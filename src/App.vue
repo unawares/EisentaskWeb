@@ -1,21 +1,22 @@
 <template>
-  <v-app light id="app">
+  <v-app style="background-color: inherit">
     <v-navigation-drawer
       fixed
       :mini-variant="miniVariant"
-      :clipped="clipped"
       v-model="drawer"
+      enable-resize-watcher
       app
+      light
     >
-      <v-list>
+      <v-list light>
         <v-list-tile
-          value="true"
-          v-for="(item, i) in items"
+          router
+          :to="item.to"
           :key="i"
-          exact
+          v-for="(item, i) in items"
         >
           <v-list-tile-action>
-            <v-icon light v-html="item.icon"></v-icon>
+            <v-icon v-html="item.icon" class="notranslate"></v-icon>
           </v-list-tile-action>
           <v-list-tile-content>
             <v-list-tile-title v-text="item.title"></v-list-tile-title>
@@ -23,33 +24,57 @@
         </v-list-tile>
       </v-list>
     </v-navigation-drawer>
-    <v-toolbar fixed app :clipped-left="clipped" class="app-toolbar">
-      <v-toolbar-side-icon @click.stop="drawer = !drawer" dark></v-toolbar-side-icon>
+    <v-toolbar dark fixed app class="app-toolbar">
+      <v-toolbar-side-icon @click.stop="drawer = !drawer" class="notranslate"></v-toolbar-side-icon>
+      <v-spacer></v-spacer>
+      <v-btn icon>
+        <v-icon class="notranslate">cached</v-icon>
+      </v-btn>
+      <v-btn icon>
+        <v-icon class="notranslate">exit_to_app</v-icon>
       </v-btn>
     </v-toolbar>
     <v-content>
-      <router-view></router-view>
+      <v-container fluid>
+        <v-slide-y-transition mode="out-in">
+          <router-view></router-view>
+        </v-slide-y-transition>
+      </v-container>
     </v-content>
   </v-app>
 </template>
 
 <script>
+  import Vue from 'vue'
+  import Vuetify from 'vuetify'
+
+  Vue.use(Vuetify, {
+    theme: {
+      goals: '#F44336',
+      progress: '#0C73AF',
+      activities: '#FF9F1C',
+      interruptions: '#616161'
+    }
+  })
+
   export default {
     data () {
       return {
-        clipped: false,
-        drawer: true,
+        drawer: false,
         items: [
-          { icon: 'web', title: 'HEADPAGE' },
-          { icon: 'info_outline', title: 'Active Tasks' },
-          { icon: 'done', title: 'Completed Tasks' }
+          { icon: 'info_outline', title: 'Active Tasks', to: '/active-tasks' },
+          { icon: 'done', title: 'Completed Tasks', to: '/completed-tasks' }
         ],
         miniVariant: false,
         title: 'Eisentask'
       }
     },
     mounted: function () {
-      document.body.style.overflow = 'auto' // To fix bug within safari
+      var pageWidth = document.getElementsByTagName('body')[0].offsetWidth
+      if (pageWidth > 1264) {
+        this.drawer = true  // When the width is wide then open drawer
+      }
+      document.body.style.overflow = 'auto'  // To fix bug within safari
     }
   }
 </script>
