@@ -2,12 +2,16 @@ import axios from 'axios'
 
 export default class QueueRequests {
   constructor (options) {
-    this.BREAK = 'break'
-    this.CLEAN = 'clean'
-    this.RETRY = 'retry'
+    // Constants for method type
+    this.BREAK = 'break'  // If fail, then break
+    this.CLEAN = 'clean'  // If fail, then break and clean rest requests
+    this.RETRY = 'retry'  // If fail, then try again
 
+    // Create instances
     this.axios = axios.create(options)
     this.requests = []
+
+    // Set default settings
     this.isLoading = false
     this.method = this.BREAK
     this.retryInterval = 500
@@ -19,9 +23,11 @@ export default class QueueRequests {
       method,
       url,
       data,
-      onSuccess: () => {},
-      onError: () => {}
+      onSuccess: () => {},  // Fucntion on success with a single request
+      onError: () => {}  // Function on error with a single request
     }
+
+    // To register custom functions
     var actions = {
       onSuccess: (func) => {
         request.onSuccess = func
@@ -32,39 +38,46 @@ export default class QueueRequests {
         return actions
       }
     }
+
+    // Register request
     this.requests.push(request)
+
     return actions
   }
 
   popNextRequest () {
+    // Pop next request
     return (this.requests.length > 0) ? this.requests.shift() : null
   }
 
   start () {
+    // Cancel if another is running
     if (this.isLoading) return
+
+    // Create function to make ability to recursion calls
     var func = () => {
-      var request = this.popNextRequest()
-      if (request) {
-        this.isLoading = true
+      var request = this.popNextRequest()  // Next request
+      if (request) {  // If next exists
+        this.isLoading = true  // Set to true to disable repeat call
         this.axios({
           method: request.method,
           url: request.url,
           data: request.data
         }).then((response) => {
           request.onSuccess(response)
-          func()
+          func()  // Call it again, to make recursive
         }).catch((error) => {
           console.log(error)
           switch (this.method) {
-            case this.BREAK:
+            case this.BREAK:  // Break logic
               this.isLoading = false
               this.requests.unshift(request)
               break
-            case this.CLEAN:
+            case this.CLEAN:  // Clean logic
               this.isLoading = false
               this.requests = []
               break
-            case this.RETRY:
+            case this.RETRY:  // Retry logic
               this.requests.unshift(request)
               setTimeout(func, this.retryInterval)
               break
@@ -76,6 +89,6 @@ export default class QueueRequests {
         this.isLoading = false
       }
     }
-    func()
+    func()  // Initial call
   }
 }

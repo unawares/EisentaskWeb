@@ -8,6 +8,7 @@ const queueRequests = new QueueRequests({
 
 queueRequests.method = queueRequests.RETRY
 
+// Get task from response
 var getTaskFromResponse = function (response) {
   var task = {
     id: response.data.task.id,
@@ -38,6 +39,9 @@ var getTaskFromResponse = function (response) {
 
 export default class ActiveTasksActions {
   static getActiveTasks () {
+    /*
+      Get all active tasks
+    */
     var tasks = []
     queueRequests.push('get', '/api/tasks/active/').onSuccess((response) => {
       for (let task of response.data.tasks) {
@@ -59,6 +63,9 @@ export default class ActiveTasksActions {
   }
 
   static createTask (task) {
+    /*
+      Create task
+    */
     queueRequests.push('post', '/api/tasks/active/', {
       task: {
         text: task.text,
@@ -76,6 +83,9 @@ export default class ActiveTasksActions {
   }
 
   static updateTask (task) {
+    /*
+      Update task
+    */
     queueRequests.push('put', '/api/tasks/active/' + task.original.id + '/', {
       task: {
         text: task.text,
@@ -94,6 +104,9 @@ export default class ActiveTasksActions {
   }
 
   static deleteTask (task) {
+    /*
+      Delete task
+    */
     queueRequests.push('delete', '/api/tasks/active/' + task.original.id + '/').onSuccess((response) => {
       console.log(response)
     }).onError((error) => {
