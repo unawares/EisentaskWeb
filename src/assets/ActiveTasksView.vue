@@ -22,7 +22,6 @@
               <v-card
                 v-for="task in tasks.goals"
                 :key="task.id"
-                :id="taskPrefix + task.id"
                 class="task">
                 <v-card-text class="task-text">
                   <span class="notranslate">{{ task.text }}</span>
@@ -68,7 +67,6 @@
               <v-card
                 v-for="task in tasks.progress"
                 :key="task.id"
-                :id="taskPrefix + task.id"
                 class="task">
                 <v-card-text class="task-text">
                   <span class="notranslate">{{ task.text }}</span>
@@ -114,7 +112,6 @@
               <v-card
                 v-for="task in tasks.activities"
                 :key="task.id"
-                :id="taskPrefix + task.id"
                 class="task">
                 <v-card-text class="task-text">
                   <span class="notranslate">{{ task.text }}</span>
@@ -160,7 +157,6 @@
               <v-card
                 v-for="task in tasks.interruptions"
                 :key="task.id"
-                :id="taskPrefix + task.id"
                 class="task">
                 <v-card-text class="task-text">
                   <span class="notranslate">{{ task.text }}</span>
@@ -191,14 +187,8 @@
 
 <script>
   import draggable from 'vuedraggable'
-  import TaskActions from '@/utils/ActiveTasksActions'
-  import Task from '@/models/Task'
-
-  window.test = TaskActions
-  window.Task = Task
-
+  
   export default {
-    delimiters: ['[[', ']]'],
     data () {
       return {
         PRIORITIES: {
@@ -209,31 +199,58 @@
         },
         taskPrefix: 'task_',
         tasks: {
-          goals: [
-            {
-              id: 1,
-              text: 'Hello Google 1'
-            },
-            {
-              id: 2,
-              text: 'Hello Google 2'
-            },
-            {
-              id: 3,
-              text: 'Hello Google 3'
-            }
-          ],
+          goals: [],
           progress: [],
           activities: [],
           interruptions: []
-        }
+        },
+        activeTasksNotifier: this.$store.getters.activeTasksNotifier
+      }
+    },
+    mounted () {
+      this.$store.commit('getActiveTasks')
+    },
+    watch: {
+      activeTasksNotifier: {
+        handler () {
+          this.setActiveTasks()
+        },
+        deep: true
       }
     },
     components: {
       draggable
     },
     methods: {
-      getPriorityByString: function (priorityText) {
+      clearTasks () {
+        this.tasks = {
+          goals: [],
+          progress: [],
+          activities: [],
+          interruptions: []
+        }
+      },
+
+      setActiveTasks () {
+        var tasks = this.$store.getters.activeTasks
+        var orders = this.$store.getters.activeTasksOrders
+        var tasksMap = new Map(tasks.map((task) => [task.original.id, task]))
+        this.clearTasks()
+        for (let pk of orders.goals) {
+          this.tasks.goals.push(tasksMap.get(pk))
+        }
+        for (let pk of orders.progress) {
+          this.tasks.progress.push(tasksMap.get(pk))
+        }
+        for (let pk of orders.activities) {
+          this.tasks.activities.push(tasksMap.get(pk))
+        }
+        for (let pk of orders.interruptions) {
+          this.tasks.interruptions.push(tasksMap.get(pk))
+        }
+      },
+
+      getPriorityByString (priorityText) {
         switch (priorityText) {
           case this.PRIORITIES[1]:
             return 1
@@ -246,21 +263,51 @@
         }
         return -1
       },
-      onDragAdd: function (evt) {
-        var taskId = parseInt(evt.item.id.substr(this.taskPrefix.length))
-        var priority = this.getPriorityByString(evt.to.id)
-        var newPosition = evt.newIndex
-        console.log('ID: ' + taskId)
-        console.log('PRIORITY: ' + priority)
-        console.log('NEW_POSITION: ' + newPosition)
+
+      onDragAdd (evt) {
+        var newIndex = evt.newIndex
+        var newPriority = this.getPriorityByString(evt.to.id)
+        var task
+        switch (newPriority) {
+          case 1:
+            task = this.tasks.goals[newIndex]
+            break
+          case 2:
+            task = this.tasks.progress[newIndex]
+            break
+          case 3:
+            task = this.tasks.activities[newIndex]
+            break
+          case 4:
+            task = this.tasks.interruptions[newIndex]
+            break
+        }
+        task.priority = newPriority
+        task.newPosition = newIndex
+        this.$store.commit('updateTask', task)
       },
-      onDragUpdate: function (evt) {
-        var taskId = parseInt(evt.item.id.substr(this.taskPrefix.length))
-        var priority = this.getPriorityByString(evt.to.id)
-        var newPosition = evt.newIndex
-        console.log('ID: ' + taskId)
-        console.log('PRIORITY: ' + priority)
-        console.log('NEW_POSITION: ' + newPosition)
+
+      onDragUpdate (evt) {
+        var newIndex = evt.newIndex
+        var newPriority = this.getPriorityByString(evt.to.id)
+        var task
+        switch (newPriority) {
+          case 1:
+            task = this.tasks.goals[newIndex]
+            break
+          case 2:
+            task = this.tasks.progress[newIndex]
+            break
+          case 3:
+            task = this.tasks.activities[newIndex]
+            break
+          case 4:
+            task = this.tasks.interruptions[newIndex]
+            break
+        }
+        task.priority = newPriority
+        task.newPosition = newIndex
+        this.$store.commit('updateTask', task)
       }
     }
   }

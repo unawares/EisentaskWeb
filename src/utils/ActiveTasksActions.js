@@ -16,56 +16,45 @@ var getTaskFromResponse = function (response) {
     priority: response.data.task.priority,
     completed: response.data.task.completed
   }
-  if (!task.completed) {
-    switch (task.priority) {
-      case 1:
-        task.position = response.data.active_tasks.goals.indexOf(task.id)
-        break
-      case 2:
-        task.position = response.data.active_tasks.progress.indexOf(task.id)
-        break
-      case 3:
-        task.position = response.data.active_tasks.activities.indexOf(task.id)
-        break
-      case 4:
-        task.position = response.data.active_tasks.interruptions.indexOf(task.id)
-        break
-    }
-  } else {
-    task.position = -1
-  }
   return task
 }
 
 export default class ActiveTasksActions {
-  static getActiveTasks () {
+  static getActiveTasks (callback) {
     /*
       Get all active tasks
     */
-    var tasks = []
+    var res = {
+      tasks: [],
+      activeTasks: {}
+    }
     queueRequests.push('get', '/api/tasks/active/').onSuccess((response) => {
       for (let task of response.data.tasks) {
         var t = new Task()
         t.instance = getTaskFromResponse({
           data: {
-            task: task,
-            active_tasks: response.data.active_tasks
+            task: task
           }
         })
-        tasks.push(t)
+        res.tasks.push(t)
       }
+      res.activeTasks = response.data.active_tasks
+      callback(res)
       console.log(response)
     }).onError((error) => {
       console.log(error)
     })
     queueRequests.start()
-    return tasks
   }
 
-  static createTask (task) {
+  static createTask (task, callback) {
     /*
       Create task
     */
+    var res = {
+      task,
+      activeTasks: {}
+    }
     queueRequests.push('post', '/api/tasks/active/', {
       task: {
         text: task.text,
@@ -73,46 +62,61 @@ export default class ActiveTasksActions {
         completed: task.completed
       }
     }).onSuccess((response) => {
-      task.instance = getTaskFromResponse(response)
+      res.task.instance = getTaskFromResponse(response)
+      res.activeTasks = response.data.active_tasks
+      callback(res)
       console.log(response)
     }).onError((error) => {
       console.log(error)
     })
     queueRequests.start()
-    return task
   }
 
-  static updateTask (task) {
+  static updateTask (task, callback) {
     /*
       Update task
     */
-    queueRequests.push('put', '/api/tasks/active/' + task.original.id + '/', {
+    var res = {
+      task,
+      activeTasks: {}
+    }
+    var data = {
       task: {
         text: task.text,
         priority: task.priority,
-        completed: task.completed,
-        new_position: task.position
+        completed: task.completed
       }
-    }).onSuccess((response) => {
-      task.instance = getTaskFromResponse(response)
+    }
+    if (task.newPosition !== undefined) {
+      data.new_position = task.newPosition
+    }
+    queueRequests.push('put', '/api/tasks/active/' + task.original.id + '/', data).onSuccess((response) => {
+      res.task.instance = getTaskFromResponse(response)
+      res.activeTasks = response.data.active_tasks
+      callback(res)
       console.log(response)
     }).onError((error) => {
       console.log(error)
     })
     queueRequests.start()
-    return task
   }
 
-  static deleteTask (task) {
+  static deleteTask (task, callback) {
     /*
       Delete task
     */
+    var res = {
+      task,
+      activeTasks: {}
+    }
     queueRequests.push('delete', '/api/tasks/active/' + task.original.id + '/').onSuccess((response) => {
+      res.task.instance = getTaskFromResponse(response)
+      res.activeTasks = response.data.active_tasks
+      callback(res)
       console.log(response)
     }).onError((error) => {
       console.log(error)
     })
     queueRequests.start()
-    return task
   }
 }
