@@ -13,7 +13,7 @@
 
 export default class Task {
   get instance () {
-    return this.instance
+    return this.original
   }
 
   set instance (instance) {

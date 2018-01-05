@@ -11,7 +11,8 @@ export default new Vuex.Store({
     },
     activeTasks: {
       tasks: [],
-      orders: undefined
+      orders: undefined,
+      activeRequests: 0
     }
   },
 
@@ -20,45 +21,61 @@ export default new Vuex.Store({
 
   mutations: {
     getActiveTasks (state) {
+      state.activeTasks.activeRequests++
       var callback = (res) => {
+        state.activeTasks.activeRequests--
         state.activeTasks.tasks = res.tasks
         state.activeTasks.orders = res.activeTasks
-        state.activeTasksNotifier.updates++
+        if (state.activeTasks.activeRequests === 0) {
+          state.activeTasksNotifier.updates++
+        }
       }
       ActiveTasksActions.getActiveTasks(callback)
     },
 
     createTask (state, task) {
+      state.activeTasks.activeRequests++
       var callback = (res) => {
-        state.activeTasks.tasks.push(res.task)
+        state.activeTasks.activeRequests--
         state.activeTasks.orders = res.activeTasks
-        state.activeTasksNotifier.updates++
+        if (state.activeTasks.activeRequests === 0) {
+          state.activeTasksNotifier.updates++
+        }
       }
+      state.activeTasks.tasks.push(task)
       ActiveTasksActions.createTask(task, callback)
     },
 
     updateTask (state, task) {
+      state.activeTasks.activeRequests++
       var callback = (res) => {
+        state.activeTasks.activeRequests--
         state.activeTasks.orders = res.activeTasks
-        state.activeTasksNotifier.updates++
+        if (state.activeTasks.activeRequests === 0) {
+          state.activeTasksNotifier.updates++
+        }
       }
-      var id = task.original.id
+      var id = task.instance.id
       if (task.completed) {
         state.activeTasks.tasks = state.activeTasks.tasks.filter((task) => {
-          return task.original.id !== id
+          return task.instance.id !== id
         })
       }
       ActiveTasksActions.updateTask(task, callback)
     },
 
     deleteTask (state, task) {
+      state.activeTasks.activeRequests++
       var callback = (res) => {
+        state.activeTasks.activeRequests--
         state.activeTasks.orders = res.activeTasks
-        state.activeTasksNotifier.updates++
+        if (state.activeTasks.activeRequests === 0) {
+          state.activeTasksNotifier.updates++
+        }
       }
-      var id = task.original.id
+      var id = task.instance.id
       state.activeTasks.tasks = state.activeTasks.tasks.filter((task) => {
-        return task.original.id !== id
+        return task.instance.id !== id
       })
       ActiveTasksActions.deleteTask(task, callback)
     }

@@ -89,8 +89,9 @@ export default class ActiveTasksActions {
     }
     if (task.newPosition !== undefined) {
       data.new_position = task.newPosition
+      delete task.newPosition
     }
-    queueRequests.push('put', '/api/tasks/active/' + task.original.id + '/', data).onSuccess((response) => {
+    queueRequests.push('put', '/api/tasks/active/' + task.instance.id + '/', data).onSuccess((response) => {
       res.task.instance = getTaskFromResponse(response)
       res.activeTasks = response.data.active_tasks
       callback(res)
@@ -109,7 +110,7 @@ export default class ActiveTasksActions {
       task,
       activeTasks: {}
     }
-    queueRequests.push('delete', '/api/tasks/active/' + task.original.id + '/').onSuccess((response) => {
+    queueRequests.push('delete', '/api/tasks/active/' + task.instance.id + '/').onSuccess((response) => {
       res.task.instance = getTaskFromResponse(response)
       res.activeTasks = response.data.active_tasks
       callback(res)

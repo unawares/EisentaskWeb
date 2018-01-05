@@ -7,14 +7,14 @@ export default class QueueRequests {
     this.CLEAN = 'clean'  // If fail, then break and clean rest requests
     this.RETRY = 'retry'  // If fail, then try again
 
-    // Create instances
+    // Prepare
     this.axios = axios.create(options)
     this.requests = []
+    this.isLoading = false
 
     // Set default settings
-    this.isLoading = false
     this.method = this.BREAK
-    this.retryInterval = 500
+    this.retryInterval = 20
     this.onFailure = () => {}
   }
 

@@ -21,20 +21,20 @@
               @update="onDragUpdate">
               <v-card
                 v-for="task in tasks.goals"
-                :key="task.id"
+                :key="task.instance.id"
                 class="task">
                 <v-card-text class="task-text">
                   <span class="notranslate">{{ task.text }}</span>
                 </v-card-text>
                 <v-card-actions>
-                  <v-btn flat icon color="goals">
+                  <v-btn flat icon color="goals" @click="onDeleteClick(task)">
                     <v-icon class="notranslate">delete</v-icon>
                   </v-btn>
                   <v-spacer></v-spacer>
-                  <v-btn flat icon color="goals">
+                  <v-btn flat icon color="goals" @click="onEditClick(task)">
                     <v-icon class="notranslate">edit</v-icon>
                   </v-btn>
-                  <v-btn flat icon color="goals">
+                  <v-btn flat icon color="goals" @click="onDoneClick(task)">
                     <v-icon class="notranslate">done</v-icon>
                   </v-btn>
                 </v-card-actions>
@@ -42,7 +42,7 @@
             </draggable>
           </v-layout>
           <v-card-actions>
-            <v-btn flat color="goals">New task</v-btn>
+            <v-btn flat color="goals" @click="onNewGoalClick">New task</v-btn>
           </v-card-actions>
         </v-card>
       </v-flex>
@@ -66,20 +66,20 @@
               @update="onDragUpdate">
               <v-card
                 v-for="task in tasks.progress"
-                :key="task.id"
+                :key="task.instance.id"
                 class="task">
                 <v-card-text class="task-text">
                   <span class="notranslate">{{ task.text }}</span>
                 </v-card-text>
                 <v-card-actions>
-                  <v-btn flat icon color="progress">
+                  <v-btn flat icon color="progress" @click="onDeleteClick(task)">
                     <v-icon class="notranslate">delete</v-icon>
                   </v-btn>
                   <v-spacer></v-spacer>
-                  <v-btn flat icon color="progress">
+                  <v-btn flat icon color="progress" @click="onEditClick(task)">
                     <v-icon class="notranslate">edit</v-icon>
                   </v-btn>
-                  <v-btn flat icon color="progress">
+                  <v-btn flat icon color="progress" @click="onDoneClick(task)">
                     <v-icon class="notranslate">done</v-icon>
                   </v-btn>
                 </v-card-actions>
@@ -87,7 +87,7 @@
             </draggable>
           </v-layout>
           <v-card-actions>
-            <v-btn flat color="progress">New task</v-btn>
+            <v-btn flat color="progress" @click="onNewProgressClick">New task</v-btn>
           </v-card-actions>
         </v-card>
       </v-flex>
@@ -111,20 +111,20 @@
             @update="onDragUpdate">
               <v-card
                 v-for="task in tasks.activities"
-                :key="task.id"
+                :key="task.instance.id"
                 class="task">
                 <v-card-text class="task-text">
                   <span class="notranslate">{{ task.text }}</span>
                 </v-card-text>
                 <v-card-actions>
-                  <v-btn flat icon color="activities">
+                  <v-btn flat icon color="activities" @click="onDeleteClick(task)">
                     <v-icon class="notranslate">delete</v-icon>
                   </v-btn>
                   <v-spacer></v-spacer>
-                  <v-btn flat icon color="activities">
+                  <v-btn flat icon color="activities" @click="onEditClick(task)">
                     <v-icon class="notranslate">edit</v-icon>
                   </v-btn>
-                  <v-btn flat icon color="activities">
+                  <v-btn flat icon color="activities" @click="onDoneClick(task)">
                     <v-icon class="notranslate">done</v-icon>
                   </v-btn>
                 </v-card-actions>
@@ -132,7 +132,7 @@
             </draggable>
           </v-layout>
           <v-card-actions>
-            <v-btn flat color="activities">New task</v-btn>
+            <v-btn flat color="activities" @click="onNewActivityClick">New task</v-btn>
           </v-card-actions>
         </v-card>
       </v-flex>
@@ -156,20 +156,20 @@
               @update="onDragUpdate">
               <v-card
                 v-for="task in tasks.interruptions"
-                :key="task.id"
+                :key="task.instance.id"
                 class="task">
                 <v-card-text class="task-text">
                   <span class="notranslate">{{ task.text }}</span>
                 </v-card-text>
                 <v-card-actions>
-                  <v-btn flat icon color="interruptions">
+                  <v-btn flat icon color="interruptions" @click="onDeleteClick(task)">
                     <v-icon class="notranslate">delete</v-icon>
                   </v-btn>
                   <v-spacer></v-spacer>
-                  <v-btn flat icon color="interruptions">
+                  <v-btn flat icon color="interruptions" @click="onEditClick(task)">
                     <v-icon class="notranslate">edit</v-icon>
                   </v-btn>
-                  <v-btn flat icon color="interruptions">
+                  <v-btn flat icon color="interruptions" @click="onDoneClick(task)">
                     <v-icon class="notranslate">done</v-icon>
                   </v-btn>
                 </v-card-actions>
@@ -177,7 +177,7 @@
             </draggable>
           </v-layout>
           <v-card-actions>
-            <v-btn flat color="interruptions">New task</v-btn>
+            <v-btn flat color="interruptions" @click="onNewInterruptionClick">New task</v-btn>
           </v-card-actions>
         </v-card>
       </v-flex>
@@ -187,7 +187,8 @@
 
 <script>
   import draggable from 'vuedraggable'
-  
+  import TaskEditor from '@/components/TaskEditor'
+
   export default {
     data () {
       return {
@@ -308,6 +309,40 @@
         task.priority = newPriority
         task.newPosition = newIndex
         this.$store.commit('updateTask', task)
+      },
+
+      onEditClick (task) {
+        TaskEditor.methods.openEditor()
+        TaskEditor.methods.setTaskInstance(task)
+      },
+
+      onDeleteClick (task) {
+        this.$store.commit('deleteTask', task)
+      },
+
+      onDoneClick (task) {
+        task.completed = true
+        this.$store.commit('updateTask', task)
+      },
+
+      onNewGoalClick () {
+        TaskEditor.methods.openEditor()
+        TaskEditor.methods.setPriority(1)
+      },
+
+      onNewProgressClick () {
+        TaskEditor.methods.openEditor()
+        TaskEditor.methods.setPriority(2)
+      },
+
+      onNewActivityClick () {
+        TaskEditor.methods.openEditor()
+        TaskEditor.methods.setPriority(3)
+      },
+
+      onNewInterruptionClick () {
+        TaskEditor.methods.openEditor()
+        TaskEditor.methods.setPriority(4)
       }
     }
   }
