@@ -171,7 +171,7 @@ export default {
         task.completed = false
         task.priority = self.obj.priority
         task.text = self.obj.text
-        this.$store.commit('createTask', task)
+        this.$store.commit('createActiveTask', task)
       }
       self.obj.closeEditor()
     },
@@ -187,8 +187,7 @@ export default {
         self.obj.task.completed = false
         self.obj.task.priority = self.obj.priority
         self.obj.task.text = self.obj.text
-        console.log(self.obj.task)
-        this.$store.commit('updateTask', self.obj.task)
+        this.$store.commit('updateActiveTask', self.obj.task)
       }
       self.obj.closeEditor()
       self.obj.refresh()

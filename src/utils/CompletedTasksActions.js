@@ -9,12 +9,12 @@ var queueRequestsRetry = createQueueRequests(RETRY, {
 // Get task from response
 var getTaskFromResponse = function (response) {
   var task = {
-    id: response.data.task.id,
-    text: response.data.task.text,
-    priority: response.data.task.priority,
-    completed: response.data.task.completed,
-    updated: response.data.task.updated,
-    created: response.data.task.created
+    id: response.id,
+    text: response.text,
+    priority: response.priority,
+    completed: response.completed,
+    updated: response.updated,
+    created: response.created
   }
   return task
 }
@@ -39,59 +39,23 @@ var setActionsToFailHelper = function (onFailHelper) {
   }
 }
 
-export default class ActiveTasksActions {
-  static getActiveTasks (callback) {
+export default class CompletedTasksActions {
+  static getCompletedTasks (callback) {
     /*
       Get all active tasks
     */
     var onFailHelper = new OnFailHelper()
     var res = {
-      tasks: [],
-      activeTasks: {}
+      tasks: []
     }
     queueRequestsRetry.push(
-      'get', '/api/tasks/active/'
+      'get', '/api/tasks/completed/'
     ).onSuccess((response) => {
-      for (let task of response.data.tasks) {
+      for (let task of response.data) {
         var t = new Task()
-        t.instance = getTaskFromResponse({
-          data: {
-            task: task
-          }
-        })
+        t.instance = getTaskFromResponse(task)
         res.tasks.push(t)
       }
-      res.activeTasks = response.data.active_tasks
-      callback(res)
-      console.log(response)
-    }).onError((error) => {
-      if (onFailHelper.statusCodes.indexOf(error.response.status) !== -1) {
-        onFailHelper.onCatchStatusCodes(queueRequestsRetry)
-      }
-      console.log(error)
-    })
-    queueRequestsRetry.start()
-    return setActionsToFailHelper(onFailHelper)
-  }
-
-  static createTask (task, callback) {
-    /*
-      Create task
-    */
-    var onFailHelper = new OnFailHelper()
-    var res = {
-      task,
-      activeTasks: {}
-    }
-    queueRequestsRetry.push('post', '/api/tasks/active/', {
-      task: {
-        text: task.text,
-        priority: task.priority,
-        completed: task.completed
-      }
-    }).onSuccess((response) => {
-      res.task.instance = getTaskFromResponse(response)
-      res.activeTasks = response.data.active_tasks
       callback(res)
       console.log(response)
     }).onError((error) => {
@@ -105,30 +69,23 @@ export default class ActiveTasksActions {
   }
 
   static updateTask (task, callback) {
+    console.log(task)
     /*
       Update task
     */
     var onFailHelper = new OnFailHelper()
     var res = {
-      task,
-      activeTasks: {}
+      task
     }
     var data = {
-      task: {
-        text: task.text,
-        priority: task.priority,
-        completed: task.completed
-      }
-    }
-    if (task.newPosition !== undefined) {
-      data.new_position = task.newPosition
-      delete task.newPosition
+      text: task.text,
+      priority: task.priority,
+      completed: task.completed
     }
     queueRequestsRetry.push(
-      'put', '/api/tasks/active/' + task.instance.id + '/', data
+      'put', '/api/tasks/completed/' + task.instance.id + '/', data
     ).onSuccess((response) => {
       res.task.instance = getTaskFromResponse(response)
-      res.activeTasks = response.data.active_tasks
       callback(res)
       console.log(response)
     }).onError((error) => {
@@ -147,14 +104,12 @@ export default class ActiveTasksActions {
     */
     var onFailHelper = new OnFailHelper()
     var res = {
-      task,
-      activeTasks: {}
+      task
     }
     queueRequestsRetry.push(
-      'delete', '/api/tasks/active/' + task.instance.id + '/'
+      'delete', '/api/tasks/completed/' + task.instance.id + '/'
     ).onSuccess((response) => {
       res.task.instance = getTaskFromResponse(response)
-      res.activeTasks = response.data.active_tasks
       callback(res)
       console.log(response)
     }).onError((error) => {

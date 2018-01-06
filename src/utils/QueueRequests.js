@@ -1,19 +1,19 @@
 import axios from 'axios'
 
-export default class QueueRequests {
-  constructor (options) {
-    // Constants for method type
-    this.BREAK = 'break'  // If fail, then break
-    this.CLEAN = 'clean'  // If fail, then break and clean rest requests
-    this.RETRY = 'retry'  // If fail, then try again
+export const IGNORE = 'ignore'  // If fail, then ignore
+export const BREAK = 'break'  // If fail, then break
+export const CLEAN = 'clean'  // If fail, then break and clean rest requests
+export const RETRY = 'retry'  // If fail, then try again
 
+class QueueRequests {
+  constructor (options) {
     // Prepare
     this.axios = axios.create(options)
     this.requests = []
     this.isLoading = false
 
     // Set default settings
-    this.method = this.BREAK
+    this.method = IGNORE
     this.retryInterval = 20
     this.onFailure = () => {}
   }
@@ -50,6 +50,11 @@ export default class QueueRequests {
     return (this.requests.length > 0) ? this.requests.shift() : null
   }
 
+  clear () {
+    this.requests = []
+    this.isLoading = false
+  }
+
   start () {
     // Cancel if another is running
     if (this.isLoading) return
@@ -67,17 +72,19 @@ export default class QueueRequests {
           request.onSuccess(response)
           func()  // Call it again, to make recursive
         }).catch((error) => {
-          console.log(error)
           switch (this.method) {
-            case this.BREAK:  // Break logic
+            case IGNORE:
+              setTimeout(func, this.retryInterval)
+              break
+            case BREAK:  // Break logic
               this.isLoading = false
               this.requests.unshift(request)
               break
-            case this.CLEAN:  // Clean logic
+            case CLEAN:  // Clean logic
               this.isLoading = false
               this.requests = []
               break
-            case this.RETRY:  // Retry logic
+            case RETRY:  // Retry logic
               this.requests.unshift(request)
               setTimeout(func, this.retryInterval)
               break
@@ -91,4 +98,10 @@ export default class QueueRequests {
     }
     func()  // Initial call
   }
+}
+
+export function createQueueRequests (method, headers) {
+  var queueRequests = new QueueRequests(headers)
+  queueRequests.method = method
+  return queueRequests
 }

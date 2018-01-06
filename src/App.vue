@@ -41,15 +41,12 @@
         </v-slide-y-transition>
       </v-container>
     </v-content>
-    <task-editor></task-editor>
   </v-app>
 </template>
 
 <script>
   import Vue from 'vue'
   import Vuetify from 'vuetify'
-
-  import TaskEditor from '@/components/TaskEditor'
 
   Vue.use(Vuetify, {
     theme: {
@@ -78,9 +75,6 @@
         this.drawer = true  // When the width is wide then open drawer
       }
       document.body.style.overflow = 'auto'  // To fix bug within safari
-    },
-    components: {
-      TaskEditor
     }
   }
 </script>

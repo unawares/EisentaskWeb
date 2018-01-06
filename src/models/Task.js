@@ -21,5 +21,7 @@ export default class Task {
     this.text = instance.text
     this.priority = instance.priority
     this.completed = instance.completed
+    this.updated = instance.updated
+    this.created = instance.created
   }
 }

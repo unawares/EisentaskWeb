@@ -181,6 +181,7 @@
           </v-card-actions>
         </v-card>
       </v-flex>
+      <task-editor ref="taskEditor" class="task-editor"></task-editor>
     </v-layout>
   </v-container>
 </template>
@@ -210,6 +211,9 @@
     },
     mounted () {
       this.$store.commit('getActiveTasks')
+      setTimeout(() => {
+        this.$refs.taskEditor.$el.style.visibility = 'visible'
+      }, 1000)
     },
     watch: {
       activeTasksNotifier: {
@@ -220,7 +224,8 @@
       }
     },
     components: {
-      draggable
+      draggable,
+      TaskEditor
     },
     methods: {
       clearTasks () {
@@ -235,19 +240,43 @@
       setActiveTasks () {
         var tasks = this.$store.getters.activeTasks
         var orders = this.$store.getters.activeTasksOrders
-        var tasksMap = new Map(tasks.map((task) => [task.original.id, task]))
+        var tasksMap = new Map(tasks.map((task) => [task.instance.id, task]))
         this.clearTasks()
         for (let pk of orders.goals) {
-          this.tasks.goals.push(tasksMap.get(pk))
+          let task = tasksMap.get(pk)
+          if (task) {
+            this.tasks.goals.push(task)
+          } else {
+            this.$store.commit('getActiveTasks')
+            return
+          }
         }
         for (let pk of orders.progress) {
-          this.tasks.progress.push(tasksMap.get(pk))
+          let task = tasksMap.get(pk)
+          if (task) {
+            this.tasks.progress.push(tasksMap.get(pk))
+          } else {
+            this.$store.commit('getActiveTasks')
+            return
+          }
         }
         for (let pk of orders.activities) {
-          this.tasks.activities.push(tasksMap.get(pk))
+          let task = tasksMap.get(pk)
+          if (task) {
+            this.tasks.activities.push(tasksMap.get(pk))
+          } else {
+            this.$store.commit('getActiveTasks')
+            return
+          }
         }
         for (let pk of orders.interruptions) {
-          this.tasks.interruptions.push(tasksMap.get(pk))
+          let task = tasksMap.get(pk)
+          if (task) {
+            this.tasks.interruptions.push(tasksMap.get(pk))
+          } else {
+            this.$store.commit('getActiveTasks')
+            return
+          }
         }
       },
 
@@ -285,7 +314,7 @@
         }
         task.priority = newPriority
         task.newPosition = newIndex
-        this.$store.commit('updateTask', task)
+        this.$store.commit('updateActiveTask', task)
       },
 
       onDragUpdate (evt) {
@@ -308,7 +337,7 @@
         }
         task.priority = newPriority
         task.newPosition = newIndex
-        this.$store.commit('updateTask', task)
+        this.$store.commit('updateActiveTask', task)
       },
 
       onEditClick (task) {
@@ -317,12 +346,12 @@
       },
 
       onDeleteClick (task) {
-        this.$store.commit('deleteTask', task)
+        this.$store.commit('deleteActiveTask', task)
       },
 
       onDoneClick (task) {
         task.completed = true
-        this.$store.commit('updateTask', task)
+        this.$store.commit('updateActiveTask', task)
       },
 
       onNewGoalClick () {
@@ -356,6 +385,9 @@
 
   box-shadow()
     vendor('box-shadow', arguments)
+
+  transition()
+    vendor('transition', arguments)
 
   $goals = #F44336
   $progress = #0C73AF
@@ -421,4 +453,9 @@
 
   .text-center
     text-align: center
+
+
+  .task-editor
+    visibility: hidden
+    transition: 300ms all ease
 </style>
