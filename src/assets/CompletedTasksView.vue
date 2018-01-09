@@ -335,7 +335,7 @@
       border-color: $interruptions
 
     .task-text
-      font-size: 25px
+      font-size: 20px
       overflow: hidden
       text-overflow: ellipsis
       white-space: pre-line
@@ -348,5 +348,6 @@
 
 
   .header
+    font-weight: normal
     font-size: 30px
 </style>

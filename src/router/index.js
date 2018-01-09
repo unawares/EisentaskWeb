@@ -17,6 +17,7 @@ export default new Router({
       path: '/completed-tasks',
       name: 'CompletedTasks',
       component: CompletedTasksView
-    }
+    },
+    { path: '*', redirect: '/active-tasks' }
   ]
 })

@@ -27,10 +27,10 @@
     <v-toolbar dark fixed app class="app-toolbar">
       <v-toolbar-side-icon @click.stop="drawer = !drawer" class="notranslate"></v-toolbar-side-icon>
       <v-spacer></v-spacer>
-      <v-btn icon>
+      <v-btn icon @click="refreshTasks">
         <v-icon class="notranslate">cached</v-icon>
       </v-btn>
-      <v-btn icon>
+      <v-btn icon href="/web/accounts/logout/">
         <v-icon class="notranslate">exit_to_app</v-icon>
       </v-btn>
     </v-toolbar>
@@ -69,12 +69,22 @@
         title: 'Eisentask'
       }
     },
-    mounted: function () {
+    mounted () {
       var pageWidth = document.getElementsByTagName('body')[0].offsetWidth
       if (pageWidth > 1264) {
         this.drawer = true  // When the width is wide then open drawer
       }
       document.body.style.overflow = 'auto'  // To fix bug within safari
+    },
+    methods: {
+      refreshTasks () {
+        this.$store.commit('getActiveTasks')
+        this.$store.commit('getCompletedTasks')
+      },
+
+      logout () {
+
+      }
     }
   }
 </script>

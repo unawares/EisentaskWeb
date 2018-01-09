@@ -212,8 +212,10 @@
     mounted () {
       this.$store.commit('getActiveTasks')
       setTimeout(() => {
-        this.$refs.taskEditor.$el.style.visibility = 'visible'
-      }, 1000)
+        if (this.$refs.taskEditor) {
+          this.$refs.taskEditor.$el.style.visibility = 'visible'
+        }
+      }, 500)
     },
     watch: {
       activeTasksNotifier: {
