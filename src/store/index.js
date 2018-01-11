@@ -10,6 +10,9 @@ export default new Vuex.Store({
     activeTasksNotifier: {
       updates: 0
     },
+    activeTasksActiveRequests: {
+      count: 0
+    },
     activeTasks: {
       tasks: [],
       orders: {
@@ -17,11 +20,13 @@ export default new Vuex.Store({
         progress: [],
         activities: [],
         interruptions: []
-      },
-      activeRequests: 0
+      }
     },
     completedTasksNotifier: {
       updates: 0
+    },
+    completedTasksActiveRequests: {
+      count: 0
     },
     completedTasks: {
       tasks: [],
@@ -34,12 +39,12 @@ export default new Vuex.Store({
 
   mutations: {
     getActiveTasks (state) {
-      state.activeTasks.activeRequests++
+      state.activeTasksActiveRequests.count++
       var callback = (res) => {
-        state.activeTasks.activeRequests--
+        state.activeTasksActiveRequests.count--
         state.activeTasks.tasks = res.tasks
         state.activeTasks.orders = res.activeTasks
-        if (state.activeTasks.activeRequests === 0) {
+        if (state.activeTasksActiveRequests.count === 0) {
           state.activeTasksNotifier.updates++
         }
       }
@@ -47,11 +52,11 @@ export default new Vuex.Store({
     },
 
     createActiveTask (state, task) {
-      state.activeTasks.activeRequests++
+      state.activeTasksActiveRequests.count++
       var callback = (res) => {
-        state.activeTasks.activeRequests--
+        state.activeTasksActiveRequests.count--
         state.activeTasks.orders = res.activeTasks
-        if (state.activeTasks.activeRequests === 0) {
+        if (state.activeTasksActiveRequests.count === 0) {
           state.activeTasksNotifier.updates++
         }
       }
@@ -60,11 +65,11 @@ export default new Vuex.Store({
     },
 
     updateActiveTask (state, task) {
-      state.activeTasks.activeRequests++
+      state.activeTasksActiveRequests.count++
       var callback = (res) => {
-        state.activeTasks.activeRequests--
+        state.activeTasksActiveRequests.count--
         state.activeTasks.orders = res.activeTasks
-        if (state.activeTasks.activeRequests === 0) {
+        if (state.activeTasksActiveRequests.count === 0) {
           state.activeTasksNotifier.updates++
         }
       }
@@ -76,24 +81,17 @@ export default new Vuex.Store({
       }
       ActiveTasksActions.updateTask(task, callback).onCatchStatusCodes([404]).do((queueRequests) => {
         queueRequests.clear()
-        state.activeTasks.tasks = []
-        state.activeTasks.orders = {
-          goals: [],
-          progress: [],
-          activities: [],
-          interruptions: []
-        }
-        state.activeTasks.activeRequests = 0
+        this.commit('refreshActiveTasks')
         this.commit('getActiveTasks')
       })
     },
 
     deleteActiveTask (state, task) {
-      state.activeTasks.activeRequests++
+      state.activeTasksActiveRequests.count++
       var callback = (res) => {
-        state.activeTasks.activeRequests--
+        state.activeTasksActiveRequests.count--
         state.activeTasks.orders = res.activeTasks
-        if (state.activeTasks.activeRequests === 0) {
+        if (state.activeTasksActiveRequests.count === 0) {
           state.activeTasksNotifier.updates++
         }
       }
@@ -103,24 +101,17 @@ export default new Vuex.Store({
       })
       ActiveTasksActions.deleteTask(task, callback).onCatchStatusCodes([404]).do((queueRequests) => {
         queueRequests.clear()
-        state.activeTasks.tasks = []
-        state.activeTasks.orders = {
-          goals: [],
-          progress: [],
-          activities: [],
-          interruptions: []
-        }
-        state.activeTasks.activeRequests = 0
+        this.commit('refreshActiveTasks')
         this.commit('getActiveTasks')
       })
     },
 
     getCompletedTasks (state) {
-      state.completedTasks.activeRequests++
+      state.completedTasksActiveRequests.count++
       var callback = (res) => {
-        state.completedTasks.activeRequests--
+        state.completedTasksActiveRequests.count--
         state.completedTasks.tasks = res.tasks
-        if (state.completedTasks.activeRequests === 0) {
+        if (state.completedTasksActiveRequests.count === 0) {
           state.completedTasksNotifier.updates++
         }
       }
@@ -128,10 +119,10 @@ export default new Vuex.Store({
     },
 
     updateCompletedTask (state, task) {
-      state.completedTasks.activeRequests++
+      state.completedTasksActiveRequests.count++
       var callback = (res) => {
-        state.completedTasks.activeRequests--
-        if (state.completedTasks.activeRequests === 0) {
+        state.completedTasksActiveRequests.count--
+        if (state.completedTasksActiveRequests.count === 0) {
           state.completedTasksNotifier.updates++
         }
       }
@@ -145,10 +136,10 @@ export default new Vuex.Store({
     },
 
     deleteCompletedTask (state, task) {
-      state.completedTasks.activeRequests++
+      state.completedTasksActiveRequests.count++
       var callback = (res) => {
-        state.completedTasks.activeRequests--
-        if (state.completedTasks.activeRequests === 0) {
+        state.completedTasksActiveRequests.count--
+        if (state.completedTasksActiveRequests.count === 0) {
           state.completedTasksNotifier.updates++
         }
       }
@@ -157,7 +148,21 @@ export default new Vuex.Store({
         return task.instance.id !== id
       })
       CompletedTasksActions.deleteTask(task, callback)
-    }
+    },
+
+    refreshActiveTasks (state) {
+      state.activeTasks.tasks = []
+      state.activeTasks.orders = {
+        goals: [],
+        progress: [],
+        activities: [],
+        interruptions: []
+      }
+      state.activeTasksActiveRequests.count = 0
+      state.activeTasksNotifier.updates = 0
+    },
+
+    refreshCompletedTasks () {}
   },
 
   getters: {
@@ -173,12 +178,20 @@ export default new Vuex.Store({
       return state.activeTasksNotifier
     },
 
+    activeTasksActiveRequests (state) {
+      return state.activeTasksActiveRequests
+    },
+
     completedTasks (state) {
       return state.completedTasks.tasks
     },
 
     completedTasksNotifier (state) {
       return state.completedTasksNotifier
+    },
+
+    completedTasksActiveRequests (state) {
+      return state.completedTasksActiveRequests
     }
   }
 })

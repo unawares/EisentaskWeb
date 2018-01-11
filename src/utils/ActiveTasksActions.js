@@ -132,8 +132,10 @@ export default class ActiveTasksActions {
       callback(res)
       console.log(response)
     }).onError((error) => {
-      if (onFailHelper.statusCodes.indexOf(error.response.status) !== -1) {
-        onFailHelper.onCatchStatusCodes(queueRequestsRetry)
+      if (error.response) {
+        if (onFailHelper.statusCodes.indexOf(error.response.status) !== -1) {
+          onFailHelper.onCatchStatusCodes(queueRequestsRetry)
+        }
       }
       console.log(error)
     })

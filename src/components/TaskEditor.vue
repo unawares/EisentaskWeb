@@ -2,6 +2,7 @@
   <v-layout>
     <v-container>
       <v-btn
+        ref="button"
         dark
         color="goals"
         fab
@@ -13,7 +14,10 @@
           <v-icon color="">edit</v-icon>
       </v-btn>
     </v-container>
-    <v-navigation-drawer id="task-editor"
+    <v-navigation-drawer
+      ref="taskEditor"
+      class="task-editor"
+      absolute
       temporary
       fixed
       v-model="drawer"
@@ -117,114 +121,144 @@
 
 
 <script>
-import Task from '@/models/Task'
+  import Task from '@/models/Task'
 
-var self = {}
+  var self = {}
 
-export default {
-  name: 'TaskEditor',
-  data () {
-    return {
-      drawer: false,
-      task: undefined,
-      session: 'form',
-      text: '',
-      priority: 1,
-      priorityClass: 'goals',
-      refreshIntervalId: undefined
-    }
-  },
-  mounted: function () {
-    self.obj = this
-  },
-  watch: {
-    priority: function (value) {
-      value = parseInt(value)
-      switch (value) {
-        case 1:
-          self.obj.priorityClass = 'goals'
-          break
-        case 2:
-          self.obj.priorityClass = 'progress'
-          break
-        case 3:
-          self.obj.priorityClass = 'activities'
-          break
-        case 4:
-          self.obj.priorityClass = 'interruptions'
-          break
+  export default {
+    name: 'TaskEditor',
+    data () {
+      return {
+        drawer: false,
+        task: undefined,
+        session: 'form',
+        text: '',
+        priority: 1,
+        priorityClass: 'goals',
+        refreshIntervalId: undefined
       }
-      return value
-    }
-  },
-  methods: {
-    // Set instance
-    setTaskInstance: function (task) {
-      self.obj.task = task
-      self.obj.priority = task.priority
-      self.obj.text = task.text
     },
-    // Create task
-    createTask: function () {
-      if (self.obj.text && !(/^\s*$/.test(self.obj.text))) {
-        var task = new Task()
-        task.completed = false
-        task.priority = self.obj.priority
-        task.text = self.obj.text
-        this.$store.commit('createActiveTask', task)
+    mounted: function () {
+      self.obj = this
+    },
+    watch: {
+      priority: function (value) {
+        value = parseInt(value)
+        switch (value) {
+          case 1:
+            self.obj.priorityClass = 'goals'
+            break
+          case 2:
+            self.obj.priorityClass = 'progress'
+            break
+          case 3:
+            self.obj.priorityClass = 'activities'
+            break
+          case 4:
+            self.obj.priorityClass = 'interruptions'
+            break
+        }
+        return value
+      },
+
+      drawer: function (value) {
+        if (value) {
+          this.$refs.taskEditor.$el.style.visibility = 'visible'
+        } else {
+          setTimeout(() => {
+            if (!this.drawer) {
+              this.$refs.taskEditor.$el.style.visibility = 'hidden'
+            }
+          }, 1000)
+        }
       }
-      self.obj.closeEditor()
     },
-    // Refresh
-    refresh: function () {
-      self.obj.task = undefined
-      self.obj.text = ''
-      self.obj.session = 'form'
-    },
-    // Update task
-    updateTask: function () {
-      if (self.obj.text && !(/^\s*$/.test(self.obj.text))) {
-        self.obj.task.completed = false
-        self.obj.task.priority = self.obj.priority
-        self.obj.task.text = self.obj.text
-        this.$store.commit('updateActiveTask', self.obj.task)
+    methods: {
+      // Set instance
+      setTaskInstance: function (task) {
+        self.obj.task = task
+        self.obj.priority = task.priority
+        self.obj.text = task.text
+      },
+
+      // Create task
+      createTask: function () {
+        if (self.obj.text && !(/^\s*$/.test(self.obj.text))) {
+          var task = new Task()
+          task.completed = false
+          task.priority = self.obj.priority
+          task.text = self.obj.text
+          this.$store.commit('createActiveTask', task)
+        }
+        self.obj.closeEditor()
+      },
+
+      // Refresh
+      refresh: function () {
+        self.obj.task = undefined
+        self.obj.text = ''
+        self.obj.session = 'form'
+      },
+
+      // Update task
+      updateTask: function () {
+        if (self.obj.text && !(/^\s*$/.test(self.obj.text))) {
+          self.obj.task.completed = false
+          self.obj.task.priority = self.obj.priority
+          self.obj.task.text = self.obj.text
+          this.$store.commit('updateActiveTask', self.obj.task)
+        }
+        self.obj.closeEditor()
+        self.obj.refresh()
+      },
+
+      setPriority: function (priority) {
+        self.obj.priority = parseInt(priority)
+        self.obj.session = 'form'
+      },
+
+      // Call to close the editor
+      closeEditor: function () {
+        self.obj.drawer = false
+      },
+
+      // Call to open the editor
+      openEditor: function () {
+        self.obj.refresh()
+        self.obj.drawer = true
       }
-      self.obj.closeEditor()
-      self.obj.refresh()
-    },
-    setPriority: function (priority) {
-      self.obj.priority = parseInt(priority)
-      self.obj.session = 'form'
-    },
-    // Call to close the editor
-    closeEditor: function () {
-      self.obj.drawer = false
-    },
-    // Call to open the editor
-    openEditor: function () {
-      self.obj.refresh()
-      self.obj.drawer = true
     }
   }
-}
 </script>
 
 
 <style scoped>
-.priority-item {
-  margin: 15px;
-}
+  .task-editor {
+    visibility: hidden;
+  }
 
-.goals {
-  background-color: #E71D36 !important;
-}
-.progress {
-  background-color: #0C73AF !important;
-}
-.activities {
-  background-color: #FF9F1C !important;
-}
-.interruptions {
-  background-color: #616161 !important;
-}
+
+  .priority-item {
+    margin: 15px;
+  }
+
+
+  .goals {
+    background-color: #E71D36 !important;
+  }
+
+
+  .progress {
+    background-color: #0C73AF !important;
+  }
+
+
+  .activities {
+    background-color: #FF9F1C !important;
+  }
+
+
+  .interruptions {
+    background-color: #616161 !important;
+  }
 </style>

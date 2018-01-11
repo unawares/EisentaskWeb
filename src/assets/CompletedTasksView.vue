@@ -149,7 +149,7 @@
     return _quickSort
   })()
 
-  Vue.filter('getDisplayMonth', function (month) {
+  Vue.filter('getDisplayMonth', (month) => {
     switch (month) {
       case '01': return 'January'
       case '02': return 'February'
@@ -167,7 +167,7 @@
     }
   })
 
-  Vue.filter('toDateTimeFormat', function (date) {
+  Vue.filter('toDateTimeFormat', (date) => {
     let dateObj = new Date(date)
     let str = dateObj.toUTCString()
     return str.substring(0, str.length - 4)
@@ -188,16 +188,16 @@
         completedTasksNotifier: this.$store.getters.completedTasksNotifier
       }
     },
-    mounted: function () {
+    mounted () {
       this.$store.commit('getCompletedTasks')
     },
     watch: {
-      date: function () {
+      date  () {
         this.filteredTasks = this.getFilteredTasks()
       },
 
       account: {
-        handler: function (value) {
+        handler (value) {
           if (value.lastActionState === 'success') {
             this.getTasks()
           } else {
@@ -208,7 +208,7 @@
       },
 
       completedTasksNotifier: {
-        handler: function () {
+        handler () {
           var tasks = this.$store.getters.completedTasks
           var allowedDatesSet = new Set()
           for (let i = 0; i < tasks.length; i++) {
@@ -240,7 +240,11 @@
       }
     },
     methods: {
-      getFilteredTasks: function () {
+      refresh () {
+        console.log('Completed Tasks Refresh')
+      },
+
+      getFilteredTasks () {
         var _filteredTasks = {}
         var fTasks = this.filterTheTasks()
         for (let i = 0; i < fTasks.length; i++) {
@@ -270,7 +274,7 @@
         return _filteredTasks
       },
 
-      filterTheTasks: function () {
+      filterTheTasks () {
         if (this.date) {
           return this.tasks.filter((value) => {
             return value.updated.substr(0, 7) === this.date
@@ -280,18 +284,18 @@
         }
       },
 
-      deleteTask: function (year, month, day, index) {
+      deleteTask (year, month, day, index) {
         var task = this.filteredTasks[year][month][day][index]
         this.$store.commit('deleteCompletedTask', task)
       },
 
-      cancelTask: function (year, month, day, index) {
+      cancelTask (year, month, day, index) {
         var task = this.filteredTasks[year][month][day][index]
         task.completed = false
         this.$store.commit('updateCompletedTask', task)
       },
 
-      getGolorNameByPriority: function (priority) {
+      getGolorNameByPriority (priority) {
         switch (priority) {
           case 1: return 'goals'
           case 2: return 'progress'

@@ -27,7 +27,7 @@
     <v-toolbar dark fixed app class="app-toolbar">
       <v-toolbar-side-icon @click.stop="drawer = !drawer" class="notranslate"></v-toolbar-side-icon>
       <v-spacer></v-spacer>
-      <v-btn icon @click="refreshTasks">
+      <v-btn icon @click="refresh">
         <v-icon class="notranslate">cached</v-icon>
       </v-btn>
       <v-btn icon href="/web/accounts/logout/">
@@ -37,16 +37,18 @@
     <v-content>
       <v-container fluid>
         <v-slide-y-transition mode="out-in">
-          <router-view></router-view>
+          <router-view ref="view"></router-view>
         </v-slide-y-transition>
       </v-container>
     </v-content>
+    <notifications></notifications>
   </v-app>
 </template>
 
 <script>
   import Vue from 'vue'
   import Vuetify from 'vuetify'
+  import Notifications from '@/components/Notifications'
 
   Vue.use(Vuetify, {
     theme: {
@@ -77,14 +79,12 @@
       document.body.style.overflow = 'auto'  // To fix bug within safari
     },
     methods: {
-      refreshTasks () {
-        this.$store.commit('getActiveTasks')
-        this.$store.commit('getCompletedTasks')
-      },
-
-      logout () {
-
+      refresh () {
+        this.$refs.view.refresh()  // Must be implemented
       }
+    },
+    components: {
+      Notifications
     }
   }
 </script>

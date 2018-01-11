@@ -181,7 +181,7 @@
           </v-card-actions>
         </v-card>
       </v-flex>
-      <task-editor ref="taskEditor" class="task-editor"></task-editor>
+      <task-editor ref="taskEditor" style="visibility: hidden"></task-editor>
     </v-layout>
   </v-container>
 </template>
@@ -189,6 +189,7 @@
 <script>
   import draggable from 'vuedraggable'
   import TaskEditor from '@/components/TaskEditor'
+  import Notifications from '@/components/Notifications'
 
   export default {
     data () {
@@ -206,21 +207,51 @@
           activities: [],
           interruptions: []
         },
-        activeTasksNotifier: this.$store.getters.activeTasksNotifier
+        activeTasksNotifier: this.$store.getters.activeTasksNotifier,
+        activeTasksActiveRequests: this.$store.getters.activeTasksActiveRequests,
+        isRefreshing: false
       }
     },
     mounted () {
-      this.$store.commit('getActiveTasks')
+      this.rerfreshAndGetActiveTasks()
       setTimeout(() => {
         if (this.$refs.taskEditor) {
           this.$refs.taskEditor.$el.style.visibility = 'visible'
         }
-      }, 500)
+      }, 700)
     },
     watch: {
       activeTasksNotifier: {
         handler () {
           this.setActiveTasks()
+        },
+        deep: true
+      },
+
+      activeTasksActiveRequests: {
+        handler () {
+          if (this.isRefreshing) {
+            if (this.activeTasksActiveRequests.count > 0) {
+              Notifications.methods.synchronized(false)
+              Notifications.methods.synchronization()
+            } else if (this.activeTasksNotifier.updates > 0) {
+              setTimeout(() => {
+                Notifications.methods.synchronization(false)
+                Notifications.methods.synchronized()
+                this.isRefreshing = false
+              }, 500)
+            }
+          } else {
+            if (this.activeTasksActiveRequests.count > 0 && this.activeTasksNotifier.updates > 0) {
+              Notifications.methods.synchronized(false)
+              Notifications.methods.synchronization()
+            } else if (this.activeTasksNotifier.updates > 1) {
+              setTimeout(() => {
+                Notifications.methods.synchronization(false)
+                Notifications.methods.synchronized()
+              }, 500)
+            }
+          }
         },
         deep: true
       }
@@ -230,6 +261,11 @@
       TaskEditor
     },
     methods: {
+      refresh () {
+        this.isRefreshing = true
+        this.rerfreshAndGetActiveTasks()
+      },
+
       clearTasks () {
         this.tasks = {
           goals: [],
@@ -237,6 +273,13 @@
           activities: [],
           interruptions: []
         }
+      },
+
+      rerfreshAndGetActiveTasks () {
+        this.$store.commit('refreshActiveTasks')
+        setTimeout(() => {
+          this.$store.commit('getActiveTasks')
+        })
       },
 
       setActiveTasks () {
@@ -249,7 +292,7 @@
           if (task) {
             this.tasks.goals.push(task)
           } else {
-            this.$store.commit('getActiveTasks')
+            this.rerfreshAndGetActiveTasks()
             return
           }
         }
@@ -258,7 +301,7 @@
           if (task) {
             this.tasks.progress.push(tasksMap.get(pk))
           } else {
-            this.$store.commit('getActiveTasks')
+            this.rerfreshAndGetActiveTasks()
             return
           }
         }
@@ -267,7 +310,7 @@
           if (task) {
             this.tasks.activities.push(tasksMap.get(pk))
           } else {
-            this.$store.commit('getActiveTasks')
+            this.rerfreshAndGetActiveTasks()
             return
           }
         }
@@ -276,7 +319,7 @@
           if (task) {
             this.tasks.interruptions.push(tasksMap.get(pk))
           } else {
-            this.$store.commit('getActiveTasks')
+            this.rerfreshAndGetActiveTasks()
             return
           }
         }
@@ -455,9 +498,4 @@
 
   .text-center
     text-align: center
-
-
-  .task-editor
-    visibility: hidden
-    transition: 300ms all ease
 </style>
