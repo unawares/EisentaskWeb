@@ -6,15 +6,25 @@
       v-model="drawer"
       enable-resize-watcher
       app
-      light
-    >
-      <v-list light>
+      light >
+        <v-toolbar flat class="transparent">
+          <v-list class="pa-0">
+            <v-list-tile avatar>
+              <v-list-tile-content>
+                <v-list-tile-title>
+                  <span>{{ username }}</span>
+                </v-list-tile-title>
+              </v-list-tile-content>
+            </v-list-tile>
+          </v-list>
+        </v-toolbar>
+      <v-list light class="pt-0">
+        <v-divider></v-divider>
         <v-list-tile
           router
           :to="item.to"
           :key="i"
-          v-for="(item, i) in items"
-        >
+          v-for="(item, i) in items" >
           <v-list-tile-action>
             <v-icon v-html="item.icon" class="notranslate"></v-icon>
           </v-list-tile-action>
@@ -62,21 +72,33 @@
   export default {
     data () {
       return {
+        username: 'unknown',
         drawer: false,
         items: [
           { icon: 'info_outline', title: 'Active Tasks', to: '/active-tasks' },
           { icon: 'done', title: 'Completed Tasks', to: '/completed-tasks' }
         ],
         miniVariant: false,
-        title: 'Eisentask'
+        title: 'Eisentask',
+        profileNotifier: this.$store.getters.profileNotifier
       }
     },
     mounted () {
+      this.$store.commit('getUser')
       var pageWidth = document.getElementsByTagName('body')[0].offsetWidth
       if (pageWidth > 1264) {
         this.drawer = true  // When the width is wide then open drawer
       }
       document.body.style.overflow = 'auto'  // To fix bug within safari
+    },
+    watch: {
+      profileNotifier: {
+        handler () {
+          let user = this.$store.getters.user
+          this.username = user.username
+        },
+        deep: true
+      }
     },
     methods: {
       refresh () {

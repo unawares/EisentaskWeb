@@ -214,6 +214,7 @@
       }
     },
     mounted () {
+      window.test = this
       this.refreshAndGetActiveTasks()
       setTimeout(() => {
         if (this.$refs.taskEditor) {

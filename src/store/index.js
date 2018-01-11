@@ -2,6 +2,8 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import ActiveTasksActions from '@/utils/ActiveTasksActions'
 import CompletedTasksActions from '@/utils/CompletedTasksActions'
+import UserActions from '@/utils/UserActions'
+import User from '@/models/User'
 
 Vue.use(Vuex)
 
@@ -31,6 +33,15 @@ export default new Vuex.Store({
     completedTasks: {
       tasks: [],
       activeRequests: 0
+    },
+    profile: {
+      user: new User()
+    },
+    profileNotifier: {
+      updates: 0
+    },
+    profileActiveRequests: {
+      count: 0
     }
   },
 
@@ -38,6 +49,18 @@ export default new Vuex.Store({
   },
 
   mutations: {
+    getUser (state) {
+      state.profileActiveRequests.count++
+      var callback = (res) => {
+        state.profileActiveRequests.count--
+        state.profile.user = res.user
+        if (state.profileActiveRequests.count === 0) {
+          state.profileNotifier.updates++
+        }
+      }
+      UserActions.getUser(callback, state.profile.user)
+    },
+
     getActiveTasks (state) {
       state.activeTasksActiveRequests.count++
       var callback = (res) => {
@@ -178,6 +201,18 @@ export default new Vuex.Store({
   },
 
   getters: {
+    user (state) {
+      return state.profile.user
+    },
+
+    profileNotifier (state) {
+      return state.profileNotifier
+    },
+
+    profileActiveRequests (state) {
+      return state.profileActiveRequests
+    },
+
     activeTasks (state) {
       return state.activeTasks.tasks
     },
