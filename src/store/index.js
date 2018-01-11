@@ -132,7 +132,11 @@ export default new Vuex.Store({
           return task.instance.id !== id
         })
       }
-      CompletedTasksActions.updateTask(task, callback)
+      CompletedTasksActions.updateTask(task, callback).onCatchStatusCodes([404]).do((queueRequests) => {
+        queueRequests.clear()
+        this.commit('refreshCompletedTasks')
+        this.commit('getCompletedTasks')
+      })
     },
 
     deleteCompletedTask (state, task) {
@@ -147,7 +151,11 @@ export default new Vuex.Store({
       state.completedTasks.tasks = state.completedTasks.tasks.filter((task) => {
         return task.instance.id !== id
       })
-      CompletedTasksActions.deleteTask(task, callback)
+      CompletedTasksActions.deleteTask(task, callback).onCatchStatusCodes([404]).do((queueRequests) => {
+        queueRequests.clear()
+        this.commit('refreshCompletedTasks')
+        this.commit('getCompletedTasks')
+      })
     },
 
     refreshActiveTasks (state) {
@@ -162,7 +170,11 @@ export default new Vuex.Store({
       state.activeTasksNotifier.updates = 0
     },
 
-    refreshCompletedTasks () {}
+    refreshCompletedTasks (state) {
+      state.completedTasks.tasks = []
+      state.completedTasksActiveRequests.count = 0
+      state.completedTasksNotifier.updates = 0
+    }
   },
 
   getters: {

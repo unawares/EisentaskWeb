@@ -15,50 +15,60 @@
 </template>
 
 <script>
-var self = {}
+  var self = {}
 
-export default {
-  data () {
-    return {
-      snackbars: {
-        synchronized: {
-          text: 'Synchronized',
-          timeout: 1500,
-          color: 'success',
-          visible: false
-        },
+  export default {
+    data () {
+      return {
+        snackbars: {
+          synchronized: {
+            text: 'Synchronized',
+            timeout: 1500,
+            color: 'success',
+            visible: false
+          },
 
-        synchronization: {
-          text: 'Synchronization...',
-          timeout: 9999,
-          color: 'info',
-          visible: false
-        },
+          synchronization: {
+            text: 'Synchronization...',
+            timeout: 999999999,
+            color: 'info',
+            visible: false
+          },
 
-        error: {
-          text: 'Something went wrong',
-          timeout: 1500,
-          color: 'error',
-          visible: false
+          error: {
+            text: 'Something went wrong',
+            timeout: 1500,
+            color: 'error',
+            visible: false
+          }
         }
       }
-    }
-  },
-  mounted: function () {
-    self.obj = this
-  },
-  methods: {
-    synchronized (visible = true) {
-      self.obj.snackbars.synchronized.visible = visible
     },
-
-    synchronization (visible = true) {
-      self.obj.snackbars.synchronization.visible = visible
+    mounted: function () {
+      self.obj = this
     },
+    methods: {
+      synchronized (visible = true) {
+        self.obj.snackbars.synchronized.visible = visible
+      },
 
-    error (visible = true) {
-      self.obj.snackbars.error.visible = visible
+      synchronization (visible = true) {
+        self.obj.snackbars.synchronization.visible = visible
+      },
+
+      error (visible = true) {
+        self.obj.snackbars.error.visible = visible
+      },
+
+      clear () {
+        for (let snackbar in self.obj.snackbars) {
+          self.obj.snackbars[snackbar].visible = false
+        }
+      },
+
+      isSynchronization () {
+        return self.obj.snackbars.synchronization.visible
+      }
     }
   }
-}
 </script>

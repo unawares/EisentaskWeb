@@ -207,13 +207,14 @@
           activities: [],
           interruptions: []
         },
+        completedTasksNotifier: this.$store.getters.completedTasksNotifier,
         activeTasksNotifier: this.$store.getters.activeTasksNotifier,
         activeTasksActiveRequests: this.$store.getters.activeTasksActiveRequests,
         isRefreshing: false
       }
     },
     mounted () {
-      this.rerfreshAndGetActiveTasks()
+      this.refreshAndGetActiveTasks()
       setTimeout(() => {
         if (this.$refs.taskEditor) {
           this.$refs.taskEditor.$el.style.visibility = 'visible'
@@ -221,6 +222,13 @@
       }, 700)
     },
     watch: {
+      completedTasksNotifier: {
+        handler () {
+          this.refresh()
+        },
+        deep: true
+      },
+
       activeTasksNotifier: {
         handler () {
           this.setActiveTasks()
@@ -261,9 +269,15 @@
       TaskEditor
     },
     methods: {
+      clearNotifications () {
+        setTimeout(() => {
+          Notifications.methods.clear()
+        })
+      },
+
       refresh () {
         this.isRefreshing = true
-        this.rerfreshAndGetActiveTasks()
+        this.refreshAndGetActiveTasks()
       },
 
       clearTasks () {
@@ -275,7 +289,7 @@
         }
       },
 
-      rerfreshAndGetActiveTasks () {
+      refreshAndGetActiveTasks () {
         this.$store.commit('refreshActiveTasks')
         setTimeout(() => {
           this.$store.commit('getActiveTasks')
@@ -292,7 +306,7 @@
           if (task) {
             this.tasks.goals.push(task)
           } else {
-            this.rerfreshAndGetActiveTasks()
+            this.refreshAndGetActiveTasks()
             return
           }
         }
@@ -301,7 +315,7 @@
           if (task) {
             this.tasks.progress.push(tasksMap.get(pk))
           } else {
-            this.rerfreshAndGetActiveTasks()
+            this.refreshAndGetActiveTasks()
             return
           }
         }
@@ -310,7 +324,7 @@
           if (task) {
             this.tasks.activities.push(tasksMap.get(pk))
           } else {
-            this.rerfreshAndGetActiveTasks()
+            this.refreshAndGetActiveTasks()
             return
           }
         }
@@ -319,7 +333,7 @@
           if (task) {
             this.tasks.interruptions.push(tasksMap.get(pk))
           } else {
-            this.rerfreshAndGetActiveTasks()
+            this.refreshAndGetActiveTasks()
             return
           }
         }

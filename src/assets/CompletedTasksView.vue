@@ -53,13 +53,18 @@
                   <h4 class="header">{{ day }} {{ month | getDisplayMonth }}</h4>
                 </v-flex>
                 <v-flex justify-end>
-                  <h4 class="header" style="text-align: right">{{ filteredTasks[year][month][day].length }}</h4>
+                  <h4
+                    class="header"
+                    style="text-align: right">{{ filteredTasks[year][month][day].length }}</h4>
                 </v-flex>
               </v-layout>
               <hr/>
               <v-layout>
                 <v-flex style="max-width: 100%">
-                  <div v-for="(task, index) in filteredTasks[year][month][day]" class="task" :class="'border-color-' + getGolorNameByPriority(task.priority)">
+                  <div
+                    v-for="(task, index) in filteredTasks[year][month][day]"
+                    class="task"
+                    :class="'border-color-' + getGolorNameByPriority(task.priority)">
                     <v-layout>
                       <v-flex justify-start>
                         <div>
@@ -111,6 +116,7 @@
 
 <script>
   import Vue from 'vue'
+  import Notifications from '@/components/Notifications'
 
   // Quick sort
   var quickSort = (() => {
@@ -185,26 +191,25 @@
         tasks: [],
         formattedDate: null,
         filteredTasks: {},
-        completedTasksNotifier: this.$store.getters.completedTasksNotifier
+        activeTasksNotifier: this.$store.getters.activeTasksNotifier,
+        completedTasksNotifier: this.$store.getters.completedTasksNotifier,
+        completedTasksActiveRequests: this.$store.getters.completedTasksActiveRequests,
+        isRefreshing: false
       }
     },
     mounted () {
-      this.$store.commit('getCompletedTasks')
+      this.refreshAndGetCompletedTasks()
     },
     watch: {
       date  () {
         this.filteredTasks = this.getFilteredTasks()
       },
 
-      account: {
-        handler (value) {
-          if (value.lastActionState === 'success') {
-            this.getTasks()
-          } else {
-            this.$router.push({ name: 'authentication', params: { action: 'signin' } })
-          }
+      activeTasksNotifier: {
+        handler () {
+          this.refresh()
         },
-        deep: 1
+        deep: true
       },
 
       completedTasksNotifier: {
@@ -237,11 +242,53 @@
           this.filteredTasks = this.getFilteredTasks()
         },
         deep: true
+      },
+
+      completedTasksActiveRequests: {
+        handler () {
+          if (this.isRefreshing) {
+            if (this.completedTasksActiveRequests.count > 0) {
+              Notifications.methods.synchronized(false)
+              Notifications.methods.synchronization()
+            } else if (this.completedTasksNotifier.updates > 0) {
+              setTimeout(() => {
+                Notifications.methods.synchronization(false)
+                Notifications.methods.synchronized()
+                this.isRefreshing = false
+              }, 500)
+            }
+          } else {
+            if (this.completedTasksActiveRequests.count > 0 && this.completedTasksNotifier.updates > 0) {
+              Notifications.methods.synchronized(false)
+              Notifications.methods.synchronization()
+            } else if (this.completedTasksNotifier.updates > 1) {
+              setTimeout(() => {
+                Notifications.methods.synchronization(false)
+                Notifications.methods.synchronized()
+              }, 500)
+            }
+          }
+        },
+        deep: true
       }
     },
     methods: {
+      clearNotifications () {
+        setTimeout(() => {
+          Notifications.methods.clear()
+        })
+      },
+
       refresh () {
-        console.log('Completed Tasks Refresh')
+        this.isRefreshing = true
+        this.refreshAndGetCompletedTasks()
+      },
+
+      refreshAndGetCompletedTasks () {
+        this.$store.commit('refreshCompletedTasks')
+        setTimeout(() => {
+          this.$store.commit('getCompletedTasks')
+        })
       },
 
       getFilteredTasks () {
@@ -348,7 +395,6 @@
         overflow: hidden
         text-overflow: ellipsis
         white-space: pre-line
-
 
 
   .header
