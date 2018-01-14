@@ -333,12 +333,14 @@
 
       deleteTask (year, month, day, index) {
         var task = this.filteredTasks[year][month][day][index]
+        this.deletedTask(task, { year, month, day, index })
         this.$store.commit('deleteCompletedTask', task)
       },
 
       cancelTask (year, month, day, index) {
         var task = this.filteredTasks[year][month][day][index]
         task.completed = false
+        this.updatedTask(task, { year, month, day, index })
         this.$store.commit('updateCompletedTask', task)
       },
 
@@ -349,6 +351,16 @@
           case 3: return 'activities'
           case 4: return 'interruptions'
         }
+      },
+
+      updatedTask (task, { year, month, day, index }) {
+        if (!task.completed) {
+          this.filteredTasks[year][month][day].splice(index, 1)
+        }
+      },
+
+      deletedTask (task, { year, month, day, index }) {
+        this.filteredTasks[year][month][day].splice(index, 1)
       }
     }
   }

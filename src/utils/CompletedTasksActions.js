@@ -49,7 +49,7 @@ export default class CompletedTasksActions {
       tasks: []
     }
     queueRequestsRetry.push(
-      'get', '/api/tasks/completed/'
+      'get', { getUrl () { return '/api/tasks/completed/' } }
     ).onSuccess((response) => {
       for (let task of response.data) {
         var t = new Task()
@@ -85,7 +85,7 @@ export default class CompletedTasksActions {
       completed: task.completed
     }
     queueRequestsRetry.push(
-      'put', '/api/tasks/completed/' + task.instance.id + '/', data
+      'put', { getUrl () { return '/api/tasks/completed/' + task.instance.id + '/' } }, data
     ).onSuccess((response) => {
       res.task.instance = getTaskFromResponse(response)
       callback(res)
@@ -111,7 +111,7 @@ export default class CompletedTasksActions {
       task
     }
     queueRequestsRetry.push(
-      'delete', '/api/tasks/completed/' + task.instance.id + '/'
+      'delete', { getUrl () { return '/api/tasks/completed/' + task.instance.id + '/' } }
     ).onSuccess((response) => {
       res.task.instance = getTaskFromResponse(response)
       callback(res)
