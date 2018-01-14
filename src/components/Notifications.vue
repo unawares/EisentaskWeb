@@ -8,7 +8,7 @@
         :key="key"
         v-model="value.visible"
       >
-        {{ value.text }}
+        <span class="snackbar-text">{{ value.text }}</span>
       </v-snackbar>
     </div>
   </div>
@@ -72,3 +72,11 @@
     }
   }
 </script>
+
+<style scoped>
+  .snackbar-text {
+    text-align: center;
+    width: 100%;
+    font-size: 15px;
+  }
+</style>

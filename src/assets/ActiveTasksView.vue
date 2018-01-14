@@ -491,7 +491,7 @@
   }
 </script>
 
-<style lang="stylus">
+<style lang="stylus" scoped>
   vendor(prop, args)
     -webkit-{prop} args
     -moz-{prop} args
