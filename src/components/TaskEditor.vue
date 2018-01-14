@@ -123,6 +123,12 @@
 <script>
   import Task from '@/models/Task'
 
+  var previousId = (function () {
+    var id = -1
+    return () => {
+      return id--
+    }
+  })()
   var self = {}
 
   export default {
@@ -186,7 +192,7 @@
         if (self.obj.text && !(/^\s*$/.test(self.obj.text))) {
           var task = new Task()
           task.instance = {
-            id: -1,
+            id: previousId(),
             completed: false,
             priority: self.obj.priority,
             text: self.obj.text
