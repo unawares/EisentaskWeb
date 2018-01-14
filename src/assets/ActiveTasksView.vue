@@ -181,7 +181,12 @@
           </v-card-actions>
         </v-card>
       </v-flex>
-      <task-editor ref="taskEditor" style="visibility: hidden"></task-editor>
+      <task-editor
+        ref="taskEditor"
+        style="visibility: hidden"
+        @updatedTask="updatedTask"
+        @createdTask="createdTask">
+      </task-editor>
     </v-layout>
   </v-container>
 </template>
@@ -374,6 +379,7 @@
         }
         task.priority = newPriority
         task.newPosition = newIndex
+        this.updatedTask(task)
         this.$store.commit('updateActiveTask', task)
       },
 
@@ -397,7 +403,53 @@
         }
         task.priority = newPriority
         task.newPosition = newIndex
+        this.updatedTask(task)
         this.$store.commit('updateActiveTask', task)
+      },
+
+      createdTask (task) {
+        if (!task.completed) {
+          switch (task.priority) {
+            case 1:
+              this.tasks.goals.push(task)
+              break
+            case 2:
+              this.tasks.progress.push(task)
+              break
+            case 3:
+              this.tasks.activities.push(task)
+              break
+            case 4:
+              this.tasks.interruptions.push(task)
+              break
+          }
+        }
+      },
+
+      updatedTask (task) {
+        if (task.completed) {
+          for (let priority in this.tasks) {
+            let index = this.tasks[priority].findIndex((t) => {
+              return task.instance.id === t.instance.id
+            })
+            if (index !== -1) {
+              this.tasks[priority].splice(index, 1)
+              break
+            }
+          }
+        }
+      },
+
+      deletedTask (task) {
+        for (let priority in this.tasks) {
+          let index = this.tasks[priority].findIndex((t) => {
+            return task.instance.id === t.instance.id
+          })
+          if (index !== -1) {
+            this.tasks[priority].splice(index, 1)
+            break
+          }
+        }
       },
 
       onEditClick (task) {
@@ -406,11 +458,13 @@
       },
 
       onDeleteClick (task) {
+        this.deletedTask(task)
         this.$store.commit('deleteActiveTask', task)
       },
 
       onDoneClick (task) {
         task.completed = true
+        this.updatedTask(task)
         this.$store.commit('updateActiveTask', task)
       },
 

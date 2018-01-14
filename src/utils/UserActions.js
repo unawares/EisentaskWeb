@@ -45,7 +45,7 @@ export default class UserActions {
       user
     }
     queueRequestsRetry.push(
-      'get', '/api/auth/user/'
+      'get', { getUrl () { return '/api/auth/user/' } }
     ).onSuccess((response) => {
       res.user.instance = getUserFromResponse(response)
       callback(res)

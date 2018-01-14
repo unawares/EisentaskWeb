@@ -18,10 +18,10 @@ class QueueRequests {
     this.onFailure = () => {}
   }
 
-  push (method, url, data = {}) {
+  push (method, dynamicUrl, data = {}) {
     var request = {
       method,
-      url,
+      dynamicUrl,
       data,
       onSuccess: () => {},  // Fucntion on success with a single request
       onError: () => {}  // Function on error with a single request
@@ -66,7 +66,7 @@ class QueueRequests {
         this.isLoading = true  // Set to true to disable repeat call
         this.axios({
           method: request.method,
-          url: request.url,
+          url: request.dynamicUrl.getUrl(),
           data: request.data
         }).then((response) => {
           request.onSuccess(response)

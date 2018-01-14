@@ -185,9 +185,13 @@
       createTask: function () {
         if (self.obj.text && !(/^\s*$/.test(self.obj.text))) {
           var task = new Task()
-          task.completed = false
-          task.priority = self.obj.priority
-          task.text = self.obj.text
+          task.instance = {
+            id: -1,
+            completed: false,
+            priority: self.obj.priority,
+            text: self.obj.text
+          }
+          this.$emit('createdTask', task)
           this.$store.commit('createActiveTask', task)
         }
         self.obj.closeEditor()
@@ -206,6 +210,7 @@
           self.obj.task.completed = false
           self.obj.task.priority = self.obj.priority
           self.obj.task.text = self.obj.text
+          this.$emit('updatedTask', self.obj.task)
           this.$store.commit('updateActiveTask', self.obj.task)
         }
         self.obj.closeEditor()

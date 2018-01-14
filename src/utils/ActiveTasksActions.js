@@ -50,7 +50,7 @@ export default class ActiveTasksActions {
       activeTasks: {}
     }
     queueRequestsRetry.push(
-      'get', '/api/tasks/active/'
+      'get', { getUrl () { return '/api/tasks/active/' } }
     ).onSuccess((response) => {
       for (let task of response.data.tasks) {
         var t = new Task()
@@ -85,7 +85,7 @@ export default class ActiveTasksActions {
       task,
       activeTasks: {}
     }
-    queueRequestsRetry.push('post', '/api/tasks/active/', {
+    queueRequestsRetry.push('post', { getUrl () { return '/api/tasks/active/' } }, {
       task: {
         text: task.text,
         priority: task.priority,
@@ -129,7 +129,7 @@ export default class ActiveTasksActions {
       delete task.newPosition
     }
     queueRequestsRetry.push(
-      'put', '/api/tasks/active/' + task.instance.id + '/', data
+      'put', { getUrl () { return '/api/tasks/active/' + task.instance.id + '/' } }, data
     ).onSuccess((response) => {
       res.task.instance = getTaskFromResponse(response)
       res.activeTasks = response.data.active_tasks
@@ -157,7 +157,7 @@ export default class ActiveTasksActions {
       activeTasks: {}
     }
     queueRequestsRetry.push(
-      'delete', '/api/tasks/active/' + task.instance.id + '/'
+      'delete', { getUrl () { return '/api/tasks/active/' + task.instance.id + '/' } }
     ).onSuccess((response) => {
       res.task.instance = getTaskFromResponse(response)
       res.activeTasks = response.data.active_tasks

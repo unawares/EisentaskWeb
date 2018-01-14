@@ -18,10 +18,10 @@ export default class Task {
 
   set instance (instance) {
     this.original = instance
-    this.text = instance.text
-    this.priority = instance.priority
-    this.completed = instance.completed
-    this.updated = instance.updated
-    this.created = instance.created
+    this.text = this.text || instance.text
+    this.priority = this.priority || instance.priority
+    this.completed = this.completed || instance.completed
+    this.updated = this.updated || instance.updated
+    this.created = this.created || instance.created
   }
 }
