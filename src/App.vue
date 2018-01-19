@@ -12,7 +12,7 @@
             <v-list-tile avatar>
               <v-list-tile-content>
                 <v-list-tile-title>
-                  <span>{{ username }}</span>
+                  <span class="notranslate">{{ username }}</span>
                 </v-list-tile-title>
               </v-list-tile-content>
             </v-list-tile>

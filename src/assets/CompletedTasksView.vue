@@ -20,6 +20,7 @@
             prepend-icon="event"
             readonly
             dark
+            class="notranslate"
           ></v-text-field>
           <v-date-picker
             color="primary"
@@ -80,7 +81,7 @@
                     <v-layout>
                       <v-flex style="max-width: 100%">
                         <div class="task-text">
-                          <span>{{ task.text }}</span>
+                          <span class="notranslate">{{ task.text }}</span>
                         </div>
                       </v-flex>
                     </v-layout>
@@ -91,7 +92,7 @@
                         flat
                         icon
                         @click="cancelTask(year, month, day, index)">
-                        <v-icon>cancel</v-icon>
+                        <v-icon class="notranslate">cancel</v-icon>
                       </v-btn>
                       <v-btn
                         :color="getGolorNameByPriority(task.priority)"
@@ -99,7 +100,7 @@
                         flat
                         icon
                         @click="deleteTask(year, month, day, index)">
-                        <v-icon>delete</v-icon>
+                        <v-icon class="notranslate">delete</v-icon>
                       </v-btn>
                     </div>
                   </div>
