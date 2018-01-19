@@ -5,6 +5,8 @@ export const BREAK = 'break'  // If fail, then break
 export const CLEAN = 'clean'  // If fail, then break and clean rest requests
 export const RETRY = 'retry'  // If fail, then try again
 
+var retryInterval = 20
+
 class QueueRequests {
   constructor (options) {
     // Prepare
@@ -14,7 +16,7 @@ class QueueRequests {
 
     // Set default settings
     this.method = IGNORE
-    this.retryInterval = 20
+    this.retryInterval = retryInterval
     this.onFailure = () => {}
   }
 
@@ -69,6 +71,7 @@ class QueueRequests {
           url: request.dynamicUrl.getUrl(),
           data: request.data
         }).then((response) => {
+          this.retryInterval = retryInterval
           request.onSuccess(response)
           func()  // Call it again, to make recursive
         }).catch((error) => {
@@ -90,7 +93,7 @@ class QueueRequests {
               break
           }
           request.onError(error)
-          this.onFailure(error)
+          this.onFailure(error, this)
         })
       } else {
         this.isLoading = false

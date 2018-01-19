@@ -36,6 +36,10 @@ var setActionsToFailHelper = function (onFailHelper) {
 }
 
 export default class UserActions {
+  static setOnFailureListener (func) {
+    queueRequestsRetry.onFailure = func
+  }
+
   static getUser (callback, user) {
     /*
       Get all active tasks

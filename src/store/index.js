@@ -5,6 +5,22 @@ import CompletedTasksActions from '@/utils/CompletedTasksActions'
 import UserActions from '@/utils/UserActions'
 import User from '@/models/User'
 
+var onFailure = function (error, queueRequests) {
+  if (error.response) {
+    switch (error.response.status) {
+      case 401:
+        queueRequests.clear()
+        window.location = '/web/accounts/login'
+    }
+  } else {
+    queueRequests.retryInterval = 1000
+  }
+}
+
+ActiveTasksActions.setOnFailureListener(onFailure)
+CompletedTasksActions.setOnFailureListener(onFailure)
+UserActions.setOnFailureListener(onFailure)
+
 Vue.use(Vuex)
 
 export default new Vuex.Store({

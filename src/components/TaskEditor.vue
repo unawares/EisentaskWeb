@@ -11,7 +11,7 @@
         bottom
         @click="openEditor"
       >
-          <v-icon color="">edit</v-icon>
+          <v-icon class="notranslate">edit</v-icon>
       </v-btn>
     </v-container>
     <v-navigation-drawer
@@ -42,7 +42,7 @@
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-btn icon @click="session = 'priority'">
-          <v-icon>dashboard</v-icon>
+          <v-icon class="notranslate">dashboard</v-icon>
         </v-btn>
       </v-toolbar>
       <v-container>
@@ -77,7 +77,7 @@
             >
               <v-list-tile @click="setPriority(1)" class="priority-item">
                 <v-list-tile-action>
-                  <v-icon dark>info_outline</v-icon>
+                  <v-icon dark class="notranslate">info_outline</v-icon>
                 </v-list-tile-action>
                 <v-list-tile-content>
                   <v-list-tile-title>GOALS</v-list-tile-title>
@@ -86,7 +86,7 @@
               </v-list-tile>
               <v-list-tile @click="setPriority(2)" class="priority-item">
                 <v-list-tile-action>
-                  <v-icon dark>alarm_on</v-icon>
+                  <v-icon dark class="notranslate">alarm_on</v-icon>
                 </v-list-tile-action>
                 <v-list-tile-content>
                   <v-list-tile-title>PROGRESS</v-list-tile-title>
@@ -95,7 +95,7 @@
               </v-list-tile>
               <v-list-tile @click="setPriority(3)" class="priority-item">
                 <v-list-tile-action>
-                  <v-icon dark>update</v-icon>
+                  <v-icon dark class="notranslate">update</v-icon>
                 </v-list-tile-action>
                 <v-list-tile-content>
                   <v-list-tile-title>ACTIVITIES</v-list-tile-title>
@@ -104,7 +104,7 @@
               </v-list-tile>
               <v-list-tile @click="setPriority(4)" class="priority-item">
                 <v-list-tile-action>
-                  <v-icon dark>schedule</v-icon>
+                  <v-icon dark class="notranslate">schedule</v-icon>
                 </v-list-tile-action>
                 <v-list-tile-content>
                   <v-list-tile-title>INTERRUPTIONS</v-list-tile-title>

@@ -40,6 +40,10 @@ var setActionsToFailHelper = function (onFailHelper) {
 }
 
 export default class CompletedTasksActions {
+  static setOnFailureListener (func) {
+    queueRequestsRetry.onFailure = func
+  }
+
   static getCompletedTasks (callback) {
     /*
       Get all active tasks
