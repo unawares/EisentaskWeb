@@ -16,7 +16,7 @@
     </v-container>
     <v-navigation-drawer
       ref="taskEditor"
-      class="task-editor"
+      class="task-editor scrollbar-hidden"
       absolute
       temporary
       fixed
@@ -51,6 +51,7 @@
             <div v-if="session === 'form'">
               <div class="text-field">
                 <v-text-field
+                  ref="taskEditText"
                   label="Task"
                   multi-line
                   auto-grow
@@ -184,7 +185,10 @@
       setTaskInstance: function (task) {
         self.obj.task = task
         self.obj.priority = task.priority
-        self.obj.text = task.text
+        setTimeout(() => {
+          self.obj.$refs.taskEditText.focus()
+          self.obj.text = task.text
+        }, 100)
       },
 
       // Create task
@@ -237,11 +241,13 @@
       openEditor: function () {
         self.obj.refresh()
         self.obj.drawer = true
+        setTimeout(() => {
+          self.obj.$refs.taskEditText.focus()
+        }, 100)
       }
     }
   }
 </script>
-
 
 <style scoped>
   .task-editor {

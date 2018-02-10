@@ -1,4 +1,5 @@
 import { RETRY, createQueueRequests } from './QueueRequests'
+import Group from '@/models/Group'
 
 var queueRequestsRetry = createQueueRequests(RETRY, {
   xsrfHeaderName: 'X-CSRFTOKEN',
@@ -6,13 +7,19 @@ var queueRequestsRetry = createQueueRequests(RETRY, {
 })
 
 // Get task from response
-var getUserFromResponse = function (response) {
-  var user = {
-    pk: response.data.pk,
-    username: response.data.username,
-    email: response.data.email
+var getGroupFromResponse = function (response) {
+  return {
+    id: response.id,
+    title: response.title,
+    description: response.description,
+    isPublic: response.is_public,
+    isJoiningAllowed: response.is_joining_allowed,
+    image: response.image,
+    created: response.created,
+    updated: response.updated,
+    admin: response.admin,
+    memberCardId: response.memberCardId
   }
-  return user
 }
 
 class OnFailHelper {
@@ -35,23 +42,27 @@ var setActionsToFailHelper = function (onFailHelper) {
   }
 }
 
-export default class UserActions {
+export default class MyGroupActions {
   static setOnFailureListener (func) {
     queueRequestsRetry.onFailure = func
   }
 
-  static getUser (callback, user) {
+  static getMyGroups (callback) {
     /*
       Get all active tasks
     */
     var onFailHelper = new OnFailHelper()
     var res = {
-      user
+      groups: []
     }
     queueRequestsRetry.push(
-      'get', { getUrl () { return '/api/auth/user/' } }
+      'get', { getUrl () { return '/api/groups/my/member-cards/' } }
     ).onSuccess((response) => {
-      res.user.instance = getUserFromResponse(response)
+      for (let memberCard of response.data) {
+        var g = new Group()
+        g.instance = getGroupFromResponse({...memberCard.group, memberCardId: memberCard.id})
+        res.groups.push(g)
+      }
       callback(res)
       console.log(response)
     }).onError((error) => {
@@ -60,7 +71,7 @@ export default class UserActions {
           onFailHelper.onCatchStatusCodes(queueRequestsRetry)
         }
       }
-      console.log(error.response)
+      console.log(error)
     })
     queueRequestsRetry.start()
     return setActionsToFailHelper(onFailHelper)

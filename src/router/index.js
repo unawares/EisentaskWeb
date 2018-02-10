@@ -1,23 +1,52 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 
-import ActiveTasksView from '@/assets/ActiveTasksView'
-import CompletedTasksView from '@/assets/CompletedTasksView'
+import DashboardMain from '@/pages/dashboard/Main'
+import ActiveTasksView from '@/pages/dashboard/ActiveTasksView'
+import CompletedTasksView from '@/pages/dashboard/CompletedTasksView'
+import GroupTasksView from '@/pages/dashboard/GroupTasksView'
+import ActiveGroupTasksView from '@/pages/dashboard/ActiveGroupTasksView'
+import CompletedGroupTasksView from '@/pages/dashboard/CompletedGroupTasksView'
 
 Vue.use(Router)
 
 export default new Router({
   routes: [
     {
-      path: '/active-tasks',
-      name: 'ActiveTasks',
-      component: ActiveTasksView
+      path: '/dashboard',
+      component: DashboardMain,
+      children: [
+        {
+          path: 'active-tasks',
+          name: 'ActiveTasks',
+          component: ActiveTasksView
+        },
+        {
+          path: 'completed-tasks',
+          name: 'CompletedTasks',
+          component: CompletedTasksView
+        },
+        {
+          path: 'groups/:id',
+          component: GroupTasksView,
+          children: [
+            {
+              path: 'active-tasks',
+              name: 'ActiveGroupTasks',
+              component: ActiveGroupTasksView
+            },
+            {
+              path: 'completed-tasks',
+              name: 'CompletedGroupTasks',
+              component: CompletedGroupTasksView
+            }
+          ]
+        }
+      ]
     },
     {
-      path: '/completed-tasks',
-      name: 'CompletedTasks',
-      component: CompletedTasksView
-    },
-    { path: '*', redirect: '/active-tasks' }
+      path: '*',
+      redirect: '/dashboard'
+    }
   ]
 })

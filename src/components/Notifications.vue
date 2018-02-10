@@ -21,24 +21,22 @@
     data () {
       return {
         snackbars: {
-          synchronized: {
-            text: 'Synchronized',
+          warning: {
+            text: '',
             timeout: 1500,
-            color: 'success',
+            color: 'warning',
             visible: false
           },
-
-          synchronization: {
-            text: 'Synchronization...',
-            timeout: 999999999,
-            color: 'info',
-            visible: false
-          },
-
           error: {
             text: 'Something went wrong',
             timeout: 1500,
             color: 'error',
+            visible: false
+          },
+          success: {
+            text: 'Successful',
+            timeout: 1500,
+            color: 'blue',
             visible: false
           }
         }
@@ -48,26 +46,23 @@
       self.obj = this
     },
     methods: {
-      synchronized (visible = true) {
-        self.obj.snackbars.synchronized.visible = visible
-      },
-
-      synchronization (visible = true) {
-        self.obj.snackbars.synchronization.visible = visible
-      },
-
       error (visible = true) {
-        self.obj.snackbars.error.visible = visible
+        self.obj.snackbars.error.visible = true
+      },
+
+      success (visible = true) {
+        self.obj.snackbars.success.visible = true
+      },
+
+      showWarning (text) {
+        self.obj.snackbars.warning.text = text
+        self.obj.snackbars.warning.visible = true
       },
 
       clear () {
         for (let snackbar in self.obj.snackbars) {
           self.obj.snackbars[snackbar].visible = false
         }
-      },
-
-      isSynchronization () {
-        return self.obj.snackbars.synchronization.visible
       }
     }
   }

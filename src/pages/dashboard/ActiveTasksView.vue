@@ -18,27 +18,19 @@
               :options="{group: 'tasks', scrollSensitivity: 160}"
               class="list"
               @add="onDragAdd"
-              @update="onDragUpdate">
-              <v-card
-                v-for="task in tasks.goals"
-                :key="task.instance.id"
-                class="task">
-                <v-card-text class="task-text">
-                  <span class="notranslate">{{ task.text }}</span>
-                </v-card-text>
-                <v-card-actions>
-                  <v-btn flat icon color="goals" @click="onDeleteClick(task)">
-                    <v-icon class="notranslate">delete</v-icon>
-                  </v-btn>
-                  <v-spacer></v-spacer>
-                  <v-btn flat icon color="goals" @click="onEditClick(task)">
-                    <v-icon class="notranslate">edit</v-icon>
-                  </v-btn>
-                  <v-btn flat icon color="goals" @click="onDoneClick(task)">
-                    <v-icon class="notranslate">done</v-icon>
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
+              @update="onDragUpdate"
+              @start="onDragStart"
+              @end="onDragEnd">
+                <active-task
+                  v-for="task in tasks.goals"
+                  :key="task.instance.id"
+                  :task="task"
+                  :color="'goals'"
+                  :isDragging="isDragging"
+                  :onDeleteClick="onDeleteClick"
+                  :onEditClick="onEditClick"
+                  :onDoneClick="onDoneClick">
+                </active-task>
             </draggable>
           </v-layout>
           <v-card-actions>
@@ -63,27 +55,19 @@
               :options="{group: 'tasks', scrollSensitivity: 160}"
               class="list"
               @add="onDragAdd"
-              @update="onDragUpdate">
-              <v-card
-                v-for="task in tasks.progress"
-                :key="task.instance.id"
-                class="task">
-                <v-card-text class="task-text">
-                  <span class="notranslate">{{ task.text }}</span>
-                </v-card-text>
-                <v-card-actions>
-                  <v-btn flat icon color="progress" @click="onDeleteClick(task)">
-                    <v-icon class="notranslate">delete</v-icon>
-                  </v-btn>
-                  <v-spacer></v-spacer>
-                  <v-btn flat icon color="progress" @click="onEditClick(task)">
-                    <v-icon class="notranslate">edit</v-icon>
-                  </v-btn>
-                  <v-btn flat icon color="progress" @click="onDoneClick(task)">
-                    <v-icon class="notranslate">done</v-icon>
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
+              @update="onDragUpdate"
+              @start="onDragStart"
+              @end="onDragEnd">
+                <active-task
+                  v-for="task in tasks.progress"
+                  :key="task.instance.id"
+                  :task="task"
+                  :color="'progress'"
+                  :isDragging="isDragging"
+                  :onDeleteClick="onDeleteClick"
+                  :onEditClick="onEditClick"
+                  :onDoneClick="onDoneClick">
+                </active-task>
             </draggable>
           </v-layout>
           <v-card-actions>
@@ -108,27 +92,19 @@
             :options="{group: 'tasks', scrollSensitivity: 160}"
             class="list"
             @add="onDragAdd"
-            @update="onDragUpdate">
-              <v-card
+            @update="onDragUpdate"
+            @start="onDragStart"
+            @end="onDragEnd">
+              <active-task
                 v-for="task in tasks.activities"
                 :key="task.instance.id"
-                class="task">
-                <v-card-text class="task-text">
-                  <span class="notranslate">{{ task.text }}</span>
-                </v-card-text>
-                <v-card-actions>
-                  <v-btn flat icon color="activities" @click="onDeleteClick(task)">
-                    <v-icon class="notranslate">delete</v-icon>
-                  </v-btn>
-                  <v-spacer></v-spacer>
-                  <v-btn flat icon color="activities" @click="onEditClick(task)">
-                    <v-icon class="notranslate">edit</v-icon>
-                  </v-btn>
-                  <v-btn flat icon color="activities" @click="onDoneClick(task)">
-                    <v-icon class="notranslate">done</v-icon>
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
+                :task="task"
+                :color="'activities'"
+                :isDragging="isDragging"
+                :onDeleteClick="onDeleteClick"
+                :onEditClick="onEditClick"
+                :onDoneClick="onDoneClick">
+              </active-task>
             </draggable>
           </v-layout>
           <v-card-actions>
@@ -153,27 +129,19 @@
               :options="{group: 'tasks', scrollSensitivity: 160}"
               class="list"
               @add="onDragAdd"
-              @update="onDragUpdate">
-              <v-card
-                v-for="task in tasks.interruptions"
-                :key="task.instance.id"
-                class="task">
-                <v-card-text class="task-text">
-                  <span class="notranslate">{{ task.text }}</span>
-                </v-card-text>
-                <v-card-actions>
-                  <v-btn flat icon color="interruptions" @click="onDeleteClick(task)">
-                    <v-icon class="notranslate">delete</v-icon>
-                  </v-btn>
-                  <v-spacer></v-spacer>
-                  <v-btn flat icon color="interruptions" @click="onEditClick(task)">
-                    <v-icon class="notranslate">edit</v-icon>
-                  </v-btn>
-                  <v-btn flat icon color="interruptions" @click="onDoneClick(task)">
-                    <v-icon class="notranslate">done</v-icon>
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
+              @update="onDragUpdate"
+              @start="onDragStart"
+              @end="onDragEnd">
+                <active-task
+                  v-for="task in tasks.interruptions"
+                  :key="task.instance.id"
+                  :task="task"
+                  :color="'interruptions'"
+                  :isDragging="isDragging"
+                  :onDeleteClick="onDeleteClick"
+                  :onEditClick="onEditClick"
+                  :onDoneClick="onDoneClick">
+                </active-task>
             </draggable>
           </v-layout>
           <v-card-actions>
@@ -192,11 +160,15 @@
 </template>
 
 <script>
-  import draggable from 'vuedraggable'
+  import Draggable from 'vuedraggable'
   import TaskEditor from '@/components/TaskEditor'
-  import Notifications from '@/components/Notifications'
+  import ActiveTask from '@/components/ActiveTask'
 
   export default {
+    props: [
+      'addLoadingTag',
+      'removeLoadingTag'
+    ],
     data () {
       return {
         PRIORITIES: {
@@ -215,11 +187,10 @@
         completedTasksNotifier: this.$store.getters.completedTasksNotifier,
         activeTasksNotifier: this.$store.getters.activeTasksNotifier,
         activeTasksActiveRequests: this.$store.getters.activeTasksActiveRequests,
-        isRefreshing: false
+        isDragging: false
       }
     },
     mounted () {
-      window.test = this
       this.refreshAndGetActiveTasks()
       setTimeout(() => {
         if (this.$refs.taskEditor) {
@@ -244,45 +215,22 @@
 
       activeTasksActiveRequests: {
         handler () {
-          if (this.isRefreshing) {
-            if (this.activeTasksActiveRequests.count > 0) {
-              Notifications.methods.synchronized(false)
-              Notifications.methods.synchronization()
-            } else if (this.activeTasksNotifier.updates > 0) {
-              setTimeout(() => {
-                Notifications.methods.synchronization(false)
-                Notifications.methods.synchronized()
-                this.isRefreshing = false
-              }, 500)
-            }
-          } else {
-            if (this.activeTasksActiveRequests.count > 0 && this.activeTasksNotifier.updates > 0) {
-              Notifications.methods.synchronized(false)
-              Notifications.methods.synchronization()
-            } else if (this.activeTasksNotifier.updates > 1) {
-              setTimeout(() => {
-                Notifications.methods.synchronization(false)
-                Notifications.methods.synchronized()
-              }, 500)
-            }
+          if (this.activeTasksActiveRequests.count > 0) {
+            this.addLoadingTag('TasksLoading')
+          } else if (this.activeTasksNotifier.updates > 0) {
+            this.removeLoadingTag('TasksLoading')
           }
         },
         deep: true
       }
     },
     components: {
-      draggable,
+      Draggable,
+      ActiveTask,
       TaskEditor
     },
     methods: {
-      clearNotifications () {
-        setTimeout(() => {
-          Notifications.methods.clear()
-        })
-      },
-
       refresh () {
-        this.isRefreshing = true
         this.refreshAndGetActiveTasks()
       },
 
@@ -407,20 +355,28 @@
         this.$store.commit('updateActiveTask', task)
       },
 
+      onDragStart () {
+        this.isDragging = true
+      },
+
+      onDragEnd () {
+        this.isDragging = false
+      },
+
       createdTask (task) {
         if (!task.completed) {
           switch (task.priority) {
             case 1:
-              this.tasks.goals.push(task)
+              this.tasks.goals.unshift(task)
               break
             case 2:
-              this.tasks.progress.push(task)
+              this.tasks.progress.unshift(task)
               break
             case 3:
-              this.tasks.activities.push(task)
+              this.tasks.activities.unshift(task)
               break
             case 4:
-              this.tasks.interruptions.push(task)
+              this.tasks.interruptions.unshift(task)
               break
           }
         }
@@ -515,23 +471,6 @@
       min-height: 160px
       padding: 16px
       width: 100%
-
-      .task
-        margin-top: 10px
-        margin-bottom: 10px
-        cursor: grab
-
-        .task-text
-          overflow: hidden
-          text-overflow: ellipsis
-          white-space: pre-line
-
-      .sortable-ghost
-        opacity: 0.3
-        box-shadow 0 0 0
-
-        > *
-          visibility: hidden
 
       &#goals
         .sortable-ghost

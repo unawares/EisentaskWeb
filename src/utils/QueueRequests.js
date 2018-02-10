@@ -15,7 +15,7 @@ class QueueRequests {
     this.isLoading = false
 
     // Set default settings
-    this.method = IGNORE
+    this.method = null
     this.retryInterval = retryInterval
     this.onFailure = () => {}
   }
@@ -66,11 +66,14 @@ class QueueRequests {
       var request = this.popNextRequest()  // Next request
       if (request) {  // If next exists
         this.isLoading = true  // Set to true to disable repeat call
-        this.axios({
+        var args = {
           method: request.method,
-          url: request.dynamicUrl.getUrl(),
-          data: request.data
-        }).then((response) => {
+          url: request.dynamicUrl.getUrl()
+        }
+        if (request.method !== 'delete') {
+          args.data = request.data
+        }
+        this.axios(args).then((response) => {
           this.retryInterval = retryInterval
           request.onSuccess(response)
           func()  // Call it again, to make recursive

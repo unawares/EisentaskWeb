@@ -94,7 +94,8 @@ export default class ActiveTasksActions {
         text: task.text,
         priority: task.priority,
         completed: task.completed
-      }
+      },
+      new_position: 0
     }).onSuccess((response) => {
       res.task.instance = getTaskFromResponse(response)
       res.activeTasks = response.data.active_tasks

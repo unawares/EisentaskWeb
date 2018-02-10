@@ -117,7 +117,6 @@
 
 <script>
   import Vue from 'vue'
-  import Notifications from '@/components/Notifications'
 
   // Quick sort
   var quickSort = (() => {
@@ -182,6 +181,10 @@
 
   export default {
     name: 'CompletedTasks',
+    props: [
+      'addLoadingTag',
+      'removeLoadingTag'
+    ],
     data () {
       return {
         account: this.$store.getters.getAccount,
@@ -194,8 +197,7 @@
         filteredTasks: {},
         activeTasksNotifier: this.$store.getters.activeTasksNotifier,
         completedTasksNotifier: this.$store.getters.completedTasksNotifier,
-        completedTasksActiveRequests: this.$store.getters.completedTasksActiveRequests,
-        isRefreshing: false
+        completedTasksActiveRequests: this.$store.getters.completedTasksActiveRequests
       }
     },
     mounted () {
@@ -247,41 +249,17 @@
 
       completedTasksActiveRequests: {
         handler () {
-          if (this.isRefreshing) {
-            if (this.completedTasksActiveRequests.count > 0) {
-              Notifications.methods.synchronized(false)
-              Notifications.methods.synchronization()
-            } else if (this.completedTasksNotifier.updates > 0) {
-              setTimeout(() => {
-                Notifications.methods.synchronization(false)
-                Notifications.methods.synchronized()
-                this.isRefreshing = false
-              }, 500)
-            }
-          } else {
-            if (this.completedTasksActiveRequests.count > 0 && this.completedTasksNotifier.updates > 0) {
-              Notifications.methods.synchronized(false)
-              Notifications.methods.synchronization()
-            } else if (this.completedTasksNotifier.updates > 1) {
-              setTimeout(() => {
-                Notifications.methods.synchronization(false)
-                Notifications.methods.synchronized()
-              }, 500)
-            }
+          if (this.completedTasksActiveRequests.count > 0) {
+            this.addLoadingTag('CompletedTasksLoading')
+          } else if (this.completedTasksNotifier.updates > 0) {
+            this.removeLoadingTag('CompletedTasksLoading')
           }
         },
         deep: true
       }
     },
     methods: {
-      clearNotifications () {
-        setTimeout(() => {
-          Notifications.methods.clear()
-        })
-      },
-
       refresh () {
-        this.isRefreshing = true
         this.refreshAndGetCompletedTasks()
       },
 
