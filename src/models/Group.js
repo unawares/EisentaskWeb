@@ -14,4 +14,16 @@ export default class Group {
     this.updated = this.updated || instance.updated
     this.admin = this.admin || instance.admin
   }
+
+  override (instance) {
+    this.original = instance
+    this.title = instance.title
+    this.description = instance.description
+    this.isPublic = instance.isPublic
+    this.isJoiningAllowed = instance.isJoiningAllowed
+    this.image = instance.image
+    this.created = instance.created
+    this.updated = instance.updated
+    this.admin = instance.admin
+  }
 }

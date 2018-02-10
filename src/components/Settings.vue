@@ -1,9 +1,10 @@
 <template>
-  <div class="settings scrollbar">
+  <div class="settings scrollbar" @scroll="handleScroll">
     <group-settings
       v-if="section === 'group-settings'"
       :section="section"
       :kwargs="kwargs"
+      :scrollEvent="scrollEvent"
       @onClickCloseAction="onClickCloseAction">
     </group-settings>
   </div>
@@ -20,11 +21,15 @@
     ],
     data () {
       return {
+        scrollEvent: undefined
       }
     },
     methods: {
       onClickCloseAction () {
         this.$emit('close')
+      },
+      handleScroll (event) {
+        this.scrollEvent = event
       }
     },
     components: {

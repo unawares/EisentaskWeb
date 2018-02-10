@@ -137,39 +137,6 @@
         </v-container>
       </div>
     </div>
-    <v-dialog v-model="dialog" scrollable max-width="300px">
-      <v-card>
-        <v-card-title>Select Country</v-card-title>
-        <v-divider></v-divider>
-        <v-card-text style="height: 300px;">
-          <v-radio-group column>
-            <v-radio label="Bahamas, The" value="bahamas"></v-radio>
-            <v-radio label="Bahrain" value="bahrain"></v-radio>
-            <v-radio label="Bangladesh" value="bangladesh"></v-radio>
-            <v-radio label="Barbados" value="barbados"></v-radio>
-            <v-radio label="Belarus" value="belarus"></v-radio>
-            <v-radio label="Belgium" value="belgium"></v-radio>
-            <v-radio label="Belize" value="belize"></v-radio>
-            <v-radio label="Benin" value="benin"></v-radio>
-            <v-radio label="Bhutan" value="bhutan"></v-radio>
-            <v-radio label="Bolivia" value="bolivia"></v-radio>
-            <v-radio label="Bosnia and Herzegovina" value="bosnia"></v-radio>
-            <v-radio label="Botswana" value="botswana"></v-radio>
-            <v-radio label="Brazil" value="brazil"></v-radio>
-            <v-radio label="Brunei" value="brunei"></v-radio>
-            <v-radio label="Bulgaria" value="bulgaria"></v-radio>
-            <v-radio label="Burkina Faso" value="burkina"></v-radio>
-            <v-radio label="Burma" value="burma"></v-radio>
-            <v-radio label="Burundi" value="burundi"></v-radio>
-          </v-radio-group>
-        </v-card-text>
-        <v-divider></v-divider>
-        <v-card-actions>
-          <v-btn color="blue darken-1" flat @click.native="dialog = false">Close</v-btn>
-          <v-btn color="blue darken-1" flat @click.native="dialog = false">Save</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </div>
 </template>
 
@@ -187,7 +154,8 @@
       image: response.image,
       created: response.created,
       updated: response.updated,
-      admin: response.admin
+      admin: response.admin,
+      memberCardId: response.memberCardId
     }
   }
 
@@ -195,7 +163,8 @@
     name: 'GroupSettings',
     props: [
       'section',
-      'kwargs'
+      'kwargs',
+      'scrollEvent'
     ],
     data () {
       return {
@@ -206,12 +175,12 @@
         title: '',
         description: '',
         isAdmin: false,
-        dialog: false,
         groupMemberCards: {
           count: 0,
           memberCards: [],
           next: undefined,
-          begin: undefined
+          begin: undefined,
+          loading: false
         },
         usernameOrEmail: ''
       }
@@ -223,11 +192,21 @@
         this.init()
         this.getNextGroupMemberCards()
       }, 200)
+      this.getGroup()
+    },
+    watch: {
+      scrollEvent (event) {
+        if (event.target.children[0].offsetHeight - event.target.offsetHeight - event.target.scrollTop < 1000) {
+          this.getNextGroupMemberCards()
+        }
+      }
     },
     methods: {
       init () {
         if (this.$store.getters.user.instance.pk === this.group.instance.admin) {
           this.isAdmin = true
+        } else {
+          this.isAdmin = false
         }
         this.title = this.group.title
         this.description = this.group.description
@@ -236,7 +215,29 @@
         this.groupMemberCards.begin = '/api/groups/list/' + this.group.instance.id + '/member-cards/'
         this.groupMemberCards.next = this.groupMemberCards.begin
       },
+      getGroup () {
+        simpleRequest('/api/groups/list/' + this.group.instance.id + '/').method('get').then((response) => {
+          let memberCardId = this.group.instance.memberCardId
+          this.group.override(getGroupFromResponse({...response.data, memberCardId: memberCardId}))
+          console.log(response)
+        }).catch((error) => {
+          if (error.response && error.response.status === 404) {
+            Notifications.methods.showWarning('You don\'t have access to the group')
+            setTimeout(() => {
+              this.closeGroupSettings()
+              this.$store.commit('getMyGroups')
+            }, 1000)
+          } else {
+            Notifications.methods.error()
+          }
+          console.log(error)
+        })
+      },
       getNextGroupMemberCards () {
+        if (this.groupMemberCards.loading || !this.groupMemberCards.next) {
+          return
+        }
+        this.groupMemberCards.loading = true
         simpleRequest(this.groupMemberCards.next).method('get').then((response) => {
           for (let memberCard of response.data.results) {
             memberCard.menu = false
@@ -244,8 +245,10 @@
           }
           this.groupMemberCards.next = response.data.next
           this.groupMemberCards.count = response.data.count
+          this.groupMemberCards.loading = false
           console.log(response)
         }).catch((error) => {
+          this.groupMemberCards.loading = false
           console.log(error)
         })
       },
@@ -265,6 +268,7 @@
           this.group.instance = getGroupFromResponse(response.data)
           Notifications.methods.showWarning('Group settings has been changed.')
           this.$store.commit('getMyGroups')
+          this.closeGroupSettings()
           console.log(response)
         }).catch((error) => {
           Notifications.methods.error()
@@ -369,8 +373,12 @@
           simpleRequest('/api/groups/my/list/' + this.group.instance.id + '/make_admin/', {
             username_or_email: memberCard.owner.username
           }).method('post').then((response) => {
-            this.$store.commit('getMyGroups')
-            this.closeGroupSettings()
+            let memberCardId = this.group.instance.memberCardId
+            this.group.override(getGroupFromResponse({...response.data.group, memberCardId: memberCardId}))
+            this.init()
+            this.groupMemberCards.memberCards = []
+            this.groupMemberCards.next = this.groupMemberCards.begin
+            this.getNextGroupMemberCards()
             console.log(response)
           }).catch((error) => {
             Notifications.methods.error()
