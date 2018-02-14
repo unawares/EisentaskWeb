@@ -1,5 +1,5 @@
 <template>
-  <v-app style="background-color: inherit" class="scrollbar">
+  <v-app style="background-color: inherit">
     <router-view></router-view>
   </v-app>
 </template>

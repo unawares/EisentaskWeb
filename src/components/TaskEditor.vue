@@ -17,7 +17,6 @@
     <v-navigation-drawer
       ref="taskEditor"
       class="task-editor scrollbar-hidden"
-      absolute
       temporary
       fixed
       v-model="drawer"
@@ -201,8 +200,7 @@
             priority: self.obj.priority,
             text: self.obj.text
           }
-          this.$emit('createdTask', task)
-          this.$store.commit('createActiveTask', task)
+          this.$emit('createTask', task)
         }
         self.obj.closeEditor()
       },
@@ -220,8 +218,7 @@
           self.obj.task.completed = false
           self.obj.task.priority = self.obj.priority
           self.obj.task.text = self.obj.text
-          this.$emit('updatedTask', self.obj.task)
-          this.$store.commit('updateActiveTask', self.obj.task)
+          this.$emit('updateTask', self.obj.task)
         }
         self.obj.closeEditor()
         self.obj.refresh()

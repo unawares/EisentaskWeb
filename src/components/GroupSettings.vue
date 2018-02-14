@@ -51,8 +51,8 @@
               <div class="group-settings-actions">
                 <v-btn flat light color="red" @click="clickDeleteGroupSettings" :disabled="!isAdmin">Delete</v-btn>
                 <v-spacer></v-spacer>
-                <v-btn flat light color="orange" @click="clickResetGroupSettings" :disabled="!isAdmin">Reset</v-btn>
-                <v-btn flat light color="orange" @click="clickSaveGroupSettings" :disabled="!isAdmin">Save</v-btn>
+                <v-btn flat light color="blue" @click="clickResetGroupSettings" :disabled="!isAdmin">Reset</v-btn>
+                <v-btn flat light color="blue" @click="clickSaveGroupSettings" :disabled="!isAdmin">Save</v-btn>
               </div>
               <v-divider></v-divider>
               <div v-if="!isAdmin" class="group-settings-actions justify-center margin-top">

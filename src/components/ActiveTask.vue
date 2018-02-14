@@ -1,5 +1,5 @@
 <template>
-  <v-card class="task" :hover="isHoverable">
+  <v-card class="task" :hover="isHoverable" ref="task">
     <v-card-text class="task-text" @click="onEditClick(task)">
       <span class="notranslate">{{ task.text }}</span>
     </v-card-text>
@@ -49,6 +49,7 @@
 .task
   margin-top: 10px
   margin-bottom: 10px
+  max-height: 1000px
 
   .task-text
     overflow: hidden

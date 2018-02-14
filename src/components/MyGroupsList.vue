@@ -43,6 +43,7 @@
         <v-card-title class="headline">Creating Group</v-card-title>
         <v-card-text>
           <v-text-field
+            color="blue"
             ref="titleEditText"
             label="Title"
             :rules="[(v) => validateTitle(v) || 'Blank is not allowed and max is 25 characters']"
@@ -52,6 +53,7 @@
             v-model="title"
           ></v-text-field>
           <v-text-field
+            color="blue"
             ref="descriptionEditText"
             label="Description"
             multi-line
@@ -61,6 +63,7 @@
             <v-flex xs6>
               <label>Access:</label>
               <v-switch
+                color="blue"
                 :label="(isPublic)? 'Public' : 'Private'"
                 v-model="isPublic"
               ></v-switch>
@@ -68,6 +71,7 @@
             <v-flex xs6>
               <label for="joining">Joining:</label>
               <v-switch
+                color="blue"
                 :label="(isJoiningAllowed)? 'Allowed' : 'Disabled'"
                 v-model="isJoiningAllowed"
               ></v-switch>
@@ -76,8 +80,8 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn flat="flat" @click="closeDialog">Cancel</v-btn>
-          <v-btn flat="flat" @click="onCreateClick">Create</v-btn>
+          <v-btn flat="flat" color="blue" @click="closeDialog">Cancel</v-btn>
+          <v-btn flat="flat" color="blue" @click="onCreateClick">Create</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>

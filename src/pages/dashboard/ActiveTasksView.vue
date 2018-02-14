@@ -152,8 +152,8 @@
       <task-editor
         ref="taskEditor"
         style="visibility: hidden"
-        @updatedTask="updatedTask"
-        @createdTask="createdTask">
+        @updateTask="updateTask"
+        @createTask="createTask">
       </task-editor>
     </v-layout>
   </v-container>
@@ -177,7 +177,6 @@
           3: 'activities',
           4: 'interruptions'
         },
-        taskPrefix: 'task_',
         tasks: {
           goals: [],
           progress: [],
@@ -361,6 +360,16 @@
 
       onDragEnd () {
         this.isDragging = false
+      },
+
+      createTask (task) {
+        this.$store.commit('createActiveTask', task)
+        this.createdTask()
+      },
+
+      updateTask (task) {
+        this.$store.commit('updateActiveTask', task)
+        this.updatedTask()
       },
 
       createdTask (task) {

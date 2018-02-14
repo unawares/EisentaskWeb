@@ -120,7 +120,6 @@
     mounted () {
       this.addLoadingTag('UserLoading')
       this.$store.commit('getUser')
-      window.test = this
     },
     watch: {
       profileNotifier: {
