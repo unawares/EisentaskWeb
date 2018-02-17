@@ -28,13 +28,16 @@
                   :key="task.instance.id"
                   :task="task"
                   :color="'goals'"
-                  :isDragging="isDragging">
+                  :isDragging="isDragging"
+                  :onDeleteClick="onDeleteClick"
+                  :onEditClick="onEditClick"
+                  :onDoneClick="onDoneClick">
                 </active-task>
               </transition-group>
             </draggable>
           </v-layout>
           <v-card-actions>
-            <v-btn flat color="goals">New task</v-btn>
+            <v-btn flat color="goals" @click="onNewGoalClick">New task</v-btn>
           </v-card-actions>
         </v-card>
       </v-flex>
@@ -65,13 +68,16 @@
                   :key="task.instance.id"
                   :task="task"
                   :color="'progress'"
-                  :isDragging="isDragging">
+                  :isDragging="isDragging"
+                  :onDeleteClick="onDeleteClick"
+                  :onEditClick="onEditClick"
+                  :onDoneClick="onDoneClick">
                 </active-task>
               </transition-group>
             </draggable>
           </v-layout>
           <v-card-actions>
-            <v-btn flat color="progress">New task</v-btn>
+            <v-btn flat color="progress" @click="onNewProgressClick">New task</v-btn>
           </v-card-actions>
         </v-card>
       </v-flex>
@@ -102,13 +108,16 @@
                   :key="task.instance.id"
                   :task="task"
                   :color="'activities'"
-                  :isDragging="isDragging">
+                  :isDragging="isDragging"
+                  :onDeleteClick="onDeleteClick"
+                  :onEditClick="onEditClick"
+                  :onDoneClick="onDoneClick">
                 </active-task>
               </transition-group>
             </draggable>
           </v-layout>
           <v-card-actions>
-            <v-btn flat color="activities">New task</v-btn>
+            <v-btn flat color="activities" @click="onNewActivityClick">New task</v-btn>
           </v-card-actions>
         </v-card>
       </v-flex>
@@ -139,20 +148,25 @@
                   :key="task.instance.id"
                   :task="task"
                   :color="'interruptions'"
-                  :isDragging="isDragging">
+                  :isDragging="isDragging"
+                  :onDeleteClick="onDeleteClick"
+                  :onEditClick="onEditClick"
+                  :onDoneClick="onDoneClick">
                 </active-task>
               </transition-group>
             </draggable>
           </v-layout>
           <v-card-actions>
-            <v-btn flat color="interruptions">New task</v-btn>
+            <v-btn flat color="interruptions" @click="onNewInterruptionClick">New task</v-btn>
           </v-card-actions>
         </v-card>
       </v-flex>
-      <task-editor
-        ref="taskEditor"
-        style="visibility: hidden">
-      </task-editor>
+      <group-task-editor
+        ref="groupTaskEditor"
+        style="visibility: hidden"
+        @updateTask="updateActiveGroupTask"
+        @createTask="createActiveGroupTask">
+      </group-task-editor>
     </v-layout>
   </v-container>
 </template>
@@ -160,7 +174,7 @@
 <script>
   import _ from 'underscore'
   import Draggable from 'vuedraggable'
-  import TaskEditor from '@/components/TaskEditor'
+  import GroupTaskEditor from '@/components/GroupTaskEditor'
   import ActiveTask from '@/components/ActiveTask'
   import simpleRequest from '@/utils/SimpleRequest'
   import Notifications from '@/components/Notifications'
@@ -182,7 +196,6 @@
     }
   }
 
-  /*
   var getGroupTaskFromResponse = function (response) {
     var task = {
       id: response.id,
@@ -194,7 +207,6 @@
     }
     return task
   }
-  */
 
   export default {
     props: [
@@ -217,22 +229,19 @@
           activities: [],
           interruptions: []
         },
-        reactiveActiveTasks: {
-          goals: undefined,
-          progress: undefined,
-          activities: undefined,
-          interruptions: undefined
-        },
+        reactiveActiveTasks: undefined,
         tasksDict: undefined,
-        lastDragEnd: new Date()
+        lastActionEnd: new Date(),
+        lastDragEnd: new Date(),
+        animationStartTime: new Date(),
+        force: true
       }
     },
     mounted () {
       this.getGroup(this.$router.history.current.params.id)
-      window.test = ReactiveActiveGroupTasks
       setTimeout(() => {
-        if (this.$refs.taskEditor) {
-          this.$refs.taskEditor.$el.style.visibility = 'visible'
+        if (this.$refs.groupTaskEditor) {
+          this.$refs.groupTaskEditor.$el.style.visibility = 'visible'
         }
       }, 700)
     },
@@ -246,23 +255,49 @@
       this.destroy()
     },
     methods: {
+      continueActions (quickly = false) {
+        if (quickly) {
+          this.reactiveActiveTasks.continueActions()
+          this.lastActionEnd = new Date()
+        } else {
+          var time = this.lastActionEnd
+          var f = () => {
+            setTimeout(() => {
+              if ((new Date().getTime() - this.lastActionEnd.getTime()) >= 1000) {
+                this.reactiveActiveTasks.continueActions()
+                this.lastActionEnd = new Date()
+              } else if (time.getTime() === this.lastActionEnd.getTime()) {
+                f()
+              }
+            }, 1500)
+          }
+          f()
+        }
+      },
+
+      pauseActions (quickly = false) {
+        if (quickly) {
+          this.reactiveActiveTasks.pauseActions()
+          this.lastActionEnd = new Date()
+        } else {
+          var time = this.lastActionEnd
+          var f = () => {
+            setTimeout(() => {
+              if ((new Date().getTime() - this.lastActionEnd.getTime()) >= 1000) {
+                this.reactiveActiveTasks.pauseActions()
+                this.lastActionEnd = new Date()
+              } else if (time.getTime() === this.lastActionEnd.getTime()) {
+                f()
+              }
+            }, 1500)
+          }
+          f()
+        }
+      },
+
       destroy () {
-        if (this.reactiveActiveTasks.goals) {
-          this.reactiveActiveTasks.goals.destroy()
-          delete this.reactiveActiveTasks.goals
-        }
-        if (this.reactiveActiveTasks.progress) {
-          this.reactiveActiveTasks.progress.destroy()
-          delete this.reactiveActiveTasks.progress
-        }
-        if (this.reactiveActiveTasks.activities) {
-          this.reactiveActiveTasks.activities.destroy()
-          delete this.reactiveActiveTasks.activities
-        }
-        if (this.reactiveActiveTasks.interruptions) {
-          this.reactiveActiveTasks.interruptions.destroy()
-          delete this.reactiveActiveTasks.interruptions
-        }
+        this.reactiveActiveTasks.stopActions()
+        this.reactiveActiveTasks = undefined
       },
 
       clearTasks () {
@@ -274,62 +309,55 @@
         }
       },
 
-      setReactiveActiveGroupTasksPriorityGoals () {
-        this.reactiveActiveTasks.goals = new ReactiveActiveGroupTasks('/api/group_tasks/active/priority/1/groups/' + this.group.instance.id + '/')
-        this.reactiveActiveTasks.goals.getNext()
-        this.reactiveActiveTasks.goals.updater()
-      },
-
-      setReactiveActiveGroupTasksPriorityProgress () {
-        this.reactiveActiveTasks.progress = new ReactiveActiveGroupTasks('/api/group_tasks/active/priority/2/groups/' + this.group.instance.id + '/')
-        this.reactiveActiveTasks.progress.getNext()
-        this.reactiveActiveTasks.progress.updater()
-      },
-
-      setReactiveActiveGroupTasksPriorityActivities () {
-        this.reactiveActiveTasks.activities = new ReactiveActiveGroupTasks('/api/group_tasks/active/priority/3/groups/' + this.group.instance.id + '/')
-        this.reactiveActiveTasks.activities.getNext()
-        this.reactiveActiveTasks.activities.updater()
-      },
-
-      setReactiveActiveGroupTasksPriorityInterruptions () {
-        this.reactiveActiveTasks.interruptions = new ReactiveActiveGroupTasks('/api/group_tasks/active/priority/4/groups/' + this.group.instance.id + '/')
-        this.reactiveActiveTasks.interruptions.getNext()
-        this.reactiveActiveTasks.interruptions.updater()
-      },
-
       getActiveGroupTasks () {
-        this.setReactiveActiveGroupTasksPriorityGoals()
-        this.setReactiveActiveGroupTasksPriorityProgress()
-        this.setReactiveActiveGroupTasksPriorityActivities()
-        this.setReactiveActiveGroupTasksPriorityInterruptions()
-        ReactiveActiveGroupTasks.setGroup(this.group)
-        ReactiveActiveGroupTasks.setOnUpdated(() => {
-          this.tasksDict = ReactiveActiveGroupTasks.getTasksDict()
+        this.reactiveActiveTasks = new ReactiveActiveGroupTasks(this.group)
+        this.reactiveActiveTasks.getNext(1)
+        this.reactiveActiveTasks.getNext(2)
+        this.reactiveActiveTasks.getNext(3)
+        this.reactiveActiveTasks.getNext(4)
+        this.reactiveActiveTasks.setOnUpdated(() => {
           this.setTasks()
         })
-        this.tasksDict = ReactiveActiveGroupTasks.getTasksDict()
+        this.reactiveActiveTasks.updater()
+        this.reactiveActiveTasks.refresher()
+        setTimeout(() => {
+          this.force = false
+        }, 1000)
       },
 
       setTasks () {
-        this.clearTasks()
-        var tasks = _.sortBy(_.values(this.tasksDict), t => t.order)
-        for (let task of tasks) {
-          switch (task.priority) {
-            case 1:
-              this.tasks.goals.push(task)
-              break
-            case 2:
-              this.tasks.progress.push(task)
-              break
-            case 3:
-              this.tasks.activities.push(task)
-              break
-            case 4:
-              this.tasks.interruptions.push(task)
-              break
+        var time = this.animationStartTime
+        var f = () => {
+          if ((new Date()).getTime() - this.animationStartTime.getTime() >= 800 || this.force) {
+            this.tasksDict = this.reactiveActiveTasks.getTasksDict()
+            this.animationStartTime = new Date()
+            this.clearTasks()
+            var tasks = _.sortBy(_.values(this.tasksDict), t => t.order)
+            for (let task of tasks) {
+              switch (task.priority) {
+                case 1:
+                  this.tasks.goals.push(task)
+                  break
+                case 2:
+                  this.tasks.progress.push(task)
+                  break
+                case 3:
+                  this.tasks.activities.push(task)
+                  break
+                case 4:
+                  this.tasks.interruptions.push(task)
+                  break
+              }
+            }
+          } else {
+            setTimeout(() => {
+              if (time.getTime() === this.animationStartTime.getTime()) {
+                f()
+              }
+            }, 100)
           }
         }
+        f()
       },
 
       getGroup (id) {
@@ -337,6 +365,7 @@
           this.group = new Group()
           this.group.instance = getGroupFromResponse(response.data)
           this.getActiveGroupTasks()
+          this.force = true
         }).catch((error) => {
           Notifications.methods.error()
           console.log(error)
@@ -390,7 +419,8 @@
           data['task_id_before'] = taskIdBefore
         }
         data['new_priority'] = priority
-        simpleRequest('/api/group_tasks/active/groups/48/task/orders/' + task.instance.id + '/', data).method('put').then((response) => {
+        simpleRequest('/api/group_tasks/active/groups/' + this.group.instance.id + '/task/orders/' + task.instance.id + '/', data).method('put').then((response) => {
+          task.override(getGroupTaskFromResponse(response.data))
           console.log(response)
         })
       },
@@ -428,14 +458,15 @@
         if (taskIdBefore !== -1) {
           data['task_id_before'] = taskIdBefore
         }
-        simpleRequest('/api/group_tasks/active/groups/48/task/orders/' + task.instance.id + '/', data).method('put').then((response) => {
+        simpleRequest('/api/group_tasks/active/groups/' + this.group.instance.id + '/task/orders/' + task.instance.id + '/', data).method('put').then((response) => {
+          task.override(getGroupTaskFromResponse(response.data))
           console.log(response)
         })
       },
 
       onDragStart () {
         this.isDragging = true
-        ReactiveActiveGroupTasks.setDragging(true)
+        this.pauseActions(true)
       },
 
       onDragEnd () {
@@ -443,15 +474,116 @@
         this.lastDragEnd = new Date()
         setTimeout(() => {
           if (!this.isDragging && ((new Date()).getTime() - this.lastDragEnd.getTime()) >= 500) {
-            ReactiveActiveGroupTasks.setDragging(false)
+            this.continueActions()
           }
-        }, 5000)
+        }, 1000)
+      },
+
+      createActiveGroupTask (task) {
+        this.pauseActions(true)
+        simpleRequest('/api/group_tasks/active/groups/' + this.group.instance.id + '/tasks/', {
+          text: task.text,
+          priority: task.priority
+        }).method('post').then((response) => {
+          task.override(getGroupTaskFromResponse(response.data))
+          switch (task.priority) {
+            case 1:
+              task.order = (this.tasks.goals.length > 0) ? this.tasks.goals[0].order - 1 : 0
+              break
+            case 2:
+              task.order = (this.tasks.progress.length > 0) ? this.tasks.progress[0].order - 1 : 0
+              break
+            case 3:
+              task.order = (this.tasks.activities.length > 0) ? this.tasks.activities[0].order - 1 : 0
+              break
+            case 4:
+              task.order = (this.tasks.interruptions.length > 0) ? this.tasks.interruptions[0].order - 1 : 0
+              break
+          }
+          this.reactiveActiveTasks.addTask(task)
+          this.reactiveActiveTasks.onUpdated()
+          this.$refs.groupTaskEditor.closeEditor()
+          this.continueActions()
+          console.log(response)
+        }).catch((error) => {
+          this.continueActions()
+          console.log(error)
+        })
+      },
+
+      updateActiveGroupTask (task) {
+        this.pauseActions(true)
+        simpleRequest('/api/group_tasks/active/groups/' + this.group.instance.id + '/tasks/' + task.instance.id + '/', {
+          text: task.text,
+          priority: task.priority,
+          order: task.order
+        }).method('put').then((response) => {
+          task.override(getGroupTaskFromResponse(response.data))
+          this.reactiveActiveTasks.onUpdated()
+          this.$refs.groupTaskEditor.closeEditor()
+          this.continueActions()
+          console.log(response)
+        }).catch((error) => {
+          this.continueActions()
+          console.log(error)
+        })
+      },
+
+      onEditClick (task) {
+        this.$refs.groupTaskEditor.openEditor()
+        this.$refs.groupTaskEditor.setTaskInstance(task)
+      },
+
+      onDoneClick (task) {
+        this.pauseActions(true)
+        simpleRequest('/api/group_tasks/active/groups/' + this.group.instance.id + '/tasks/' + task.instance.id + '/complete/').method('post').then((response) => {
+          this.reactiveActiveTasks.removeTask(task)
+          this.reactiveActiveTasks.onUpdated()
+          this.continueActions()
+          console.log(response)
+        }).catch((error) => {
+          this.continueActions()
+          console.log(error)
+        })
+      },
+
+      onDeleteClick (task) {
+        this.pauseActions(true)
+        simpleRequest('/api/group_tasks/active/groups/' + this.group.instance.id + '/tasks/' + task.instance.id + '/').method('delete').then((response) => {
+          this.reactiveActiveTasks.removeTask(task)
+          this.reactiveActiveTasks.onUpdated()
+          this.continueActions()
+          console.log(response)
+        }).catch((error) => {
+          this.continueActions()
+          console.log(error)
+        })
+      },
+
+      onNewGoalClick () {
+        this.$refs.groupTaskEditor.openEditor()
+        this.$refs.groupTaskEditor.setPriority(1)
+      },
+
+      onNewProgressClick () {
+        this.$refs.groupTaskEditor.openEditor()
+        this.$refs.groupTaskEditor.setPriority(2)
+      },
+
+      onNewActivityClick () {
+        this.$refs.groupTaskEditor.openEditor()
+        this.$refs.groupTaskEditor.setPriority(3)
+      },
+
+      onNewInterruptionClick () {
+        this.$refs.groupTaskEditor.openEditor()
+        this.$refs.groupTaskEditor.setPriority(4)
       }
     },
     components: {
       Draggable,
       ActiveTask,
-      TaskEditor
+      GroupTaskEditor
     }
   }
 </script>

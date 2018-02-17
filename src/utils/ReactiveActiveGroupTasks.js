@@ -14,56 +14,100 @@ var getGroupTaskFromResponse = function (response) {
 }
 
 export default class ReactiveActiveGroupTasks {
-  static tasksDict = {}
-  static group = undefined
-  static onUpdated () {}
-  static isDragging = false
-  static isActive = false
+  constructor (group) {
+    this.group = group
+    this.init()
+  }
 
-  constructor (startURL) {
-    this.startURL = startURL
-    this.nextURL = this.startURL
+  init () {
+    this.tasksDict = {}
+    this.onUpdated = () => {}
+    this.isPaused = false
+    this.isActive = false
     this.responsedURLS = []
-    this.removed = false
+    this.updaterIsActive = false
+    this.refresherIsActive = false
     this.taskIds = []
-    if (!ReactiveActiveGroupTasks.isActive) {
-      ReactiveActiveGroupTasks.isActive = true
-      ReactiveActiveGroupTasks.refresher()
+    let startGoalsURL = '/api/group_tasks/active/priority/' + 1 + '/groups/' + this.group.instance.id + '/'
+    let startProgressURL = '/api/group_tasks/active/priority/' + 2 + '/groups/' + this.group.instance.id + '/'
+    let startActivitiesURL = '/api/group_tasks/active/priority/' + 3 + '/groups/' + this.group.instance.id + '/'
+    let startInterruptionsURL = '/api/group_tasks/active/priority/' + 4 + '/groups/' + this.group.instance.id + '/'
+    this.urls = {
+      goals: {
+        start: startGoalsURL,
+        next: startGoalsURL
+      },
+      progress: {
+        start: startProgressURL,
+        next: startProgressURL
+      },
+      activities: {
+        start: startActivitiesURL,
+        next: startActivitiesURL
+      },
+      interruptions: {
+        start: startInterruptionsURL,
+        next: startInterruptionsURL
+      }
     }
   }
 
-  static setGroup (group) {
-    ReactiveActiveGroupTasks.group = group
+  getTasksDict () {
+    return this.tasksDict
   }
 
-  static getTasksDict () {
-    return ReactiveActiveGroupTasks.tasksDict
+  setOnUpdated (func) {
+    this.onUpdated = func
   }
 
-  static setOnUpdated (func) {
-    ReactiveActiveGroupTasks.onUpdated = func
+  addTask (task) {
+    if (!(task.id in this.tasksDict)) {
+      this.tasksDict[task.instance.id] = task
+      this.taskIds.push(task.instance.id)
+    }
   }
 
-  static setDragging (state) {
-    ReactiveActiveGroupTasks.isDragging = state
+  removeTask (task) {
+    if (task.instance.id in this.tasksDict) {
+      delete this.tasksDict[task.instance.id]
+    }
+    let index = this.taskIds.indexOf(task.instance.id)
+    if (index !== -1) {
+      this.taskIds.splice(index, 1)
+    }
   }
 
-  getNext () {
-    if (this.nextURL !== null) {
-      simpleRequest(this.startURL).method('get').then((response) => {
-        this.responsedURLS.push(this.nextURL)
-        this.nextURL = response.data.next
+  getNext (priority) {
+    var url
+    switch (priority) {
+      case 1:
+        url = this.urls.goals
+        break
+      case 2:
+        url = this.urls.progress
+        break
+      case 3:
+        url = this.urls.activities
+        break
+      case 4:
+        url = this.urls.interruptions
+        break
+    }
+    if (url.next !== null) {
+      simpleRequest(url.next).method('get').then((response) => {
+        this.responsedURLS.push(url.next)
+        url.next = response.data.next
         for (let task of response.data.results) {
-          if (task.id in ReactiveActiveGroupTasks.tasksDict) {
-            ReactiveActiveGroupTasks.tasksDict[task.id].override(getGroupTaskFromResponse(task))
+          if (task.id in this.tasksDict) {
+            this.tasksDict[task.id].override(getGroupTaskFromResponse(task))
           } else {
             var t = new GroupTask()
             t.instance = getGroupTaskFromResponse(task)
-            ReactiveActiveGroupTasks.tasksDict[t.instance.id] = t
+            this.tasksDict[t.instance.id] = t
             this.taskIds.push(t.instance.id)
           }
         }
-        ReactiveActiveGroupTasks.onUpdated()
+        this.onUpdated()
         console.log(response)
       }).catch((error) => {
         console.log(error)
@@ -71,26 +115,35 @@ export default class ReactiveActiveGroupTasks {
     }
   }
 
-  destroy () {
-    this.removed = true
-    delete this.responsedURLS
-    for (let taskId of this.taskIds) {
-      delete ReactiveActiveGroupTasks.tasksDict[taskId]
-    }
+  stopActions () {
+    this.updaterIsActive = false
+    this.refresherIsActive = false
+  }
+
+  pauseActions () {
+    this.isPaused = true
+  }
+
+  continueActions () {
+    this.isPaused = false
   }
 
   updater () {
+    if (this.updaterIsActive) {
+      return
+    }
+    this.updaterIsActive = true
     var index = 0
     var func = () => {
       return new Promise((resolve, reject) => {
         simpleRequest(this.responsedURLS[index]).method('get').then((response) => {
           for (let task of response.data.results) {
-            if (task.id in ReactiveActiveGroupTasks.tasksDict) {
-              ReactiveActiveGroupTasks.tasksDict[task.id].override(getGroupTaskFromResponse(task))
+            if (task.id in this.tasksDict) {
+              this.tasksDict[task.id].override(getGroupTaskFromResponse(task))
             } else {
               var t = new GroupTask()
               t.instance = getGroupTaskFromResponse(task)
-              ReactiveActiveGroupTasks.tasksDict[t.instance.id] = t
+              this.tasksDict[t.instance.id] = t
               this.taskIds.push(t.instance.id)
             }
           }
@@ -107,26 +160,30 @@ export default class ReactiveActiveGroupTasks {
       })
     }
     var f = () => {
-      if (!this.removed) {
+      if (this.updaterIsActive) {
         setTimeout(() => {
-          if (!ReactiveActiveGroupTasks.isDragging && !this.removed) {
+          if (!this.isPaused && this.updaterIsActive) {
             func().then(() => { f() }).catch(() => { f() })
-          } else if (!this.removed) {
+          } else if (this.updaterIsActive) {
             f()
           }
-        }, 10000)
+        }, 5000)
       }
     }
     f()
   }
 
-  static refresher () {
+  refresher () {
+    if (this.refresherIsActive) {
+      return
+    }
+    this.refresherIsActive = true
     var getIds = () => {
       var ids = []
-      for (let key in ReactiveActiveGroupTasks.tasksDict) {
-        if (ReactiveActiveGroupTasks.tasksDict.hasOwnProperty(key)) {
-          if ('id' in ReactiveActiveGroupTasks.tasksDict[key].instance) {
-            ids.push(ReactiveActiveGroupTasks.tasksDict[key].instance.id)
+      for (let key in this.tasksDict) {
+        if (this.tasksDict.hasOwnProperty(key)) {
+          if ('id' in this.tasksDict[key].instance) {
+            ids.push(this.tasksDict[key].instance.id)
           }
         }
       }
@@ -135,34 +192,42 @@ export default class ReactiveActiveGroupTasks {
     var func = () => {
       return new Promise((resolve, reject) => {
         var ids = getIds()
-        simpleRequest('/api/group_tasks/active/groups/' + ReactiveActiveGroupTasks.group.instance.id + '/selection/tasks/', {
-          ids: ids
-        }).method('post').then((response) => {
-          for (let task of response.data) {
-            ReactiveActiveGroupTasks.tasksDict[task.id].override(getGroupTaskFromResponse(task))
-            ids.splice(ids.indexOf(task.id), 1)
-          }
-          for (let id of ids) {
-            delete ReactiveActiveGroupTasks.tasksDict[id]
-          }
-          ReactiveActiveGroupTasks.onUpdated()
-          resolve(response)
-          console.log(response)
-        }).catch((error) => {
-          reject(error)
-          console.log(error)
-        })
+        if (ids.length > 0) {
+          simpleRequest('/api/group_tasks/active/groups/' + this.group.instance.id + '/selection/tasks/', {
+            ids: ids
+          }).method('post').then((response) => {
+            for (let task of response.data) {
+              this.tasksDict[task.id].override(getGroupTaskFromResponse(task))
+              ids.splice(ids.indexOf(task.id), 1)
+            }
+            for (let id of ids) {
+              delete this.tasksDict[id]
+              let index = this.taskIds.indexOf(id)
+              if (index !== -1) {
+                this.taskIds.splice(index, 1)
+              }
+            }
+            this.onUpdated()
+            resolve(response)
+            console.log(response)
+          }).catch((error) => {
+            reject(error)
+            console.log(error)
+          })
+        } else {
+          reject()
+        }
       })
     }
     var f = () => {
-      if (ReactiveActiveGroupTasks.isActive) {
+      if (this.refresherIsActive) {
         setTimeout(() => {
-          if (!ReactiveActiveGroupTasks.isDragging && ReactiveActiveGroupTasks.isActive) {
+          if (!this.isPaused && this.refresherIsActive) {
             func().then(() => { f() }).catch(() => { f() })
-          } else if (ReactiveActiveGroupTasks.isActive) {
+          } else if (this.refresherIsActive) {
             f()
           }
-        }, 5000)
+        }, 2500)
       }
     }
     f()
