@@ -45,16 +45,12 @@
                 rows="7"
                 :disabled="!isAdmin"
               ></v-text-field>
-              <v-checkbox label="Group is public" v-model="isPublic" color="blue" :disabled="!isAdmin"></v-checkbox>
-              <v-checkbox label="Joining is allowed" v-model="isJoiningAllowed" color="blue" :disabled="!isAdmin"></v-checkbox>
-              <v-divider></v-divider>
               <div class="group-settings-actions">
                 <v-btn flat light color="red" @click="clickDeleteGroupSettings" :disabled="!isAdmin">Delete</v-btn>
                 <v-spacer></v-spacer>
                 <v-btn flat light color="blue" @click="clickResetGroupSettings" :disabled="!isAdmin">Reset</v-btn>
                 <v-btn flat light color="blue" @click="clickSaveGroupSettings" :disabled="!isAdmin">Save</v-btn>
               </div>
-              <v-divider></v-divider>
               <div v-if="!isAdmin" class="group-settings-actions justify-center margin-top">
                 <v-btn outline dark color="red" @click="clickLeaveGroupSettings">Leave</v-btn>
               </div>

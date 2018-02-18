@@ -456,6 +456,9 @@
         simpleRequest('/api/group_tasks/active/groups/' + this.group.instance.id + '/task/orders/' + task.instance.id + '/', data).method('put').then((response) => {
           task.override(getGroupTaskFromResponse(response.data))
           console.log(response)
+        }).catch((error) => {
+          this.refresh()
+          console.log(error)
         })
       },
 
@@ -495,6 +498,9 @@
         simpleRequest('/api/group_tasks/active/groups/' + this.group.instance.id + '/task/orders/' + task.instance.id + '/', data).method('put').then((response) => {
           task.override(getGroupTaskFromResponse(response.data))
           console.log(response)
+        }).catch((error) => {
+          this.refresh()
+          console.log(error)
         })
       },
 
@@ -514,6 +520,7 @@
       },
 
       createActiveGroupTask (task) {
+        this.pauseActions(true)
         simpleRequest('/api/group_tasks/active/groups/' + this.group.instance.id + '/tasks/', {
           text: task.text,
           priority: task.priority
@@ -536,17 +543,16 @@
           }
           this.reactiveActiveTasks.addTask(task)
           this.reactiveActiveTasks.onUpdated()
-          this.continueActions(true)
+          this.continueActions()
           console.log(response)
         }).catch((error) => {
-          this.continueActions(true)
+          this.refresh()
           console.log(error)
         })
       },
 
       updateActiveGroupTask (task) {
         this.pauseActions(true)
-        console.log(task.order)
         simpleRequest('/api/group_tasks/active/groups/' + this.group.instance.id + '/tasks/' + task.instance.id + '/', {
           text: task.text,
           priority: task.priority,
@@ -554,10 +560,10 @@
         }).method('put').then((response) => {
           this.$refs.groupTaskEditor.closeEditor()
           task.override(getGroupTaskFromResponse(response.data))
-          this.continueActions(true)
+          this.continueActions()
           console.log(response)
         }).catch((error) => {
-          this.continueActions(true)
+          this.refresh()
           console.log(error)
         })
       },
@@ -575,7 +581,7 @@
           this.continueActions()
           console.log(response)
         }).catch((error) => {
-          this.continueActions()
+          this.refresh()
           console.log(error)
         })
       },
@@ -588,7 +594,7 @@
           this.continueActions()
           console.log(response)
         }).catch((error) => {
-          this.continueActions()
+          this.refresh()
           console.log(error)
         })
       },
