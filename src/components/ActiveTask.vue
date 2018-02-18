@@ -1,14 +1,14 @@
 <template>
-  <v-card class="task" :hover="isHoverable" ref="task">
-    <v-card-text class="task-text" @click="onEditClick(task)">
-      <span class="notranslate">{{ task.text }}</span>
+  <v-card class="task" :hover="isHoverable && isStaff" ref="task">
+    <v-card-text class="task-text" @click="onEditClick">
+      <slot name="text"></slot>
     </v-card-text>
     <v-card-actions>
-      <v-btn flat icon :color="color" @click="onDeleteClick(task)">
+      <v-btn v-if="isStaff" flat icon :color="color" @click="onDeleteClick">
         <v-icon class="notranslate">delete</v-icon>
       </v-btn>
       <v-spacer></v-spacer>
-      <v-btn flat icon :color="color" @click="onDoneClick(task)">
+      <v-btn flat icon :color="color" @click="onDoneClick">
         <v-icon class="notranslate">done</v-icon>
       </v-btn>
     </v-card-actions>
@@ -25,11 +25,9 @@
     },
     props: [
       'task',
-      'onDeleteClick',
-      'onEditClick',
-      'onDoneClick',
       'color',
-      'isDragging'
+      'isDragging',
+      'isStaff'
     ],
     watch: {
       isDragging (value) {
@@ -41,6 +39,17 @@
           }
         }
       }
+    },
+    methods: {
+      onEditClick () {
+        this.$emit('onEditClick', this.task)
+      },
+      onDoneClick () {
+        this.$emit('onDoneClick', this.task)
+      },
+      onDeleteClick () {
+        this.$emit('onDeleteClick', this.task)
+      }
     }
   }
 </script>
@@ -49,7 +58,7 @@
 .task
   margin-top: 10px
   margin-bottom: 10px
-  max-height: 1000px
+  max-height: 9999px
 
   .task-text
     overflow: hidden

@@ -2,6 +2,7 @@
   <v-layout>
     <v-container>
       <v-btn
+        v-if="isStaff"
         ref="button"
         dark
         color="goals"
@@ -129,10 +130,12 @@
       return id--
     }
   })()
-  var self = {}
 
   export default {
     name: 'TaskEditor',
+    props: [
+      'isStaff'
+    ],
     data () {
       return {
         drawer: false,
@@ -144,24 +147,21 @@
         refreshIntervalId: undefined
       }
     },
-    mounted: function () {
-      self.obj = this
-    },
     watch: {
       priority: function (value) {
         value = parseInt(value)
         switch (value) {
           case 1:
-            self.obj.priorityClass = 'goals'
+            this.priorityClass = 'goals'
             break
           case 2:
-            self.obj.priorityClass = 'progress'
+            this.priorityClass = 'progress'
             break
           case 3:
-            self.obj.priorityClass = 'activities'
+            this.priorityClass = 'activities'
             break
           case 4:
-            self.obj.priorityClass = 'interruptions'
+            this.priorityClass = 'interruptions'
             break
         }
         return value
@@ -169,8 +169,10 @@
 
       drawer: function (value) {
         if (value) {
+          this.$emit('opened')
           this.$refs.taskEditor.$el.style.visibility = 'visible'
         } else {
+          this.$emit('closed')
           setTimeout(() => {
             if (!this.drawer) {
               this.$refs.taskEditor.$el.style.visibility = 'hidden'
@@ -182,62 +184,61 @@
     methods: {
       // Set instance
       setTaskInstance: function (task) {
-        self.obj.task = task
-        self.obj.priority = task.priority
+        this.task = task
+        this.priority = task.priority
         setTimeout(() => {
-          self.obj.$refs.taskEditText.focus()
-          self.obj.text = task.text
+          this.$refs.taskEditText.focus()
+          this.text = task.text
         }, 100)
       },
 
       // Create task
       createTask: function () {
-        if (self.obj.text && !(/^\s*$/.test(self.obj.text))) {
+        if (this.text && !(/^\s*$/.test(this.text))) {
           var task = new GroupTask()
           task.instance = {
             id: previousId(),
             completed: false,
-            priority: self.obj.priority,
-            text: self.obj.text
+            priority: this.priority,
+            text: this.text
           }
-          this.$emit('createTask', task)
+          this.$emit('createActiveGroupTask', task)
         }
       },
 
       // Refresh
       refresh: function () {
-        self.obj.task = undefined
-        self.obj.text = ''
-        self.obj.session = 'form'
+        this.task = undefined
+        this.text = ''
+        this.session = 'form'
       },
 
       // Update task
       updateTask: function () {
-        if (self.obj.text && !(/^\s*$/.test(self.obj.text))) {
-          self.obj.task.completed = false
-          self.obj.task.priority = self.obj.priority
-          self.obj.task.text = self.obj.text
-          this.$emit('updateTask', self.obj.task)
+        if (this.text && !(/^\s*$/.test(this.text))) {
+          this.task.text = this.text
+          this.task.priority = this.priority
+          this.$emit('updateActiveGroupTask', this.task)
         }
-        self.obj.refresh()
+        this.refresh()
       },
 
       setPriority: function (priority) {
-        self.obj.priority = parseInt(priority)
-        self.obj.session = 'form'
+        this.priority = parseInt(priority)
+        this.session = 'form'
       },
 
       // Call to close the editor
       closeEditor: function () {
-        self.obj.drawer = false
+        this.drawer = false
       },
 
       // Call to open the editor
       openEditor: function () {
-        self.obj.refresh()
-        self.obj.drawer = true
+        this.refresh()
+        this.drawer = true
         setTimeout(() => {
-          self.obj.$refs.taskEditText.focus()
+          this.$refs.taskEditText.focus()
         }, 100)
       }
     }

@@ -14,23 +14,27 @@
           <v-layout>
             <draggable
               :id="PRIORITIES[1]"
-              v-model="tasks.goals"
-              :options="{group: 'tasks', scrollSensitivity: 160}"
-              class="list"
+              :options="{group: 'tasks', handle: '.my-handle', scrollSensitivity: 160, animation: 150}"
+              :list="tasks.goals"
+              :no-transition-on-drag="true"
               @add="onDragAdd"
               @update="onDragUpdate"
               @start="onDragStart"
-              @end="onDragEnd">
-                <active-task
-                  v-for="task in tasks.goals"
-                  :key="task.instance.id"
-                  :task="task"
-                  :color="'goals'"
-                  :isDragging="isDragging"
-                  :onDeleteClick="onDeleteClick"
-                  :onEditClick="onEditClick"
-                  :onDoneClick="onDoneClick">
-                </active-task>
+              @end="onDragEnd"
+              class="list">
+              <active-task
+                class="my-handle"
+                v-for="task in tasks.goals"
+                :key="task.instance.id"
+                :task="task"
+                :color="'goals'"
+                :isDragging="isDragging"
+                @onDeleteClick="onDeleteClick"
+                @onEditClick="onEditClick"
+                @onDoneClick="onDoneClick"
+                :isStaff="true">
+                <span slot="text" class="notranslate">{{ task.text }}</span>
+              </active-task>
             </draggable>
           </v-layout>
           <v-card-actions>
@@ -51,23 +55,27 @@
           <v-layout>
             <draggable
               :id="PRIORITIES[2]"
-              v-model="tasks.progress"
-              :options="{group: 'tasks', scrollSensitivity: 160}"
-              class="list"
+              :options="{group: 'tasks', handle: '.my-handle', scrollSensitivity: 160, animation: 150}"
+              :list="tasks.progress"
+              :no-transition-on-drag="true"
               @add="onDragAdd"
               @update="onDragUpdate"
               @start="onDragStart"
-              @end="onDragEnd">
-                <active-task
-                  v-for="task in tasks.progress"
-                  :key="task.instance.id"
-                  :task="task"
-                  :color="'progress'"
-                  :isDragging="isDragging"
-                  :onDeleteClick="onDeleteClick"
-                  :onEditClick="onEditClick"
-                  :onDoneClick="onDoneClick">
-                </active-task>
+              @end="onDragEnd"
+              class="list">
+              <active-task
+                class="my-handle"
+                v-for="task in tasks.progress"
+                :key="task.instance.id"
+                :task="task"
+                :color="'progress'"
+                :isDragging="isDragging"
+                @onDeleteClick="onDeleteClick"
+                @onEditClick="onEditClick"
+                @onDoneClick="onDoneClick"
+                :isStaff="true">
+                <span slot="text" class="notranslate">{{ task.text }}</span>
+              </active-task>
             </draggable>
           </v-layout>
           <v-card-actions>
@@ -87,23 +95,27 @@
           </v-card>
           <v-layout>
             <draggable
-            :id="PRIORITIES[3]"
-            v-model="tasks.activities"
-            :options="{group: 'tasks', scrollSensitivity: 160}"
-            class="list"
-            @add="onDragAdd"
-            @update="onDragUpdate"
-            @start="onDragStart"
-            @end="onDragEnd">
+              :id="PRIORITIES[3]"
+              :options="{group: 'tasks', handle: '.my-handle', scrollSensitivity: 160, animation: 150}"
+              :list="tasks.activities"
+              :no-transition-on-drag="true"
+              @add="onDragAdd"
+              @update="onDragUpdate"
+              @start="onDragStart"
+              @end="onDragEnd"
+              class="list">
               <active-task
+                class="my-handle"
                 v-for="task in tasks.activities"
                 :key="task.instance.id"
                 :task="task"
                 :color="'activities'"
                 :isDragging="isDragging"
-                :onDeleteClick="onDeleteClick"
-                :onEditClick="onEditClick"
-                :onDoneClick="onDoneClick">
+                @onDeleteClick="onDeleteClick"
+                @onEditClick="onEditClick"
+                @onDoneClick="onDoneClick"
+                :isStaff="true">
+                <span slot="text" class="notranslate">{{ task.text }}</span>
               </active-task>
             </draggable>
           </v-layout>
@@ -125,23 +137,27 @@
           <v-layout>
             <draggable
               :id="PRIORITIES[4]"
-              v-model="tasks.interruptions"
-              :options="{group: 'tasks', scrollSensitivity: 160}"
-              class="list"
+              :options="{group: 'tasks', handle: '.my-handle', scrollSensitivity: 160, animation: 150}"
+              :list="tasks.interruptions"
+              :no-transition-on-drag="true"
               @add="onDragAdd"
               @update="onDragUpdate"
               @start="onDragStart"
-              @end="onDragEnd">
-                <active-task
-                  v-for="task in tasks.interruptions"
-                  :key="task.instance.id"
-                  :task="task"
-                  :color="'interruptions'"
-                  :isDragging="isDragging"
-                  :onDeleteClick="onDeleteClick"
-                  :onEditClick="onEditClick"
-                  :onDoneClick="onDoneClick">
-                </active-task>
+              @end="onDragEnd"
+              class="list">
+              <active-task
+                class="my-handle"
+                v-for="task in tasks.interruptions"
+                :key="task.instance.id"
+                :task="task"
+                :color="'interruptions'"
+                :isDragging="isDragging"
+                @onDeleteClick="onDeleteClick"
+                @onEditClick="onEditClick"
+                @onDoneClick="onDoneClick"
+                :isStaff="true">
+                <span slot="text" class="notranslate">{{ task.text }}</span>
+              </active-task>
             </draggable>
           </v-layout>
           <v-card-actions>
@@ -153,7 +169,8 @@
         ref="taskEditor"
         style="visibility: hidden"
         @updateTask="updateTask"
-        @createTask="createTask">
+        @createTask="createTask"
+        :isStaff="true">
       </task-editor>
     </v-layout>
   </v-container>
@@ -307,8 +324,8 @@
       },
 
       onDragAdd (evt) {
-        var newIndex = evt.newIndex
         var newPriority = this.getPriorityByString(evt.to.id)
+        var newIndex = evt.newIndex
         var task
         switch (newPriority) {
           case 1:
@@ -331,8 +348,8 @@
       },
 
       onDragUpdate (evt) {
-        var newIndex = evt.newIndex
         var newPriority = this.getPriorityByString(evt.to.id)
+        var newIndex = evt.newIndex
         var task
         switch (newPriority) {
           case 1:
@@ -364,12 +381,12 @@
 
       createTask (task) {
         this.$store.commit('createActiveTask', task)
-        this.createdTask()
+        this.createdTask(task)
       },
 
       updateTask (task) {
         this.$store.commit('updateActiveTask', task)
-        this.updatedTask()
+        this.updatedTask(task)
       },
 
       createdTask (task) {
@@ -418,8 +435,8 @@
       },
 
       onEditClick (task) {
-        TaskEditor.methods.openEditor()
-        TaskEditor.methods.setTaskInstance(task)
+        this.$refs.taskEditor.openEditor()
+        this.$refs.taskEditor.setTaskInstance(task)
       },
 
       onDeleteClick (task) {
@@ -434,23 +451,23 @@
       },
 
       onNewGoalClick () {
-        TaskEditor.methods.openEditor()
-        TaskEditor.methods.setPriority(1)
+        this.$refs.taskEditor.openEditor()
+        this.$refs.taskEditor.setPriority(1)
       },
 
       onNewProgressClick () {
-        TaskEditor.methods.openEditor()
-        TaskEditor.methods.setPriority(2)
+        this.$refs.taskEditor.openEditor()
+        this.$refs.taskEditor.setPriority(2)
       },
 
       onNewActivityClick () {
-        TaskEditor.methods.openEditor()
-        TaskEditor.methods.setPriority(3)
+        this.$refs.taskEditor.openEditor()
+        this.$refs.taskEditor.setPriority(3)
       },
 
       onNewInterruptionClick () {
-        TaskEditor.methods.openEditor()
-        TaskEditor.methods.setPriority(4)
+        this.$refs.taskEditor.openEditor()
+        this.$refs.taskEditor.setPriority(4)
       }
     }
   }
@@ -477,7 +494,7 @@
     padding: 10px
 
     .list
-      min-height: 160px
+      min-height: 120px
       padding: 16px
       width: 100%
 

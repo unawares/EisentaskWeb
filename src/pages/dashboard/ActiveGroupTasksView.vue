@@ -14,7 +14,7 @@
           <v-layout>
             <draggable
               :id="PRIORITIES[1]"
-              :options="{group: 'tasks', handle: '.my-handle', scrollSensitivity: 160, animation: 150}"
+              :options="{group: 'tasks', handle: '.my-handle', scrollSensitivity: 160, animation: 150, disabled: !isStaff}"
               :list="tasks.goals"
               :no-transition-on-drag="true"
               @add="onDragAdd"
@@ -29,9 +29,11 @@
                   :task="task"
                   :color="'goals'"
                   :isDragging="isDragging"
-                  :onDeleteClick="onDeleteClick"
-                  :onEditClick="onEditClick"
-                  :onDoneClick="onDoneClick">
+                  @onDeleteClick="onDeleteClick"
+                  @onEditClick="onEditClick"
+                  @onDoneClick="onDoneClick"
+                  :isStaff="isStaff">
+                  <span slot="text" class="notranslate">{{ task.text }}</span>
                 </active-task>
               </transition-group>
             </draggable>
@@ -54,7 +56,7 @@
           <v-layout>
             <draggable
               :id="PRIORITIES[2]"
-              :options="{group: 'tasks', handle: '.my-handle', scrollSensitivity: 160, animation: 150}"
+              :options="{group: 'tasks', handle: '.my-handle', scrollSensitivity: 160, animation: 150, disabled: !isStaff}"
               :list="tasks.progress"
               :no-transition-on-drag="true"
               @add="onDragAdd"
@@ -69,9 +71,11 @@
                   :task="task"
                   :color="'progress'"
                   :isDragging="isDragging"
-                  :onDeleteClick="onDeleteClick"
-                  :onEditClick="onEditClick"
-                  :onDoneClick="onDoneClick">
+                  @onDeleteClick="onDeleteClick"
+                  @onEditClick="onEditClick"
+                  @onDoneClick="onDoneClick"
+                  :isStaff="isStaff">
+                  <span slot="text" class="notranslate">{{ task.text }}</span>
                 </active-task>
               </transition-group>
             </draggable>
@@ -94,7 +98,7 @@
           <v-layout>
             <draggable
               :id="PRIORITIES[3]"
-              :options="{group: 'tasks', handle: '.my-handle', scrollSensitivity: 160, animation: 150}"
+              :options="{group: 'tasks', handle: '.my-handle', scrollSensitivity: 160, animation: 150, disabled: !isStaff}"
               :list="tasks.activities"
               :no-transition-on-drag="true"
               @add="onDragAdd"
@@ -109,9 +113,11 @@
                   :task="task"
                   :color="'activities'"
                   :isDragging="isDragging"
-                  :onDeleteClick="onDeleteClick"
-                  :onEditClick="onEditClick"
-                  :onDoneClick="onDoneClick">
+                  @onDeleteClick="onDeleteClick"
+                  @onEditClick="onEditClick"
+                  @onDoneClick="onDoneClick"
+                  :isStaff="isStaff">
+                  <span slot="text" class="notranslate">{{ task.text }}</span>
                 </active-task>
               </transition-group>
             </draggable>
@@ -134,7 +140,7 @@
           <v-layout>
             <draggable
               :id="PRIORITIES[4]"
-              :options="{group: 'tasks', handle: '.my-handle', scrollSensitivity: 160, animation: 150}"
+              :options="{group: 'tasks', handle: '.my-handle', scrollSensitivity: 160, animation: 150, disabled: !isStaff}"
               :list="tasks.interruptions"
               :no-transition-on-drag="true"
               @add="onDragAdd"
@@ -149,9 +155,11 @@
                   :task="task"
                   :color="'interruptions'"
                   :isDragging="isDragging"
-                  :onDeleteClick="onDeleteClick"
-                  :onEditClick="onEditClick"
-                  :onDoneClick="onDoneClick">
+                  @onDeleteClick="onDeleteClick"
+                  @onEditClick="onEditClick"
+                  @onDoneClick="onDoneClick"
+                  :isStaff="isStaff">
+                  <span slot="text" class="notranslate">{{ task.text }}</span>
                 </active-task>
               </transition-group>
             </draggable>
@@ -164,8 +172,11 @@
       <group-task-editor
         ref="groupTaskEditor"
         style="visibility: hidden"
-        @updateTask="updateActiveGroupTask"
-        @createTask="createActiveGroupTask">
+        @updateActiveGroupTask="updateActiveGroupTask"
+        @createActiveGroupTask="createActiveGroupTask"
+        @opened="openedGroupTaskEditor"
+        @closed="closedGroupTaskEditor"
+        :isStaff="isStaff">
       </group-task-editor>
     </v-layout>
   </v-container>
@@ -221,6 +232,7 @@
           3: 'activities',
           4: 'interruptions'
         },
+        isStaff: false,
         isDragging: false,
         group: undefined,
         tasks: {
@@ -234,11 +246,13 @@
         lastActionEnd: new Date(),
         lastDragEnd: new Date(),
         animationStartTime: new Date(),
-        force: true
+        force: true,
+        user: this.$store.getters.user
       }
     },
     mounted () {
-      this.getGroup(this.$router.history.current.params.id)
+      this.addLoadingTag('ActiveGroupTasksLoading')
+      this.getGroupAndTasks(this.$router.history.current.params.id)
       setTimeout(() => {
         if (this.$refs.groupTaskEditor) {
           this.$refs.groupTaskEditor.$el.style.visibility = 'visible'
@@ -247,14 +261,22 @@
     },
     watch: {
       $route (to, from) {
+        this.addLoadingTag('ActiveGroupTasksLoading')
         this.destroy()
-        this.getGroup(this.$router.history.current.params.id)
+        this.getGroupAndTasks(this.$router.history.current.params.id)
       }
     },
     beforeDestroy () {
       this.destroy()
     },
     methods: {
+      refresh () {
+        this.addLoadingTag('ActiveGroupTasksLoading')
+        this.destroy()
+        this.clearTasks()
+        this.getGroupAndTasks(this.$router.history.current.params.id)
+      },
+
       continueActions (quickly = false) {
         if (quickly) {
           this.reactiveActiveTasks.continueActions()
@@ -297,7 +319,6 @@
 
       destroy () {
         this.reactiveActiveTasks.stopActions()
-        this.reactiveActiveTasks = undefined
       },
 
       clearTasks () {
@@ -322,6 +343,7 @@
         this.reactiveActiveTasks.refresher()
         setTimeout(() => {
           this.force = false
+          this.removeLoadingTag('ActiveGroupTasksLoading')
         }, 1000)
       },
 
@@ -360,12 +382,24 @@
         f()
       },
 
-      getGroup (id) {
+      getGroupAndTasks (id) {
         simpleRequest('/api/groups/list/' + id + '/').method('get').then((response) => {
+          var group = response.data
           this.group = new Group()
-          this.group.instance = getGroupFromResponse(response.data)
-          this.getActiveGroupTasks()
-          this.force = true
+          this.group.override(getGroupFromResponse(group))
+          simpleRequest('/api/groups/my/member-cards/').method('get').then((response) => {
+            for (let data of response.data) {
+              if (data.group.id === group.id) {
+                this.group.override(getGroupFromResponse({...group, memberCardId: data.id}))
+                this.isStaff = data.is_staff
+                this.getActiveGroupTasks()
+                break
+              }
+            }
+          }).catch((error) => {
+            Notifications.methods.error()
+            console.log(error)
+          })
         }).catch((error) => {
           Notifications.methods.error()
           console.log(error)
@@ -480,11 +514,11 @@
       },
 
       createActiveGroupTask (task) {
-        this.pauseActions(true)
         simpleRequest('/api/group_tasks/active/groups/' + this.group.instance.id + '/tasks/', {
           text: task.text,
           priority: task.priority
         }).method('post').then((response) => {
+          this.$refs.groupTaskEditor.closeEditor()
           task.override(getGroupTaskFromResponse(response.data))
           switch (task.priority) {
             case 1:
@@ -502,29 +536,28 @@
           }
           this.reactiveActiveTasks.addTask(task)
           this.reactiveActiveTasks.onUpdated()
-          this.$refs.groupTaskEditor.closeEditor()
-          this.continueActions()
+          this.continueActions(true)
           console.log(response)
         }).catch((error) => {
-          this.continueActions()
+          this.continueActions(true)
           console.log(error)
         })
       },
 
       updateActiveGroupTask (task) {
         this.pauseActions(true)
+        console.log(task.order)
         simpleRequest('/api/group_tasks/active/groups/' + this.group.instance.id + '/tasks/' + task.instance.id + '/', {
           text: task.text,
           priority: task.priority,
           order: task.order
         }).method('put').then((response) => {
-          task.override(getGroupTaskFromResponse(response.data))
-          this.reactiveActiveTasks.onUpdated()
           this.$refs.groupTaskEditor.closeEditor()
-          this.continueActions()
+          task.override(getGroupTaskFromResponse(response.data))
+          this.continueActions(true)
           console.log(response)
         }).catch((error) => {
-          this.continueActions()
+          this.continueActions(true)
           console.log(error)
         })
       },
@@ -558,6 +591,14 @@
           this.continueActions()
           console.log(error)
         })
+      },
+
+      openedGroupTaskEditor () {
+        this.pauseActions(true)
+      },
+
+      closedGroupTaskEditor () {
+        this.continueActions(true)
       },
 
       onNewGoalClick () {

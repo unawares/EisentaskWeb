@@ -114,7 +114,8 @@
           visible: false,
           section: undefined,
           kwargs: undefined
-        }
+        },
+        lastRefresh: new Date()
       }
     },
     mounted () {
@@ -151,10 +152,13 @@
     },
     methods: {
       refresh () {
-        this.$store.commit('getUser')
-        this.$refs.view.refresh()  // Must be implemented
-        if (this.$refs.groupsList) {
-          this.$refs.groupsList.refresh()
+        if ((new Date()).getTime() - this.lastRefresh.getTime() > 2000) {
+          this.lastRefresh = new Date()
+          this.$store.commit('getUser')
+          this.$refs.view.refresh()  // Must be implemented
+          if (this.$refs.groupsList) {
+            this.$refs.groupsList.refresh()
+          }
         }
       },
       addLoadingTag (tag) {
