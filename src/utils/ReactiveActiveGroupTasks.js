@@ -78,41 +78,45 @@ export default class ReactiveActiveGroupTasks {
   }
 
   getNext (priority) {
-    var url
-    switch (priority) {
-      case 1:
-        url = this.urls.goals
-        break
-      case 2:
-        url = this.urls.progress
-        break
-      case 3:
-        url = this.urls.activities
-        break
-      case 4:
-        url = this.urls.interruptions
-        break
-    }
-    if (url.next !== null) {
-      simpleRequest(url.next).method('get').then((response) => {
-        this.responsedURLS.push(url.next)
-        url.next = response.data.next
-        for (let task of response.data.results) {
-          if (task.id in this.tasksDict) {
-            this.tasksDict[task.id].override(getGroupTaskFromResponse(task))
-          } else {
-            var t = new GroupTask()
-            t.instance = getGroupTaskFromResponse(task)
-            this.tasksDict[t.instance.id] = t
-            this.taskIds.push(t.instance.id)
+    return new Promise((resolve, reject) => {
+      var url
+      switch (priority) {
+        case 1:
+          url = this.urls.goals
+          break
+        case 2:
+          url = this.urls.progress
+          break
+        case 3:
+          url = this.urls.activities
+          break
+        case 4:
+          url = this.urls.interruptions
+          break
+      }
+      if (url.next !== null) {
+        simpleRequest(url.next).method('get').then((response) => {
+          this.responsedURLS.push(url.next)
+          url.next = response.data.next
+          for (let task of response.data.results) {
+            if (task.id in this.tasksDict) {
+              this.tasksDict[task.id].override(getGroupTaskFromResponse(task))
+            } else {
+              var t = new GroupTask()
+              t.instance = getGroupTaskFromResponse(task)
+              this.tasksDict[t.instance.id] = t
+              this.taskIds.push(t.instance.id)
+            }
           }
-        }
-        this.onUpdated()
-        console.log(response)
-      }).catch((error) => {
-        console.log(error)
-      })
-    }
+          this.onUpdated()
+          console.log(response)
+          resolve()
+        }).catch((error) => {
+          console.log(error)
+          reject()
+        })
+      }
+    })
   }
 
   stopActions () {

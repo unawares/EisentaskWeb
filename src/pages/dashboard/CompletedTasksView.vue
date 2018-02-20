@@ -67,18 +67,6 @@
                     class="task"
                     :class="'border-color-' + getGolorNameByPriority(task.priority)">
                     <v-layout>
-                      <v-flex justify-start>
-                        <div>
-                          <label>Created: {{ task.created | toDateTimeFormat }}</label>
-                        </div>
-                      </v-flex>
-                      <v-flex justify-end>
-                        <div style="text-align: right">
-                          <label>Updated: {{ task.updated | toDateTimeFormat }}</label>
-                        </div>
-                      </v-flex>
-                    </v-layout>
-                    <v-layout>
                       <v-flex style="max-width: 100%">
                         <div class="task-text">
                           <span class="notranslate">{{ task.text }}</span>
@@ -92,7 +80,7 @@
                         flat
                         icon
                         @click="cancelTask(year, month, day, index)">
-                        <v-icon class="notranslate">cancel</v-icon>
+                        <v-icon class="notranslate">remove_circle_outline</v-icon>
                       </v-btn>
                       <v-btn
                         :color="getGolorNameByPriority(task.priority)"
@@ -357,7 +345,7 @@
     max-width: 100%
     border-radius: 2px
     color: $text-color
-    border-left-width: 16px
+    border-left-width: 10px
     border-left-style: solid
     padding-left: 20px
     margin: 20px 0

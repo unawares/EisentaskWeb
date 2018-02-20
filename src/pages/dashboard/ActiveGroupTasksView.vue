@@ -38,9 +38,6 @@
               </transition-group>
             </draggable>
           </v-layout>
-          <v-card-actions>
-            <v-btn flat color="goals" @click="onNewGoalClick">New task</v-btn>
-          </v-card-actions>
         </v-card>
       </v-flex>
       <v-flex xs12 sm6 md3 lg3 xl3 class="list-of-tasks">
@@ -80,9 +77,6 @@
               </transition-group>
             </draggable>
           </v-layout>
-          <v-card-actions>
-            <v-btn flat color="progress" @click="onNewProgressClick">New task</v-btn>
-          </v-card-actions>
         </v-card>
       </v-flex>
       <v-flex xs12 sm6 md3 lg3 xl3 class="list-of-tasks">
@@ -122,9 +116,6 @@
               </transition-group>
             </draggable>
           </v-layout>
-          <v-card-actions>
-            <v-btn flat color="activities" @click="onNewActivityClick">New task</v-btn>
-          </v-card-actions>
         </v-card>
       </v-flex>
       <v-flex xs12 sm6 md3 lg3 xl3 class="list-of-tasks">
@@ -164,9 +155,6 @@
               </transition-group>
             </draggable>
           </v-layout>
-          <v-card-actions>
-            <v-btn flat color="interruptions" @click="onNewInterruptionClick">New task</v-btn>
-          </v-card-actions>
         </v-card>
       </v-flex>
       <group-task-editor
@@ -191,6 +179,24 @@
   import Notifications from '@/components/Notifications'
   import Group from '@/models/Group'
   import ReactiveActiveGroupTasks from '@/utils/ReactiveActiveGroupTasks'
+
+  var getWindow = function () {
+    var w = window
+    var d = document
+    var e = d.documentElement
+    var g = d.getElementsByTagName('body')[0]
+    var x = w.innerWidth || e.clientWidth || g.clientWidth
+    var y = w.innerHeight || e.clientHeight || g.clientHeight
+    return {x, y}
+  }
+
+  function getOffset (el) {
+    var e = el.getBoundingClientRect()
+    return {
+      left: e.left + window.scrollX,
+      top: e.top + window.scrollY
+    }
+  }
 
   var getGroupFromResponse = function (response) {
     return {
@@ -222,7 +228,8 @@
   export default {
     props: [
       'addLoadingTag',
-      'removeLoadingTag'
+      'removeLoadingTag',
+      'scrollEvent'
     ],
     data () {
       return {
@@ -247,7 +254,13 @@
         lastDragEnd: new Date(),
         animationStartTime: new Date(),
         force: true,
-        user: this.$store.getters.user
+        user: this.$store.getters.user,
+        requested: {
+          goals: false,
+          progress: false,
+          activities: false,
+          interruptions: false
+        }
       }
     },
     mounted () {
@@ -264,6 +277,31 @@
         this.addLoadingTag('ActiveGroupTasksLoading')
         this.destroy()
         this.getGroupAndTasks(this.$router.history.current.params.id)
+      },
+
+      scrollEvent (evt) {
+        var goals = document.getElementById('goals')
+        var progress = document.getElementById('progress')
+        var activities = document.getElementById('activities')
+        var interruptions = document.getElementById('interruptions')
+        var func = (el, priority, id) => {
+          let {y} = getWindow()
+          let {top} = getOffset(el)
+          let yPosition = top + el.offsetHeight - (document.body.scrollTop + y)
+          if (yPosition < 500 && !this.requested[id]) {
+            this.reactiveActiveTasks.getNext(priority).then(() => {
+              this.requested[id] = false
+            }).catch(() => {
+              this.requested[id] = false
+            })
+          }
+        }
+        if (this.reactiveActiveTasks) {
+          func(goals, 1, 'goals')
+          func(progress, 2, 'progress')
+          func(activities, 3, 'activities')
+          func(interruptions, 4, 'interruptions')
+        }
       }
     },
     beforeDestroy () {
@@ -682,10 +720,11 @@
     .list
       padding: 16px
       width: 100%
+      margin-bottom: 16px
 
       > span
         display: block
-        min-height: 120px
+        min-height: 160px
 
       &#goals
         .sortable-ghost

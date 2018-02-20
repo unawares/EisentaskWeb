@@ -1,5 +1,5 @@
 <template>
-  <router-view ref="view" :addLoadingTag="addLoadingTag" :removeLoadingTag="removeLoadingTag"></router-view>
+  <router-view ref="view" :addLoadingTag="addLoadingTag" :removeLoadingTag="removeLoadingTag" :scrollEvent="scrollEvent"></router-view>
 </template>
 
 <script>
@@ -11,11 +11,21 @@ export default {
   ],
   data () {
     return {
+      scrollEvent: undefined
     }
+  },
+  beforeMount () {
+    window.addEventListener('scroll', this.handleScroll)
+  },
+  beforeDestroy () {
+    window.removeEventListener('scroll', this.handleScroll)
   },
   methods: {
     refresh () {
       this.$refs.view.refresh()
+    },
+    handleScroll (evt) {
+      this.scrollEvent = evt
     }
   }
 }

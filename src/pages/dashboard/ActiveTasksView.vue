@@ -37,9 +37,6 @@
               </active-task>
             </draggable>
           </v-layout>
-          <v-card-actions>
-            <v-btn flat color="goals" @click="onNewGoalClick">New task</v-btn>
-          </v-card-actions>
         </v-card>
       </v-flex>
       <v-flex xs12 sm6 md3 lg3 xl3 class="list-of-tasks">
@@ -78,9 +75,6 @@
               </active-task>
             </draggable>
           </v-layout>
-          <v-card-actions>
-            <v-btn flat color="progress" @click="onNewProgressClick">New task</v-btn>
-          </v-card-actions>
         </v-card>
       </v-flex>
       <v-flex xs12 sm6 md3 lg3 xl3 class="list-of-tasks">
@@ -119,9 +113,6 @@
               </active-task>
             </draggable>
           </v-layout>
-          <v-card-actions>
-            <v-btn flat color="activities" @click="onNewActivityClick">New task</v-btn>
-          </v-card-actions>
         </v-card>
       </v-flex>
       <v-flex xs12 sm6 md3 lg3 xl3 class="list-of-tasks">
@@ -160,9 +151,6 @@
               </active-task>
             </draggable>
           </v-layout>
-          <v-card-actions>
-            <v-btn flat color="interruptions" @click="onNewInterruptionClick">New task</v-btn>
-          </v-card-actions>
         </v-card>
       </v-flex>
       <task-editor
@@ -494,9 +482,10 @@
     padding: 10px
 
     .list
-      min-height: 120px
+      min-height: 160px
       padding: 16px
       width: 100%
+      margin-bottom: 16px
 
       &#goals
         .sortable-ghost

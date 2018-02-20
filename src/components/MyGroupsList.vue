@@ -59,24 +59,6 @@
             multi-line
             v-model="description"
           ></v-text-field>
-          <v-layout row wrap>
-            <v-flex xs6>
-              <label>Access:</label>
-              <v-switch
-                color="blue"
-                :label="(isPublic)? 'Public' : 'Private'"
-                v-model="isPublic"
-              ></v-switch>
-            </v-flex>
-            <v-flex xs6>
-              <label for="joining">Joining:</label>
-              <v-switch
-                color="blue"
-                :label="(isJoiningAllowed)? 'Allowed' : 'Disabled'"
-                v-model="isJoiningAllowed"
-              ></v-switch>
-            </v-flex>
-          </v-layout>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
