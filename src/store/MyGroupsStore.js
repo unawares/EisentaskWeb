@@ -16,7 +16,10 @@ export default {
       var callback = (res) => {
         state.groups.splice(0, state.groups.length, ...res.groups)
       }
-      myGroupActions.getMyGroups(callback)
+      myGroupActions.getMyGroups(callback).onCatchStatusCodes().do((queueRequests) => {
+        queueRequests.clear()
+        this.commit('refreshMyGroups')
+      })
     },
 
     refreshMyGroups (state) {

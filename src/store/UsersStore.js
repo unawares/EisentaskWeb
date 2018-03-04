@@ -1,3 +1,4 @@
+import EventEmitter from 'events'
 import userActions from '@/utils/UserActions'
 import User from '@/models/User'
 import setDefaultOnFailure from '@/utils/SetDefaultOnFailure'
@@ -6,15 +7,9 @@ setDefaultOnFailure(userActions)
 
 export default {
   state: {
-    profile: {
-      user: new User()
-    },
-    profileNotifier: {
-      updates: 0
-    },
-    profileActiveRequests: {
-      count: 0
-    }
+    user: new User(),
+    eventEmitter: new EventEmitter(),
+    userActiveRequestsCount: 0
   },
 
   actions: {
@@ -22,29 +17,33 @@ export default {
 
   mutations: {
     getUser (state) {
-      state.profileActiveRequests.count++
+      state.userActiveRequestsCount++
       var callback = (res) => {
-        state.profileActiveRequests.count--
-        state.profile.user = res.user
-        if (state.profileActiveRequests.count === 0) {
-          state.profileNotifier.updates++
+        state.userActiveRequestsCount--
+        state.user = res.user
+        if (state.userActiveRequestsCount === 0) {
+          state.eventEmitter.emit('updated')
         }
       }
-      userActions.getUser(callback, state.profile.user)
+      userActions.getUser(callback, state.user).onCatchStatusCodes().do((queueRequests) => {
+        queueRequests.clear()
+        this.commit('refreshUser')
+      })
+    },
+
+    refreshUser (state) {
+      state.user = new User()
+      state.userActiveRequestsCount = 0
     }
   },
 
   getters: {
     user (state) {
-      return state.profile.user
+      return state.user
     },
 
-    profileNotifier (state) {
-      return state.profileNotifier
-    },
-
-    profileActiveRequests (state) {
-      return state.profileActiveRequests
+    userEventEmitter (state) {
+      return state.eventEmitter
     }
   }
 }

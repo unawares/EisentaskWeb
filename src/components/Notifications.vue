@@ -21,9 +21,15 @@
     data () {
       return {
         snackbars: {
-          warning: {
+          successWithText: {
             text: '',
-            timeout: 1500,
+            timeout: 2500,
+            color: 'blue',
+            visible: false
+          },
+          warningWithText: {
+            text: '',
+            timeout: 2500,
             color: 'warning',
             visible: false
           },
@@ -54,9 +60,14 @@
         self.obj.snackbars.success.visible = true
       },
 
-      showWarning (text) {
-        self.obj.snackbars.warning.text = text
-        self.obj.snackbars.warning.visible = true
+      showWarningWithText (text) {
+        self.obj.snackbars.warningWithText.text = text
+        self.obj.snackbars.warningWithText.visible = true
+      },
+
+      showSuccessWithText (text) {
+        self.obj.snackbars.successWithText.text = text
+        self.obj.snackbars.successWithText.visible = true
       },
 
       clear () {

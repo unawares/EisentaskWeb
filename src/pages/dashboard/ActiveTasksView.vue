@@ -188,41 +188,36 @@
           activities: [],
           interruptions: []
         },
-        completedTasksNotifier: this.$store.getters.completedTasksNotifier,
-        activeTasksNotifier: this.$store.getters.activeTasksNotifier,
+        completedTasksEventEmitter: this.$store.getters.completedTasksEventEmitter,
+        activeTasksEventEmitter: this.$store.getters.activeTasksEventEmitter,
         activeTasksActiveRequests: this.$store.getters.activeTasksActiveRequests,
         isDragging: false
       }
     },
     mounted () {
+      this.removeLoadingTag('TasksLoading')
+      this.removeLoadingTag('CompletedTasksLoading')
+      this.activeTasksEventEmitter.removeAllListeners('updated', () => {})
+      this.completedTasksEventEmitter.removeAllListeners('updated', () => {})
       this.refreshAndGetActiveTasks()
+      this.activeTasksEventEmitter.on('updated', () => {
+        this.setActiveTasks()
+        this.removeLoadingTag('TasksLoading')
+      })
       setTimeout(() => {
         if (this.$refs.taskEditor) {
           this.$refs.taskEditor.$el.style.visibility = 'visible'
         }
       }, 700)
     },
+    beforeDestroy () {
+      this.activeTasksEventEmitter.removeListener('updated', () => {})
+    },
     watch: {
-      completedTasksNotifier: {
-        handler () {
-          this.refresh()
-        },
-        deep: true
-      },
-
-      activeTasksNotifier: {
-        handler () {
-          this.setActiveTasks()
-        },
-        deep: true
-      },
-
       activeTasksActiveRequests: {
         handler () {
           if (this.activeTasksActiveRequests.count > 0) {
             this.addLoadingTag('TasksLoading')
-          } else if (this.activeTasksNotifier.updates > 0) {
-            this.removeLoadingTag('TasksLoading')
           }
         },
         deep: true

@@ -29,7 +29,9 @@ class OnFailHelper {
 var setActionsToFailHelper = function (onFailHelper) {
   return {
     onCatchStatusCodes: (statusCodes) => {
-      onFailHelper.statusCodes = statusCodes
+      if (statusCodes) {
+        onFailHelper.statusCodes = statusCodes
+      }
       return {
         do: (func) => {
           onFailHelper.onCatchStatusCodes = func
@@ -72,6 +74,8 @@ export default class ActiveTasksActions {
       if (error.response) {
         if (onFailHelper.statusCodes.indexOf(error.response.status) !== -1) {
           onFailHelper.onCatchStatusCodes(queueRequestsRetry)
+        } else if (onFailHelper.statusCodes.length === 0) {
+          onFailHelper.onCatchStatusCodes(queueRequestsRetry)
         }
       }
       console.log(error)
@@ -104,6 +108,8 @@ export default class ActiveTasksActions {
     }).onError((error) => {
       if (error.response) {
         if (onFailHelper.statusCodes.indexOf(error.response.status) !== -1) {
+          onFailHelper.onCatchStatusCodes(queueRequestsRetry)
+        } else if (onFailHelper.statusCodes.length === 0) {
           onFailHelper.onCatchStatusCodes(queueRequestsRetry)
         }
       }
@@ -144,6 +150,8 @@ export default class ActiveTasksActions {
       if (error.response) {
         if (onFailHelper.statusCodes.indexOf(error.response.status) !== -1) {
           onFailHelper.onCatchStatusCodes(queueRequestsRetry)
+        } else if (onFailHelper.statusCodes.length === 0) {
+          onFailHelper.onCatchStatusCodes(queueRequestsRetry)
         }
       }
       console.log(error)
@@ -171,6 +179,8 @@ export default class ActiveTasksActions {
     }).onError((error) => {
       if (error.response) {
         if (onFailHelper.statusCodes.indexOf(error.response.status) !== -1) {
+          onFailHelper.onCatchStatusCodes(queueRequestsRetry)
+        } else if (onFailHelper.statusCodes.length === 0) {
           onFailHelper.onCatchStatusCodes(queueRequestsRetry)
         }
       }

@@ -1,3 +1,4 @@
+import EventEmitter from 'events'
 import activeTasksActions from '@/utils/ActiveTasksActions'
 import setDefaultOnFailure from '@/utils/SetDefaultOnFailure'
 
@@ -5,9 +6,7 @@ setDefaultOnFailure(activeTasksActions)
 
 export default {
   state: {
-    activeTasksNotifier: {
-      updates: 0
-    },
+    activeTasksEventEmitter: new EventEmitter(),
     activeTasksActiveRequests: {
       count: 0
     },
@@ -33,10 +32,13 @@ export default {
         state.activeTasks.tasks = res.tasks
         state.activeTasks.orders = res.activeTasks
         if (state.activeTasksActiveRequests.count === 0) {
-          state.activeTasksNotifier.updates++
+          state.activeTasksEventEmitter.emit('updated')
         }
       }
-      activeTasksActions.getActiveTasks(callback)
+      activeTasksActions.getActiveTasks(callback).onCatchStatusCodes().do((queueRequests) => {
+        queueRequests.clear()
+        this.commit('refreshActiveTasks')
+      })
     },
 
     createActiveTask (state, task) {
@@ -45,11 +47,14 @@ export default {
         state.activeTasksActiveRequests.count--
         state.activeTasks.orders = res.activeTasks
         if (state.activeTasksActiveRequests.count === 0) {
-          state.activeTasksNotifier.updates++
+          state.activeTasksEventEmitter.emit('updated')
         }
       }
       state.activeTasks.tasks.push(task)
-      activeTasksActions.createTask(task, callback)
+      activeTasksActions.createTask(task, callback).onCatchStatusCodes().do((queueRequests) => {
+        queueRequests.clear()
+        this.commit('refreshActiveTasks')
+      })
     },
 
     updateActiveTask (state, task) {
@@ -58,7 +63,7 @@ export default {
         state.activeTasksActiveRequests.count--
         state.activeTasks.orders = res.activeTasks
         if (state.activeTasksActiveRequests.count === 0) {
-          state.activeTasksNotifier.updates++
+          state.activeTasksEventEmitter.emit('updated')
         }
       }
       var id = task.instance.id
@@ -80,7 +85,7 @@ export default {
         state.activeTasksActiveRequests.count--
         state.activeTasks.orders = res.activeTasks
         if (state.activeTasksActiveRequests.count === 0) {
-          state.activeTasksNotifier.updates++
+          state.activeTasksEventEmitter.emit('updated')
         }
       }
       var id = task.instance.id
@@ -103,7 +108,6 @@ export default {
         interruptions: []
       }
       state.activeTasksActiveRequests.count = 0
-      state.activeTasksNotifier.updates = 0
     }
   },
 
@@ -116,8 +120,8 @@ export default {
       return state.activeTasks.orders
     },
 
-    activeTasksNotifier (state) {
-      return state.activeTasksNotifier
+    activeTasksEventEmitter (state) {
+      return state.activeTasksEventEmitter
     },
 
     activeTasksActiveRequests (state) {

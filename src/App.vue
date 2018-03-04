@@ -1,12 +1,18 @@
 <template>
-  <v-app style="background-color: inherit">
-    <router-view></router-view>
+  <v-app style="background-color: inherit; overflow: hidden">
+    <router-view :showNotification="showNotification"></router-view>
+    <notifications ref="notifications"></notifications>
   </v-app>
 </template>
 
 <script>
   import Vue from 'vue'
   import Vuetify from 'vuetify'
+  import Notifications from '@/components/Notifications'
+
+  function isFunction (functionToCheck) {
+    return functionToCheck && {}.toString.call(functionToCheck) === '[object Function]'
+  }
 
   Vue.use(Vuetify, {
     theme: {
@@ -21,6 +27,16 @@
     data () {
       return {
       }
+    },
+    methods: {
+      showNotification (name, ...args) {
+        if (name in this.$refs.notifications && isFunction(this.$refs.notifications[name])) {
+          this.$refs.notifications[name](...args)
+        }
+      }
+    },
+    components: {
+      Notifications
     }
   }
 </script>

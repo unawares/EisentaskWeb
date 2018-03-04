@@ -7,6 +7,7 @@ import CompletedTasksView from '@/pages/dashboard/CompletedTasksView'
 import GroupTasksView from '@/pages/dashboard/GroupTasksView'
 import ActiveGroupTasksView from '@/pages/dashboard/ActiveGroupTasksView'
 import CompletedGroupTasksView from '@/pages/dashboard/CompletedGroupTasksView'
+import AuthenticationView from '@/pages/authentication/AuthenticationView'
 
 Vue.use(Router)
 
@@ -45,8 +46,14 @@ export default new Router({
       ]
     },
     {
+      path: '/auth/:action',
+      name: 'Authentication',
+      component: AuthenticationView,
+      props: true
+    },
+    {
       path: '*',
-      redirect: '/dashboard'
+      redirect: '/dashboard/active-tasks'
     }
   ]
 })

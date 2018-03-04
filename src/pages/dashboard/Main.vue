@@ -54,7 +54,7 @@
         <v-btn icon @click="refresh" :class="{rotating: loading}">
           <v-icon class="notranslate">cached</v-icon>
         </v-btn>
-        <v-btn icon href="/web/accounts/logout/">
+        <v-btn icon @click="logout">
           <v-icon class="notranslate">exit_to_app</v-icon>
         </v-btn>
       </v-toolbar>
@@ -64,7 +64,8 @@
             <router-view
               ref="view"
               :addLoadingTag="addLoadingTag"
-              :removeLoadingTag="removeLoadingTag">
+              :removeLoadingTag="removeLoadingTag"
+              :showNotification="showNotification">
             </router-view>
           </v-slide-y-transition>
         </v-container>
@@ -77,20 +78,22 @@
       :kwargs="settings.kwargs"
       @close="closeSettings">
     </settings>
-    <notifications></notifications>
   </div>
 </template>
 
 <script>
   import Overlayable from 'vuetify/src/mixins/overlayable'
-  import Notifications from '@/components/Notifications'
   import MyGroupsList from '@/components/MyGroupsList'
   import Settings from '@/components/Settings'
+  import simpleRequest from '@/utils/SimpleRequest'
 
   export default {
     name: 'Dashboard',
     mixins: [
       Overlayable
+    ],
+    props: [
+      'showNotification'
     ],
     data () {
       return {
@@ -109,7 +112,7 @@
         ],
         miniVariant: false,
         title: 'Eisentask',
-        profileNotifier: this.$store.getters.profileNotifier,
+        userEventEmitter: this.$store.getters.userEventEmitter,
         settings: {
           visible: false,
           section: undefined,
@@ -118,20 +121,19 @@
         lastRefresh: new Date()
       }
     },
-    mounted () {
-      this.addLoadingTag('UserLoading')
-      this.$store.commit('getUser')
+    created () {
+      this.userEventEmitter.on('updated', () => {
+        this.navigationDrawer = true
+        let user = this.$store.getters.user
+        this.username = user.username
+        this.removeLoadingTag('UserLoading')
+      })
+      setTimeout(() => {
+        this.addLoadingTag('UserLoading')
+        this.$store.commit('getUser')
+      }, 200)
     },
     watch: {
-      profileNotifier: {
-        handler () {
-          this.navigationDrawer = true
-          let user = this.$store.getters.user
-          this.username = user.username
-          this.removeLoadingTag('UserLoading')
-        },
-        deep: true
-      },
       loadingTags (tags) {
         if (tags.length > 0) {
           this.loading = true
@@ -202,6 +204,12 @@
       },
       onClickGroupSettings (section, kwargs) {
         this.openSettings(section, kwargs)
+      },
+      logout () {
+        simpleRequest('/api/auth/logout/').method('post').then(() => {
+          this.showNotification('showWarningWithText', 'You have logged out')
+          this.$router.push({ name: 'Authentication', params: { action: 'signin' } })
+        })
       }
     },
     beforeRouteUpdate (to, from, next) {
@@ -213,7 +221,6 @@
       }
     },
     components: {
-      Notifications,
       MyGroupsList,
       Settings
     }

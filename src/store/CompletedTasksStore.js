@@ -1,3 +1,4 @@
+import EventEmitter from 'events'
 import completedTasksActions from '@/utils/CompletedTasksActions'
 import setDefaultOnFailure from '@/utils/SetDefaultOnFailure'
 
@@ -5,9 +6,7 @@ setDefaultOnFailure(completedTasksActions)
 
 export default {
   state: {
-    completedTasksNotifier: {
-      updates: 0
-    },
+    completedTasksEventEmitter: new EventEmitter(),
     completedTasksActiveRequests: {
       count: 0
     },
@@ -27,10 +26,13 @@ export default {
         state.completedTasksActiveRequests.count--
         state.completedTasks.tasks = res.tasks
         if (state.completedTasksActiveRequests.count === 0) {
-          state.completedTasksNotifier.updates++
+          state.completedTasksEventEmitter.emit('updated')
         }
       }
-      completedTasksActions.getCompletedTasks(callback)
+      completedTasksActions.getCompletedTasks(callback).onCatchStatusCodes().do((queueRequests) => {
+        queueRequests.clear()
+        this.commit('refreshCompletedTasks')
+      })
     },
 
     updateCompletedTask (state, task) {
@@ -38,7 +40,7 @@ export default {
       var callback = (res) => {
         state.completedTasksActiveRequests.count--
         if (state.completedTasksActiveRequests.count === 0) {
-          state.completedTasksNotifier.updates++
+          state.completedTasksEventEmitter.emit('updated')
         }
       }
       var id = task.instance.id
@@ -59,7 +61,7 @@ export default {
       var callback = (res) => {
         state.completedTasksActiveRequests.count--
         if (state.completedTasksActiveRequests.count === 0) {
-          state.completedTasksNotifier.updates++
+          state.completedTasksEventEmitter.emit('updated')
         }
       }
       var id = task.instance.id
@@ -76,7 +78,6 @@ export default {
     refreshCompletedTasks (state) {
       state.completedTasks.tasks = []
       state.completedTasksActiveRequests.count = 0
-      state.completedTasksNotifier.updates = 0
     }
   },
 
@@ -85,8 +86,8 @@ export default {
       return state.completedTasks.tasks
     },
 
-    completedTasksNotifier (state) {
-      return state.completedTasksNotifier
+    completedTasksEventEmitter (state) {
+      return state.completedTasksEventEmitter
     },
 
     completedTasksActiveRequests (state) {

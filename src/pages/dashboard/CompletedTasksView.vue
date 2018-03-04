@@ -183,64 +183,59 @@
         tasks: [],
         formattedDate: null,
         filteredTasks: {},
-        activeTasksNotifier: this.$store.getters.activeTasksNotifier,
-        completedTasksNotifier: this.$store.getters.completedTasksNotifier,
+        activeTasksEventEmitter: this.$store.getters.activeTasksEventEmitter,
+        completedTasksEventEmitter: this.$store.getters.completedTasksEventEmitter,
         completedTasksActiveRequests: this.$store.getters.completedTasksActiveRequests
       }
     },
     mounted () {
+      this.removeLoadingTag('TasksLoading')
+      this.removeLoadingTag('CompletedTasksLoading')
+      this.activeTasksEventEmitter.removeAllListeners('updated', () => {})
+      this.completedTasksEventEmitter.removeAllListeners('updated', () => {})
+      this.completedTasksEventEmitter.on('updated', () => {
+        this.removeLoadingTag('CompletedTasksLoading')
+        var tasks = this.$store.getters.completedTasks
+        var allowedDatesSet = new Set()
+        for (let i = 0; i < tasks.length; i++) {
+          let date = new Date(tasks[i].updated)
+          let year = date.getFullYear()
+          let month = date.getMonth() + 1
+          let stringDate = year + '-' + ((month > 9) ? month : '0' + month)
+          allowedDatesSet.add(stringDate)
+        }
+        {
+          let thisDate = new Date()
+          let year = thisDate.getFullYear()
+          let month = thisDate.getMonth() + 1
+          let stringDate = year + '-' + ((month > 9) ? month : '0' + month)
+          allowedDatesSet.add(stringDate)
+        }
+        this.allowedDates = Array.from(allowedDatesSet)
+        this.tasks = tasks
+        if (!this.date) {
+          var currentDate = new Date()
+          let year = currentDate.getFullYear()
+          let month = currentDate.getMonth() + 1
+          this.date = year + '-' + ((month > 9) ? month : '0' + month)
+          this.formattedDate = currentDate.toDateString()
+        }
+        this.filteredTasks = this.getFilteredTasks()
+      })
       this.refreshAndGetCompletedTasks()
+    },
+    beforeDestroy () {
+      this.completedTasksEventEmitter.removeListener('updated', () => {})
     },
     watch: {
       date  () {
         this.filteredTasks = this.getFilteredTasks()
       },
 
-      activeTasksNotifier: {
-        handler () {
-          this.refresh()
-        },
-        deep: true
-      },
-
-      completedTasksNotifier: {
-        handler () {
-          var tasks = this.$store.getters.completedTasks
-          var allowedDatesSet = new Set()
-          for (let i = 0; i < tasks.length; i++) {
-            let date = new Date(tasks[i].updated)
-            let year = date.getFullYear()
-            let month = date.getMonth() + 1
-            let stringDate = year + '-' + ((month > 9) ? month : '0' + month)
-            allowedDatesSet.add(stringDate)
-          }
-          {
-            let thisDate = new Date()
-            let year = thisDate.getFullYear()
-            let month = thisDate.getMonth() + 1
-            let stringDate = year + '-' + ((month > 9) ? month : '0' + month)
-            allowedDatesSet.add(stringDate)
-          }
-          this.allowedDates = Array.from(allowedDatesSet)
-          this.tasks = tasks
-          if (!this.date) {
-            var currentDate = new Date()
-            let year = currentDate.getFullYear()
-            let month = currentDate.getMonth() + 1
-            this.date = year + '-' + ((month > 9) ? month : '0' + month)
-            this.formattedDate = currentDate.toDateString()
-          }
-          this.filteredTasks = this.getFilteredTasks()
-        },
-        deep: true
-      },
-
       completedTasksActiveRequests: {
         handler () {
           if (this.completedTasksActiveRequests.count > 0) {
             this.addLoadingTag('CompletedTasksLoading')
-          } else if (this.completedTasksNotifier.updates > 0) {
-            this.removeLoadingTag('CompletedTasksLoading')
           }
         },
         deep: true
