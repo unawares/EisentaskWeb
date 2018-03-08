@@ -92,9 +92,9 @@
               </transition-group>
             </draggable>
           </v-layout>
-          <v-card-actions>
+          <v-card-actions v-if="!!reactiveActiveTasks && reactiveActiveTasks.hasNext(2)">
             <v-spacer></v-spacer>
-            <v-btn v-if="!!reactiveActiveTasks && reactiveActiveTasks.hasNext(2) && !activeTasksLoading" flat color="progress" @click="loadNextTasks(2)">Load tasks</v-btn>
+            <v-btn :loading="activeTasksLoading" flat color="progress" @click="loadNextTasks(2)">Load tasks</v-btn>
             <v-spacer></v-spacer>
           </v-card-actions>
         </v-card>
@@ -141,9 +141,9 @@
               </transition-group>
             </draggable>
           </v-layout>
-          <v-card-actions>
+          <v-card-actions v-if="!!reactiveActiveTasks && reactiveActiveTasks.hasNext(3)">
             <v-spacer></v-spacer>
-            <v-btn v-if="!!reactiveActiveTasks && reactiveActiveTasks.hasNext(3) && !activeTasksLoading" flat color="activities" @click="loadNextTasks(3)">Load tasks</v-btn>
+            <v-btn :loading="activeTasksLoading" flat color="activities" @click="loadNextTasks(3)">Load tasks</v-btn>
             <v-spacer></v-spacer>
           </v-card-actions>
         </v-card>
@@ -190,9 +190,9 @@
               </transition-group>
             </draggable>
           </v-layout>
-          <v-card-actions>
+          <v-card-actions v-if="!!reactiveActiveTasks && reactiveActiveTasks.hasNext(4)">
             <v-spacer></v-spacer>
-            <v-btn v-if="!!reactiveActiveTasks && reactiveActiveTasks.hasNext(4) && !activeTasksLoading" flat color="interruptions" @click="loadNextTasks(4)">Load tasks</v-btn>
+            <v-btn :loading="activeTasksLoading" flat color="interruptions" @click="loadNextTasks(4)">Load tasks</v-btn>
             <v-spacer></v-spacer>
           </v-card-actions>
         </v-card>
