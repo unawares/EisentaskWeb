@@ -38,7 +38,7 @@
                   @onEditClick="onEditClick"
                   @onDoneClick="onDoneClick"
                   :isStaff="isStaff">
-                  <span slot="text" class="notranslate">{{ task.text }}</span>
+                  <span v-html="filterWithUrls(task.text)" slot="text" class="notranslate"></span>
                 </active-task>
               </transition-group>
             </draggable>
@@ -87,7 +87,7 @@
                   @onEditClick="onEditClick"
                   @onDoneClick="onDoneClick"
                   :isStaff="isStaff">
-                  <span slot="text" class="notranslate">{{ task.text }}</span>
+                  <span v-html="filterWithUrls(task.text)" slot="text" class="notranslate"></span>
                 </active-task>
               </transition-group>
             </draggable>
@@ -136,7 +136,7 @@
                   @onEditClick="onEditClick"
                   @onDoneClick="onDoneClick"
                   :isStaff="isStaff">
-                  <span slot="text" class="notranslate">{{ task.text }}</span>
+                  <span v-html="filterWithUrls(task.text)" slot="text" class="notranslate"></span>
                 </active-task>
               </transition-group>
             </draggable>
@@ -185,7 +185,7 @@
                   @onEditClick="onEditClick"
                   @onDoneClick="onDoneClick"
                   :isStaff="isStaff">
-                  <span slot="text" class="notranslate">{{ task.text }}</span>
+                  <span v-html="filterWithUrls(task.text)" slot="text" class="notranslate"></span>
                 </active-task>
               </transition-group>
             </draggable>
@@ -680,8 +680,12 @@
       },
 
       onEditClick (task) {
-        this.$refs.groupTaskEditor.openEditor()
-        this.$refs.groupTaskEditor.setTaskInstance(task)
+        if (window.linkClicked) {
+          window.linkClicked = false
+        } else {
+          this.$refs.groupTaskEditor.openEditor()
+          this.$refs.groupTaskEditor.setTaskInstance(task)
+        }
       },
 
       onDoneClick (task) {
@@ -714,6 +718,18 @@
         this.activeTasksLoading = true
         this.reactiveActiveTasks.getNext(parseInt(priority)).then(() => {
           this.activeTasksLoading = false
+        })
+      },
+
+      filterWithUrls (text) {
+        text = text.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;')
+        var regex = /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|(www\.)?[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9]\.[^\s]{2,})/g
+        return text.replace(regex, (match, a, b) => {
+          var url = match
+          if (!url.match(/^[a-zA-Z]+:\/\//)) {
+            url = '//' + url
+          }
+          return '<a target="_blank" class="task-text-link" href="' + url + '" onclick="window.linkClicked = true">' + match + '</a>'
         })
       },
 
@@ -775,6 +791,13 @@
     opacity: 0;
     overflow: hidden;
   }
+</style>
+
+<style lang="stylus">
+  .task-text-link
+    text-decoration: none
+    &:hover
+      color: #F2215D
 </style>
 
 <style lang="stylus" scoped>
