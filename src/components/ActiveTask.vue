@@ -1,14 +1,14 @@
 <template>
-  <v-card class="task" :hover="isHoverable && isStaff" ref="task">
-    <v-card-text class="task-text" @click="onEditClick">
+  <v-card class="task" :hover="isHoverable && isStaff" ref="task" @click.native="onEditClick">
+    <v-card-text class="task-text">
       <slot name="text"></slot>
     </v-card-text>
     <v-card-actions>
-      <v-btn v-if="isStaff" flat icon :color="color" @click="onDeleteClick">
+      <v-btn v-if="isStaff" flat icon :color="color" @click.stop="onDeleteClick">
         <v-icon class="notranslate">delete</v-icon>
       </v-btn>
       <v-spacer></v-spacer>
-      <v-btn flat icon :color="color" @click="onDoneClick">
+      <v-btn flat icon :color="color" @click.stop="onDoneClick">
         <v-icon class="notranslate">done</v-icon>
       </v-btn>
     </v-card-actions>

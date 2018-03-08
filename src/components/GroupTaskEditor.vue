@@ -41,7 +41,7 @@
           </span>
         </v-toolbar-title>
         <v-spacer></v-spacer>
-        <v-btn icon @click="session = 'priority'">
+        <v-btn v-if="isStaff" icon @click="session = 'priority'">
           <v-icon class="notranslate">dashboard</v-icon>
         </v-btn>
       </v-toolbar>
@@ -58,15 +58,16 @@
                   light
                   v-model="text"
                   rows="1"
+                  :readonly="!isStaff"
                 ></v-text-field>
                 <v-layout row justify-end>
                   <v-flex xs3>
                     <v-btn flat light @click="closeEditor">Cancel</v-btn>
                   </v-flex>
-                  <v-flex xs3 v-if="!task">
+                  <v-flex xs3 v-if="!task && isStaff">
                     <v-btn flat light @click="createTask">Create</v-btn>
                   </v-flex>
-                  <v-flex xs3 v-else>
+                  <v-flex xs3 v-else-if="task && isStaff">
                     <v-btn flat light @click="updateTask">Update</v-btn>
                   </v-flex>
                 </v-layout>
@@ -187,7 +188,9 @@
         this.task = task
         this.priority = task.priority
         setTimeout(() => {
-          this.$refs.taskEditText.focus()
+          if (this.isStaff) {
+            this.$refs.taskEditText.focus()
+          }
           this.text = task.text
         }, 100)
       },
@@ -238,7 +241,9 @@
         this.refresh()
         this.drawer = true
         setTimeout(() => {
-          this.$refs.taskEditText.focus()
+          if (this.isStaff) {
+            this.$refs.taskEditText.focus()
+          }
         }, 100)
       }
     }

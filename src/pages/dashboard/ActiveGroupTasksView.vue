@@ -11,6 +11,11 @@
               </div>
             </v-card-title>
           </v-card>
+          <v-card v-if="isStaff" color="goals_sub" dark flat tile>
+            <v-card-actions>
+              <v-btn small block flat @click="onNewGoalClick">New Task</v-btn>
+            </v-card-actions>
+          </v-card>
           <v-layout>
             <draggable
               :id="PRIORITIES[1]"
@@ -38,6 +43,11 @@
               </transition-group>
             </draggable>
           </v-layout>
+          <v-card-actions v-if="!!reactiveActiveTasks && reactiveActiveTasks.hasNext(1)">
+            <v-spacer></v-spacer>
+            <v-btn :loading="activeTasksLoading" flat color="goals" @click="loadNextTasks(1)">Load tasks</v-btn>
+            <v-spacer></v-spacer>
+          </v-card-actions>
         </v-card>
       </v-flex>
       <v-flex xs12 sm6 md3 lg3 xl3 class="list-of-tasks">
@@ -49,6 +59,11 @@
                 <span class="list-description">Important and not urgent</span>
               </div>
             </v-card-title>
+          </v-card>
+          <v-card v-if="isStaff" color="progress_sub" dark flat tile>
+            <v-card-actions>
+              <v-btn small block flat @click="onNewProgressClick">New Task</v-btn>
+            </v-card-actions>
           </v-card>
           <v-layout>
             <draggable
@@ -77,6 +92,11 @@
               </transition-group>
             </draggable>
           </v-layout>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn v-if="!!reactiveActiveTasks && reactiveActiveTasks.hasNext(2) && !activeTasksLoading" flat color="progress" @click="loadNextTasks(2)">Load tasks</v-btn>
+            <v-spacer></v-spacer>
+          </v-card-actions>
         </v-card>
       </v-flex>
       <v-flex xs12 sm6 md3 lg3 xl3 class="list-of-tasks">
@@ -88,6 +108,11 @@
                 <span class="list-description">Not important and urgent</span>
               </div>
             </v-card-title>
+          </v-card>
+          <v-card v-if="isStaff" color="activities_sub" dark flat tile>
+            <v-card-actions>
+              <v-btn small block flat @click="onNewActivityClick">New Task</v-btn>
+            </v-card-actions>
           </v-card>
           <v-layout>
             <draggable
@@ -116,6 +141,11 @@
               </transition-group>
             </draggable>
           </v-layout>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn v-if="!!reactiveActiveTasks && reactiveActiveTasks.hasNext(3) && !activeTasksLoading" flat color="activities" @click="loadNextTasks(3)">Load tasks</v-btn>
+            <v-spacer></v-spacer>
+          </v-card-actions>
         </v-card>
       </v-flex>
       <v-flex xs12 sm6 md3 lg3 xl3 class="list-of-tasks">
@@ -127,6 +157,11 @@
                 <span class="list-description">Not important and not urgent</span>
               </div>
             </v-card-title>
+          </v-card>
+          <v-card v-if="isStaff" color="interruptions_sub" dark flat tile>
+            <v-card-actions>
+              <v-btn small block flat @click="onNewInterruptionClick">New Task</v-btn>
+            </v-card-actions>
           </v-card>
           <v-layout>
             <draggable
@@ -155,6 +190,11 @@
               </transition-group>
             </draggable>
           </v-layout>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn v-if="!!reactiveActiveTasks && reactiveActiveTasks.hasNext(4) && !activeTasksLoading" flat color="interruptions" @click="loadNextTasks(4)">Load tasks</v-btn>
+            <v-spacer></v-spacer>
+          </v-card-actions>
         </v-card>
       </v-flex>
       <group-task-editor
@@ -176,7 +216,6 @@
   import GroupTaskEditor from '@/components/GroupTaskEditor'
   import ActiveTask from '@/components/ActiveTask'
   import simpleRequest from '@/utils/SimpleRequest'
-  import Notifications from '@/components/Notifications'
   import Group from '@/models/Group'
   import ReactiveActiveGroupTasks from '@/utils/ReactiveActiveGroupTasks'
 
@@ -229,7 +268,8 @@
     props: [
       'addLoadingTag',
       'removeLoadingTag',
-      'scrollEvent'
+      'scrollEvent',
+      'showNotification'
     ],
     data () {
       return {
@@ -260,7 +300,9 @@
           progress: false,
           activities: false,
           interruptions: false
-        }
+        },
+        updated: 0,
+        activeTasksLoading: true
       }
     },
     mounted () {
@@ -274,8 +316,10 @@
     },
     watch: {
       $route (to, from) {
+        this.updated++
         this.addLoadingTag('ActiveGroupTasksLoading')
         this.destroy()
+        this.clearTasks()
         this.getGroupAndTasks(this.$router.history.current.params.id)
       },
 
@@ -284,31 +328,40 @@
         var progress = document.getElementById('progress')
         var activities = document.getElementById('activities')
         var interruptions = document.getElementById('interruptions')
-        var func = (el, priority, id) => {
-          let {y} = getWindow()
-          let {top} = getOffset(el)
-          let yPosition = top + el.offsetHeight - (document.body.scrollTop + y)
-          if (yPosition < 500 && !this.requested[id]) {
-            this.reactiveActiveTasks.getNext(priority).then(() => {
-              this.requested[id] = false
-            }).catch(() => {
-              this.requested[id] = false
-            })
+        if ((
+          goals.parentNode.parentNode.parentNode.offsetTop +
+          progress.parentNode.parentNode.parentNode.offsetTop +
+          activities.parentNode.parentNode.parentNode.offsetTop +
+          interruptions.parentNode.parentNode.parentNode.offsetTop
+        ) / 4 === goals.parentNode.parentNode.parentNode.offsetTop) {
+          var func = (el, priority, id) => {
+            let {y} = getWindow()
+            let {top} = getOffset(el)
+            let yPosition = top + el.offsetHeight - (document.body.scrollTop + y)
+            if (yPosition < 500 && !this.requested[id]) {
+              this.reactiveActiveTasks.getNext(priority).then(() => {
+                this.requested[id] = false
+              }).catch(() => {
+                this.requested[id] = false
+              })
+            }
           }
-        }
-        if (this.reactiveActiveTasks) {
-          func(goals, 1, 'goals')
-          func(progress, 2, 'progress')
-          func(activities, 3, 'activities')
-          func(interruptions, 4, 'interruptions')
+          if (this.reactiveActiveTasks) {
+            func(goals, 1, 'goals')
+            func(progress, 2, 'progress')
+            func(activities, 3, 'activities')
+            func(interruptions, 4, 'interruptions')
+          }
         }
       }
     },
     beforeDestroy () {
+      this.updated++
       this.destroy()
     },
     methods: {
       refresh () {
+        this.updated++
         this.addLoadingTag('ActiveGroupTasksLoading')
         this.destroy()
         this.clearTasks()
@@ -356,7 +409,10 @@
       },
 
       destroy () {
-        this.reactiveActiveTasks.stopActions()
+        this.activeTasksLoading = true
+        if (this.reactiveActiveTasks) {
+          this.reactiveActiveTasks.stopActions()
+        }
       },
 
       clearTasks () {
@@ -369,20 +425,33 @@
       },
 
       getActiveGroupTasks () {
-        this.reactiveActiveTasks = new ReactiveActiveGroupTasks(this.group)
-        this.reactiveActiveTasks.getNext(1)
-        this.reactiveActiveTasks.getNext(2)
-        this.reactiveActiveTasks.getNext(3)
-        this.reactiveActiveTasks.getNext(4)
-        this.reactiveActiveTasks.setOnUpdated(() => {
-          this.setTasks()
+        this.reactiveActiveTasks.getNext(1).then(() => {
+          this.reactiveActiveTasks.getNext(2).then(() => {
+            this.reactiveActiveTasks.getNext(3).then(() => {
+              this.reactiveActiveTasks.getNext(4).then(() => {
+                this.reactiveActiveTasks.setOnUpdated(() => {
+                  this.setTasks()
+                })
+                this.reactiveActiveTasks.onUpdated()
+                this.reactiveActiveTasks.updater()
+                this.reactiveActiveTasks.refresher()
+                setTimeout(() => {
+                  this.activeTasksLoading = false
+                  this.force = false
+                  this.removeLoadingTag('ActiveGroupTasksLoading')
+                }, 500)
+              }).catch(() => {
+                this.refresh()
+              })
+            }).catch(() => {
+              this.refresh()
+            })
+          }).catch(() => {
+            this.refresh()
+          })
+        }).catch(() => {
+          this.refresh()
         })
-        this.reactiveActiveTasks.updater()
-        this.reactiveActiveTasks.refresher()
-        setTimeout(() => {
-          this.force = false
-          this.removeLoadingTag('ActiveGroupTasksLoading')
-        }, 1000)
       },
 
       setTasks () {
@@ -421,6 +490,7 @@
       },
 
       getGroupAndTasks (id) {
+        var currentUpdate = this.updated
         simpleRequest('/api/groups/list/' + id + '/').method('get').then((response) => {
           var group = response.data
           this.group = new Group()
@@ -430,16 +500,19 @@
               if (data.group.id === group.id) {
                 this.group.override(getGroupFromResponse({...group, memberCardId: data.id}))
                 this.isStaff = data.is_staff
-                this.getActiveGroupTasks()
+                if (currentUpdate === this.updated) {
+                  this.reactiveActiveTasks = new ReactiveActiveGroupTasks(this.group)
+                  this.getActiveGroupTasks()
+                }
                 break
               }
             }
           }).catch((error) => {
-            Notifications.methods.error()
+            this.showNotification('error')
             console.log(error)
           })
         }).catch((error) => {
-          Notifications.methods.error()
+          this.showNotification('error')
           console.log(error)
         })
       },
@@ -637,6 +710,13 @@
         })
       },
 
+      loadNextTasks (priority) {
+        this.activeTasksLoading = true
+        this.reactiveActiveTasks.getNext(parseInt(priority)).then(() => {
+          this.activeTasksLoading = false
+        })
+      },
+
       openedGroupTaskEditor () {
         this.pauseActions(true)
       },
@@ -676,21 +756,21 @@
 <style scoped>
   .list-tasks-enter-active {
     overflow: hidden;
-    transition: all 700ms ease;
+    transition: all 500ms ease;
   }
 
   .list-tasks-move {
-    transition: transform 700ms;
+    transition: transform 500ms;
   }
 
   .list-tasks-leave-active {
     overflow: hidden;
-    transition: all 700ms ease;
+    transition: all 500ms ease;
   }
 
   .list-tasks-enter,
   .list-tasks-leave-to {
-    transition: all 700ms ease;
+    transition: all 500ms ease;
     max-height: 0;
     opacity: 0;
     overflow: hidden;
@@ -724,7 +804,7 @@
 
       > span
         display: block
-        min-height: 160px
+        min-height: 120px
 
       &#goals
         .sortable-ghost

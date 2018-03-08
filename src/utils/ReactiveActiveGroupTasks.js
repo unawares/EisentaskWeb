@@ -115,8 +115,29 @@ export default class ReactiveActiveGroupTasks {
           console.log(error)
           reject()
         })
+      } else {
+        resolve()
       }
     })
+  }
+
+  hasNext (priority) {
+    var url
+    switch (priority) {
+      case 1:
+        url = this.urls.goals
+        break
+      case 2:
+        url = this.urls.progress
+        break
+      case 3:
+        url = this.urls.activities
+        break
+      case 4:
+        url = this.urls.interruptions
+        break
+    }
+    return url.next !== null
   }
 
   stopActions () {

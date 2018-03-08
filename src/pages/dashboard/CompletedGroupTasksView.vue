@@ -46,9 +46,9 @@
     </v-layout>
     <v-layout justify-center style="color: white">
       <v-flex xl4 lg6 md8 sm10 xs12>
-        <div v-for="year in Object.keys(filteredTasks).sort().reverse()">
-          <div v-for="month in Object.keys(filteredTasks[year]).sort().reverse()">
-            <div v-for="day in Object.keys(filteredTasks[year][month]).sort().reverse()">
+        <div v-for="year in Object.keys(filteredTasks).sort().reverse()" :key="year">
+          <div v-for="month in Object.keys(filteredTasks[year]).sort().reverse()" :key="year + '-' + month">
+            <div v-for="day in Object.keys(filteredTasks[year][month]).sort().reverse()" :key="year + '-' + month + '-' + day">
               <v-layout>
                 <v-flex justify-start>
                   <h4 class="header">{{ day }} {{ month | getDisplayMonth }}</h4>
@@ -65,6 +65,7 @@
                   <div
                     v-for="(task, index) in filteredTasks[year][month][day]"
                     class="task"
+                    :key="task.id"
                     :class="'border-color-' + getGolorNameByPriority(task.priority)">
                     <v-layout>
                       <v-flex style="max-width: 100%">
@@ -99,7 +100,6 @@
   import Vue from 'vue'
   import _ from 'underscore'
   import simpleRequest from '@/utils/SimpleRequest'
-  // import Notifications from '@/components/Notifications'
   import Group from '@/models/Group'
 
   function getWindow () {
@@ -179,16 +179,15 @@
         menu: false,
         currentIndex: 0,
         tasks: [],
-        requested: false
+        requested: false,
+        isSynchronizing: false
       }
     },
     mounted () {
       this.addLoadingTag('CompletedGroupTasksLoading')
       this.refreshData()
       this.synchronize().then(() => {
-        this.getNextCompletedTasks().then(() => {
-          this.currentIndex++
-        })
+        this.init()
       })
     },
     watch: {
@@ -196,9 +195,7 @@
         this.addLoadingTag('CompletedGroupTasksLoading')
         this.refreshData()
         this.synchronize().then(() => {
-          this.getNextCompletedTasks().then(() => {
-            this.currentIndex++
-          })
+          this.init()
         })
       },
 
@@ -216,6 +213,7 @@
       },
 
       date () {
+        this.refreshData()
         var selectedDates = new Set()
         for (let date of this.dates) {
           let year = date.getFullYear()
@@ -226,6 +224,7 @@
         }
         this.selectedDates = Array.from(selectedDates)
         this.selectedDates.sort().reverse()
+        this.init()
       },
 
       tasks: {
@@ -236,6 +235,33 @@
       }
     },
     methods: {
+      init () {
+        var count = 10
+        var f = () => {
+          this.requested = true
+          return new Promise((resolve, reject) => {
+            this.getNextCompletedTasks().then(() => {
+              count--
+              this.currentIndex++
+              this.requested = false
+              if (count > 0) {
+                f()
+              } else {
+                this.isSynchronizing = false
+              }
+              resolve()
+            }).catch(() => {
+              this.requested = false
+              this.isSynchronizing = false
+            })
+          })
+        }
+        if (!this.isSynchronizing) {
+          this.isSynchronizing = true
+          f()
+        }
+      },
+
       refresh () {
         this.addLoadingTag('CompletedGroupTasksLoading')
         this.refreshData()

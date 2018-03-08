@@ -5,7 +5,8 @@
       :section="section"
       :kwargs="kwargs"
       :scrollEvent="scrollEvent"
-      @onClickCloseAction="onClickCloseAction">
+      @onClickCloseAction="onClickCloseAction"
+      :showNotification="showNotification">
     </group-settings>
   </div>
 </template>
@@ -17,7 +18,8 @@
     name: 'Settings',
     props: [
       'section',
-      'kwargs'
+      'kwargs',
+      'showNotification'
     ],
     data () {
       return {

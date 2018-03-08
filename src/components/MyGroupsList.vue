@@ -14,7 +14,6 @@
         <v-list-tile-avatar size="36px">
           <img v-if="group.image" :src="group.image">
         </v-list-tile-avatar>
-        </v-list-tile-avatar>
         <v-list-tile-content>
           <v-list-tile-title>{{ group.title }}</v-list-tile-title>
         </v-list-tile-content>
@@ -72,13 +71,13 @@
 
 <script>
   import simpleRequest from '@/utils/SimpleRequest'
-  import Notifications from '@/components/Notifications'
 
   export default {
     name: 'MyGroups',
     props: [
       'addLoadingTag',
-      'removeLoadingTag'
+      'removeLoadingTag',
+      'showNotification'
     ],
     data () {
       return {
@@ -131,7 +130,7 @@
             this.getMyGroups()
             console.log(response)
           }).catch((error) => {
-            Notifications.methods.error()
+            this.showNotification('error')
             console.log(error.response)
           })
         }

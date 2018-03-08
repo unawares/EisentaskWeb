@@ -73,13 +73,13 @@
                     <v-btn flat color="blue" @click="addMemberToTheGroup">ADD</v-btn>
                   </v-list-tile-action>
                 </v-list-tile>
-                <v-list-tile v-for="(memberCard, index) in groupMemberCards.memberCards" :key="memberCard.id" @click="">
+                <v-list-tile v-for="(memberCard, index) in groupMemberCards.memberCards" :key="memberCard.id">
                   <v-list-tile-content>
                     <v-list-tile-title>{{ memberCard.owner.username }}</v-list-tile-title>
                     <v-list-tile-sub-title>
                       <span v-if="memberCard.owner.id === memberCard.group.admin" style="color: #f44336">Admin</span>
                       <span v-else-if="memberCard.is_staff" style="color: #3e82ef">Staff</span>
-                      <span v-else="">Member</span>
+                      <span v-else>Member</span>
                     </v-list-tile-sub-title>
                   </v-list-tile-content>
                   <v-list-tile-action v-if="hasAccessToActions(memberCard)">
@@ -138,7 +138,6 @@
 
 <script>
   import simpleRequest from '@/utils/SimpleRequest'
-  import Notifications from '@/components/Notifications'
 
   var getGroupFromResponse = function (response) {
     return {
@@ -160,7 +159,8 @@
     props: [
       'section',
       'kwargs',
-      'scrollEvent'
+      'scrollEvent',
+      'showNotification'
     ],
     data () {
       return {
@@ -218,13 +218,13 @@
           console.log(response)
         }).catch((error) => {
           if (error.response && error.response.status === 404) {
-            Notifications.methods.showWarning('You don\'t have access to the group')
+            this.showNotification('showWarningWithText', 'You don\'t have access to the group')
             setTimeout(() => {
               this.closeGroupSettings()
               this.$store.commit('getMyGroups')
             }, 1000)
           } else {
-            Notifications.methods.error()
+            this.showNotification('error')
           }
           console.log(error)
         })
@@ -262,12 +262,12 @@
           is_joining_allowed: this.isJoiningAllowed
         }).method('put').then((response) => {
           this.group.instance = getGroupFromResponse(response.data)
-          Notifications.methods.showWarning('Group settings has been changed.')
+          this.showNotification('showWarningWithText', 'Group settings has been changed.')
           this.$store.commit('getMyGroups')
           this.closeGroupSettings()
           console.log(response)
         }).catch((error) => {
-          Notifications.methods.error()
+          this.showNotification('error')
           console.log(error)
         })
       },
@@ -278,7 +278,7 @@
             this.closeGroupSettings()
             console.log(response)
           }).catch((error) => {
-            Notifications.methods.error()
+            this.showNotification('error')
             console.log(error)
           })
         }
@@ -290,7 +290,7 @@
             this.closeGroupSettings()
             console.log(response)
           }).catch((error) => {
-            Notifications.methods.error()
+            this.showNotification('error')
             console.log(error)
           })
         }
@@ -312,7 +312,7 @@
             this.groupMemberCards.memberCards.unshift(response.data)
             console.log(response)
           }).catch((error) => {
-            Notifications.methods.showWarning(error.response.data.detail)
+            this.showNotification('showWarningWithText', error.response.data.detail)
             console.log(error)
           })
           this.usernameOrEmail = ''
@@ -327,7 +327,7 @@
             this.groupMemberCards.memberCards.splice(index, 1)
             console.log(response)
           }).catch((error) => {
-            Notifications.methods.error()
+            this.showNotification('error')
             console.log(error)
           })
         }
@@ -342,7 +342,7 @@
             memberCard.is_staff = true
             console.log(response)
           }).catch((error) => {
-            Notifications.methods.error()
+            this.showNotification('error')
             console.log(error)
           })
         }
@@ -357,7 +357,7 @@
             memberCard.is_staff = false
             console.log(response)
           }).catch((error) => {
-            Notifications.methods.error()
+            this.showNotification('error')
             console.log(error)
           })
         }
@@ -377,7 +377,7 @@
             this.getNextGroupMemberCards()
             console.log(response)
           }).catch((error) => {
-            Notifications.methods.error()
+            this.showNotification('error')
             console.log(error)
           })
         }

@@ -43,9 +43,9 @@
             min="8"
             :error="form.signin.password.isError"
             :rules="form.signin.password.messages"
-            :append-icon="passwordVisibility ? 'visibility' : 'visibility_off'"
+            :append-icon="!passwordVisibility ? 'visibility' : 'visibility_off'"
             :append-icon-cb="() => (passwordVisibility = !passwordVisibility)"
-            :type="passwordVisibility ? 'password' : 'text'"
+            :type="!passwordVisibility ? 'password' : 'text'"
             counter
             dark
           ></v-text-field>
@@ -77,9 +77,9 @@
             min="8"
             :error="form.signup.password.isError"
             :rules="form.signup.password.messages"
-            :append-icon="passwordVisibility ? 'visibility' : 'visibility_off'"
+            :append-icon="!passwordVisibility ? 'visibility' : 'visibility_off'"
             :append-icon-cb="() => (passwordVisibility = !passwordVisibility)"
-            :type="passwordVisibility ? 'password' : 'text'"
+            :type="!passwordVisibility ? 'password' : 'text'"
             counter
             dark
           ></v-text-field>
@@ -156,7 +156,7 @@ export default {
   data () {
     return {
       resetBottomSheet: false,
-      passwordVisibility: true,
+      passwordVisibility: false,
       usernameOrEmail: '',
       username: '',
       password: '',
@@ -191,10 +191,14 @@ export default {
     usernameOrEmail: function () {
       if (validateEmail(this.usernameOrEmail)) {
         this.email = this.usernameOrEmail
-        this.username = ''
+        if (this.action === 'signin') {
+          this.username = ''
+        }
       } else {
         this.username = this.usernameOrEmail
-        this.email = ''
+        if (this.action === 'signin') {
+          this.email = ''
+        }
       }
       this.refreshUsernameField()
     },
@@ -204,6 +208,23 @@ export default {
     email: function () {
       this.refreshEmailField()
       this.refreshResetField()
+      if (this.action === 'signup') {
+        if (validateEmail(this.email) && (validateEmail(this.usernameOrEmail) || !this.usernameOrEmail)) {
+          this.usernameOrEmail = this.email
+        } else {
+          this.usernameOrEmail = this.username
+        }
+      }
+    },
+    username: function () {
+      this.refreshUsernameField()
+      if (this.action === 'signup') {
+        if (this.username.length === 0 && this.email.length > 0 && validateEmail(this.email)) {
+          this.usernameOrEmail = this.email
+        } else {
+          this.usernameOrEmail = this.username
+        }
+      }
     }
   },
   methods: {
@@ -242,7 +263,17 @@ export default {
       this.refreshEmailField()
       this.refreshResetField()
     },
+    refreshSignUpFields: function () {
+      this.refreshUsernameField()
+      this.refreshEmailField()
+      this.refreshPasswordField()
+    },
+    refreshSignInFields: function () {
+      this.refreshUsernameOrEmailField()
+      this.refreshPasswordField()
+    },
     authenticate: function () {
+      this.refreshSignInFields()
       this.loading = true
       var _authenticate = () => {
         var error = false
@@ -279,19 +310,29 @@ export default {
           this.$router.push({ name: 'ActiveTasks' })
           console.log(response)
         }).catch((error) => {
-          if ('non_field_errors' in error.response.data) {
-            this.showNotification('showWarningWithText', error.response.data['non_field_errors'][0])
-          }
           this.loading = false
+          if (error.response.data) {
+            console.log(error.response.data)
+            if ('non_field_errors' in error.response.data) {
+              this.showNotification('showWarningWithText', error.response.data.non_field_errors[0])
+            }
+            if ('username' in error.response.data) {
+              this.form.signin.username.messages = error.response.data.username
+            }
+            if ('password' in error.response.data) {
+              this.form.signin.password.messages = error.response.data.password
+            }
+          } else {
+            this.showNotification('error')
+          }
           console.log(error)
         })
       }
       setTimeout(_authenticate, 500)
     },
     register: function () {
+      this.refreshSignUpFields()
       this.loading = true
-      var username = this.username
-      var password = this.password
       var _register = () => {
         var error = false
 
@@ -313,44 +354,44 @@ export default {
 
         // Cancel if there is an error
         if (error) {
+          this.showNotification('showWarningWithText', 'Invalid fields.')
           this.loading = false
           return
         }
 
-        /*
-        new RegisterUser({
-          username: username,
-          password: password,
-          email: this.email
-        }, (response) => {
-          this.$store.commit('authenticate', {
-            username: username,
-            password: password
-          }, () => {
-            this.loading = false
-          }, () => {
-            this.loading = false
-          })
-        }, (error) => {
+        simpleRequest('/api/auth/registration/', {
+          username: this.username,
+          email: this.email,
+          password1: this.password,
+          password2: this.password
+        }).method('post').then((response) => {
           this.loading = false
-          if ('username' in error.response.data) {
-            this.form.signup.username.messages = error.response.data
-              .username
+          if ('detail' in response.data) {
+            this.showNotification('showSuccessWithText', response.data.detail)
           }
-          if ('email' in error.response.data) {
-            this.form.signup.email.messages = error.response.data.email
+          console.log(response)
+        }).catch((error) => {
+          this.loading = false
+          if (error.response.data) {
+            if ('username' in error.response.data) {
+              this.form.signup.username.messages = error.response.data.username
+            }
+            if ('email' in error.response.data) {
+              this.form.signup.email.messages = error.response.data.email
+            }
+            if ('password1' in error.response.data) {
+              this.form.signup.password.messages = error.response.data.password1
+            }
+          } else {
+            this.showNotification('error')
           }
-          if ('password1' in error.response.data) {
-            this.form.signup.password.messages = error.response.data
-              .password1
-          }
+          console.log(error)
         })
-        */
-        console.log(username, password)
       }
       setTimeout(_register, 500)
     },
     reset: function () {
+      this.refreshResetField()
       this.resetLoading = true
       var _reset = () => {
         var error = false
@@ -371,12 +412,13 @@ export default {
           if ('detail' in response.data) {
             this.showNotification('showSuccessWithText', response.data.detail)
           }
-          console.log(response.data)
+          this.email = ''
+          console.log(response)
         }).catch((error) => {
           this.resetBottomSheet = false
           this.resetLoading = false
           this.showNotification('error')
-          console.log(error.response.data)
+          console.log(error)
         })
       }
       setTimeout(_reset, 500)

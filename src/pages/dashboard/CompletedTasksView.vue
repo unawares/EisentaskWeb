@@ -46,9 +46,9 @@
     </v-layout>
     <v-layout justify-center style="color: white">
       <v-flex xl4 lg6 md8 sm10 xs12>
-        <div v-for="year in Object.keys(filteredTasks).sort().reverse()">
-          <div v-for="month in Object.keys(filteredTasks[year]).sort().reverse()">
-            <div v-for="day in Object.keys(filteredTasks[year][month]).sort().reverse()">
+        <div v-for="year in Object.keys(filteredTasks).sort().reverse()" :key="year">
+          <div v-for="month in Object.keys(filteredTasks[year]).sort().reverse()" :key="year + '-' + month">
+            <div v-for="day in Object.keys(filteredTasks[year][month]).sort().reverse()" :key="year + '-' + month + '-' + day">
               <v-layout>
                 <v-flex justify-start>
                   <h4 class="header">{{ day }} {{ month | getDisplayMonth }}</h4>
@@ -65,7 +65,8 @@
                   <div
                     v-for="(task, index) in filteredTasks[year][month][day]"
                     class="task"
-                    :class="'border-color-' + getGolorNameByPriority(task.priority)">
+                    :class="'border-color-' + getGolorNameByPriority(task.priority)"
+                    :key="task.id">
                     <v-layout>
                       <v-flex style="max-width: 100%">
                         <div class="task-text">

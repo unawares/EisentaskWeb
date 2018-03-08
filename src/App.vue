@@ -17,9 +17,13 @@
   Vue.use(Vuetify, {
     theme: {
       goals: '#F44336',
+      goals_sub: '#FF5742',
       progress: '#0C73AF',
+      progress_sub: '#2185B7',
       activities: '#FF9F1C',
-      interruptions: '#616161'
+      activities_sub: '#FFB532',
+      interruptions: '#616161',
+      interruptions_sub: '#717171'
     }
   })
 

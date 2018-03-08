@@ -41,6 +41,7 @@
           ref="groupsList"
           :addLoadingTag="addLoadingTag"
           :removeLoadingTag="removeLoadingTag"
+          :showNotification="showNotification"
           @onClickGroupSettings="onClickGroupSettings">
         </my-groups-list>
       </v-navigation-drawer>
@@ -76,6 +77,7 @@
       ref="settings"
       :section="settings.section"
       :kwargs="settings.kwargs"
+      :showNotification="showNotification"
       @close="closeSettings">
     </settings>
   </div>

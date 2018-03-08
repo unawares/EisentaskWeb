@@ -1,5 +1,11 @@
 <template>
-  <router-view ref="view" :addLoadingTag="addLoadingTag" :removeLoadingTag="removeLoadingTag" :scrollEvent="scrollEvent"></router-view>
+  <router-view
+    ref="view"
+    :addLoadingTag="addLoadingTag"
+    :removeLoadingTag="removeLoadingTag"
+    :scrollEvent="scrollEvent"
+    :showNotification="showNotification">
+  </router-view>
 </template>
 
 <script>
@@ -7,7 +13,8 @@ export default {
   name: 'GroupTasks',
   props: [
     'addLoadingTag',
-    'removeLoadingTag'
+    'removeLoadingTag',
+    'showNotification'
   ],
   data () {
     return {

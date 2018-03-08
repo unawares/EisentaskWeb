@@ -8,6 +8,7 @@ import GroupTasksView from '@/pages/dashboard/GroupTasksView'
 import ActiveGroupTasksView from '@/pages/dashboard/ActiveGroupTasksView'
 import CompletedGroupTasksView from '@/pages/dashboard/CompletedGroupTasksView'
 import AuthenticationView from '@/pages/authentication/AuthenticationView'
+import AuthenticationResetPasswordView from '@/pages/authentication/AuthenticationResetPasswordView'
 
 Vue.use(Router)
 
@@ -44,6 +45,12 @@ export default new Router({
           ]
         }
       ]
+    },
+    {
+      path: '/auth/reset/:uid/:token',
+      name: 'AuthenticationResetPassword',
+      component: AuthenticationResetPasswordView,
+      props: true
     },
     {
       path: '/auth/:action',

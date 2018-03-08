@@ -11,6 +11,11 @@
               </div>
             </v-card-title>
           </v-card>
+          <v-card color="goals_sub" dark flat tile>
+            <v-card-actions>
+              <v-btn small block flat @click="onNewGoalClick">New Task</v-btn>
+            </v-card-actions>
+          </v-card>
           <v-layout>
             <draggable
               :id="PRIORITIES[1]"
@@ -33,7 +38,7 @@
                 @onEditClick="onEditClick"
                 @onDoneClick="onDoneClick"
                 :isStaff="true">
-                <span slot="text" class="notranslate">{{ task.text }}</span>
+                <span v-html="filterWithUrls(task.text)" slot="text" class="notranslate"></span>
               </active-task>
             </draggable>
           </v-layout>
@@ -48,6 +53,11 @@
                 <span class="list-description">Important and not urgent</span>
               </div>
             </v-card-title>
+          </v-card>
+          <v-card color="progress_sub" dark flat tile>
+            <v-card-actions>
+              <v-btn small block flat @click="onNewProgressClick">New Task</v-btn>
+            </v-card-actions>
           </v-card>
           <v-layout>
             <draggable
@@ -71,7 +81,7 @@
                 @onEditClick="onEditClick"
                 @onDoneClick="onDoneClick"
                 :isStaff="true">
-                <span slot="text" class="notranslate">{{ task.text }}</span>
+                <span v-html="filterWithUrls(task.text)" slot="text" class="notranslate"></span>
               </active-task>
             </draggable>
           </v-layout>
@@ -86,6 +96,11 @@
                 <span class="list-description">Not important and urgent</span>
               </div>
             </v-card-title>
+          </v-card>
+          <v-card color="activities_sub" dark flat tile>
+            <v-card-actions>
+              <v-btn small block flat @click="onNewActivityClick">New Task</v-btn>
+            </v-card-actions>
           </v-card>
           <v-layout>
             <draggable
@@ -109,7 +124,7 @@
                 @onEditClick="onEditClick"
                 @onDoneClick="onDoneClick"
                 :isStaff="true">
-                <span slot="text" class="notranslate">{{ task.text }}</span>
+                <span v-html="filterWithUrls(task.text)" slot="text" class="notranslate"></span>
               </active-task>
             </draggable>
           </v-layout>
@@ -124,6 +139,11 @@
                 <span class="list-description">Not important and not urgent</span>
               </div>
             </v-card-title>
+          </v-card>
+          <v-card color="interruptions_sub" dark flat tile>
+            <v-card-actions>
+              <v-btn small block flat @click="onNewInterruptionClick">New Task</v-btn>
+            </v-card-actions>
           </v-card>
           <v-layout>
             <draggable
@@ -147,7 +167,7 @@
                 @onEditClick="onEditClick"
                 @onDoneClick="onDoneClick"
                 :isStaff="true">
-                <span slot="text" class="notranslate">{{ task.text }}</span>
+                <span v-html="filterWithUrls(task.text)" slot="text" class="notranslate"></span>
               </active-task>
             </draggable>
           </v-layout>
@@ -417,9 +437,25 @@
         }
       },
 
+      filterWithUrls (text) {
+        text = text.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;')
+        var regex = /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|(www\.)?[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9]\.[^\s]{2,})/g
+        return text.replace(regex, (match, a, b) => {
+          var url = match
+          if (!url.match(/^[a-zA-Z]+:\/\//)) {
+            url = '//' + url
+          }
+          return '<a target="_blank" class="task-text-link" href="' + url + '" onclick="window.linkClicked = true">' + match + '</a>'
+        })
+      },
+
       onEditClick (task) {
-        this.$refs.taskEditor.openEditor()
-        this.$refs.taskEditor.setTaskInstance(task)
+        if (window.linkClicked) {
+          window.linkClicked = false
+        } else {
+          this.$refs.taskEditor.openEditor()
+          this.$refs.taskEditor.setTaskInstance(task)
+        }
       },
 
       onDeleteClick (task) {
@@ -456,6 +492,14 @@
   }
 </script>
 
+<style lang="stylus">
+  .task-text-link
+    text-decoration: none
+    &:hover
+      color: #F2215D
+</style>
+
+
 <style lang="stylus" scoped>
   vendor(prop, args)
     -webkit-{prop} args
@@ -472,7 +516,7 @@
   $progress = #0C73AF
   $activities = #FF9F1C
   $interruptions = #616161
-
+  
   .list-of-tasks
     padding: 10px
 
