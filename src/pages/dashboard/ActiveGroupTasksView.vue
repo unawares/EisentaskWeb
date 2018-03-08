@@ -43,9 +43,16 @@
               </transition-group>
             </draggable>
           </v-layout>
-          <v-card-actions v-if="!!reactiveActiveTasks && reactiveActiveTasks.hasNext(1)">
+          <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn :loading="activeTasksLoading" flat color="goals" @click="loadNextTasks(1)">Load tasks</v-btn>
+            <v-btn
+              :loading="loading.goals"
+              v-if="!!reactiveActiveTasks && reactiveActiveTasks.hasNext(1) && !activeTasksLoading"
+              flat
+              color="goals"
+              @click="loadNextTasks(1)">
+              Load tasks
+            </v-btn>
             <v-spacer></v-spacer>
           </v-card-actions>
         </v-card>
@@ -92,9 +99,16 @@
               </transition-group>
             </draggable>
           </v-layout>
-          <v-card-actions v-if="!!reactiveActiveTasks && reactiveActiveTasks.hasNext(2)">
+          <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn :loading="activeTasksLoading" flat color="progress" @click="loadNextTasks(2)">Load tasks</v-btn>
+            <v-btn
+              :loading="loading.progress"
+              v-if="!!reactiveActiveTasks && reactiveActiveTasks.hasNext(2) && !activeTasksLoading"
+              flat
+              color="progress"
+              @click="loadNextTasks(2)">
+              Load tasks
+            </v-btn>
             <v-spacer></v-spacer>
           </v-card-actions>
         </v-card>
@@ -141,9 +155,16 @@
               </transition-group>
             </draggable>
           </v-layout>
-          <v-card-actions v-if="!!reactiveActiveTasks && reactiveActiveTasks.hasNext(3)">
+          <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn :loading="activeTasksLoading" flat color="activities" @click="loadNextTasks(3)">Load tasks</v-btn>
+            <v-btn
+              :loading="loading.activities"
+              v-if="!!reactiveActiveTasks && reactiveActiveTasks.hasNext(3) && !activeTasksLoading"
+              flat
+              color="activities"
+              @click="loadNextTasks(3)">
+              Load tasks
+            </v-btn>
             <v-spacer></v-spacer>
           </v-card-actions>
         </v-card>
@@ -190,9 +211,15 @@
               </transition-group>
             </draggable>
           </v-layout>
-          <v-card-actions v-if="!!reactiveActiveTasks && reactiveActiveTasks.hasNext(4)">
+          <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn :loading="activeTasksLoading" flat color="interruptions" @click="loadNextTasks(4)">Load tasks</v-btn>
+            <v-btn
+              :loading="loading.interruptions"
+              v-if="!!reactiveActiveTasks && reactiveActiveTasks.hasNext(4) && !activeTasksLoading"
+              flat color="interruptions"
+              @click="loadNextTasks(4)">
+              Load tasks
+            </v-btn>
             <v-spacer></v-spacer>
           </v-card-actions>
         </v-card>
@@ -302,7 +329,13 @@
           interruptions: false
         },
         updated: 0,
-        activeTasksLoading: true
+        activeTasksLoading: true,
+        loading: {
+          goals: false,
+          progress: false,
+          activities: false,
+          interruptions: false
+        }
       }
     },
     mounted () {
@@ -413,6 +446,10 @@
         if (this.reactiveActiveTasks) {
           this.reactiveActiveTasks.stopActions()
         }
+        this.loading.goals = false
+        this.loading.progress = false
+        this.loading.activities = false
+        this.loading.interruptions = false
       },
 
       clearTasks () {
@@ -715,10 +752,13 @@
       },
 
       loadNextTasks (priority) {
-        this.activeTasksLoading = true
-        this.reactiveActiveTasks.getNext(parseInt(priority)).then(() => {
-          this.activeTasksLoading = false
-        })
+        if (this.getLoadingState(priority)) return
+        this.setLoadingState(parseInt(priority), true)
+        setTimeout(() => {
+          this.reactiveActiveTasks.getNext(parseInt(priority)).then(() => {
+            this.setLoadingState(parseInt(priority), false)
+          })
+        }, 500)
       },
 
       filterWithUrls (text) {
@@ -731,6 +771,36 @@
           }
           return '<a target="_blank" class="task-text-link" href="' + url + '" onclick="window.linkClicked = true">' + match + '</a>'
         })
+      },
+
+      setLoadingState (priority, state) {
+        switch (priority) {
+          case 1:
+            this.loading.goals = state
+            break
+          case 2:
+            this.loading.progress = state
+            break
+          case 3:
+            this.loading.activities = state
+            break
+          case 4:
+            this.loading.interruptions = state
+            break
+        }
+      },
+
+      getLoadingState (priority) {
+        switch (priority) {
+          case 1:
+            return this.loading.goals
+          case 2:
+            return this.loading.progress
+          case 3:
+            return this.loading.activities
+          case 4:
+            return this.loading.interruptions
+        }
       },
 
       openedGroupTaskEditor () {
