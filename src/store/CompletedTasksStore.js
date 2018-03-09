@@ -30,6 +30,7 @@ export default {
         }
       }
       completedTasksActions.getCompletedTasks(callback).onCatchStatusCodes().do((queueRequests) => {
+        this.commit('getUser')
         queueRequests.clear()
         this.commit('refreshCompletedTasks')
       })
@@ -49,7 +50,8 @@ export default {
           return task.instance.id !== id
         })
       }
-      completedTasksActions.updateTask(task, callback).onCatchStatusCodes([404]).do((queueRequests) => {
+      completedTasksActions.updateTask(task, callback).onCatchStatusCodes().do((queueRequests) => {
+        this.commit('getUser')
         queueRequests.clear()
         this.commit('refreshCompletedTasks')
         this.commit('getCompletedTasks')
@@ -68,7 +70,8 @@ export default {
       state.completedTasks.tasks = state.completedTasks.tasks.filter((task) => {
         return task.instance.id !== id
       })
-      completedTasksActions.deleteTask(task, callback).onCatchStatusCodes([404]).do((queueRequests) => {
+      completedTasksActions.deleteTask(task, callback).onCatchStatusCodes().do((queueRequests) => {
+        this.commit('getUser')
         queueRequests.clear()
         this.commit('refreshCompletedTasks')
         this.commit('getCompletedTasks')

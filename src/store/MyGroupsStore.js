@@ -17,8 +17,10 @@ export default {
         state.groups.splice(0, state.groups.length, ...res.groups)
       }
       myGroupActions.getMyGroups(callback).onCatchStatusCodes().do((queueRequests) => {
+        this.commit('getUser')
         queueRequests.clear()
         this.commit('refreshMyGroups')
+        this.commit('')
       })
     },
 

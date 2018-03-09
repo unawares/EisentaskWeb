@@ -36,6 +36,7 @@ export default {
         }
       }
       activeTasksActions.getActiveTasks(callback).onCatchStatusCodes().do((queueRequests) => {
+        this.commit('getUser')
         queueRequests.clear()
         this.commit('refreshActiveTasks')
       })
@@ -52,6 +53,7 @@ export default {
       }
       state.activeTasks.tasks.push(task)
       activeTasksActions.createTask(task, callback).onCatchStatusCodes().do((queueRequests) => {
+        this.commit('getUser')
         queueRequests.clear()
         this.commit('refreshActiveTasks')
       })
@@ -72,7 +74,8 @@ export default {
           return task.instance.id !== id
         })
       }
-      activeTasksActions.updateTask(task, callback).onCatchStatusCodes([404]).do((queueRequests) => {
+      activeTasksActions.updateTask(task, callback).onCatchStatusCodes().do((queueRequests) => {
+        this.commit('getUser')
         queueRequests.clear()
         this.commit('refreshActiveTasks')
         this.commit('getActiveTasks')
@@ -92,7 +95,8 @@ export default {
       state.activeTasks.tasks = state.activeTasks.tasks.filter((task) => {
         return task.instance.id !== id
       })
-      activeTasksActions.deleteTask(task, callback).onCatchStatusCodes([404]).do((queueRequests) => {
+      activeTasksActions.deleteTask(task, callback).onCatchStatusCodes().do((queueRequests) => {
+        this.commit('getUser')
         queueRequests.clear()
         this.commit('refreshActiveTasks')
         this.commit('getActiveTasks')

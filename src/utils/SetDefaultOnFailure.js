@@ -6,7 +6,7 @@ var onFailure = function (error, queueRequests) {
     switch (error.response.status) {
       case 401:
         queueRequests.clear()
-        router.push({ name: 'Authentication', params: { action: 'signin' } })
+        router.replace({ name: 'Authentication', params: { action: 'signin' } })
         break
       default:
         queueRequests.retryInterval = timeToWait

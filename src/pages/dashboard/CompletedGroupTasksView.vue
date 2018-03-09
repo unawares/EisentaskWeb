@@ -212,7 +212,7 @@
         }
       },
 
-      date () {
+      date (value) {
         this.refreshData()
         var selectedDates = new Set()
         for (let date of this.dates) {
@@ -220,7 +220,9 @@
           let month = date.getMonth() + 1
           let day = date.getDate()
           let stringDate = year + '-' + ((month > 9) ? month : '0' + month) + '-' + ((day > 9) ? day : '0' + day)
-          selectedDates.add(stringDate)
+          if (value === stringDate.substr(0, value.length)) {
+            selectedDates.add(stringDate)
+          }
         }
         this.selectedDates = Array.from(selectedDates)
         this.selectedDates.sort().reverse()
