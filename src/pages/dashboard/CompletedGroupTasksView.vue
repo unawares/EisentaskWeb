@@ -195,6 +195,7 @@
         this.addLoadingTag('CompletedGroupTasksLoading')
         this.refreshData()
         this.synchronize().then(() => {
+          this.synchronizeSelectedDates()
           this.init()
         })
       },
@@ -212,20 +213,9 @@
         }
       },
 
-      date (value) {
+      date () {
         this.refreshData()
-        var selectedDates = new Set()
-        for (let date of this.dates) {
-          let year = date.getFullYear()
-          let month = date.getMonth() + 1
-          let day = date.getDate()
-          let stringDate = year + '-' + ((month > 9) ? month : '0' + month) + '-' + ((day > 9) ? day : '0' + day)
-          if (value === stringDate.substr(0, value.length)) {
-            selectedDates.add(stringDate)
-          }
-        }
-        this.selectedDates = Array.from(selectedDates)
-        this.selectedDates.sort().reverse()
+        this.synchronizeSelectedDates()
         this.init()
       },
 
@@ -314,6 +304,21 @@
         return _filteredTasks
       },
 
+      synchronizeSelectedDates () {
+        var selectedDates = new Set()
+        for (let date of this.dates) {
+          let year = date.getFullYear()
+          let month = date.getMonth() + 1
+          let day = date.getDate()
+          let stringDate = year + '-' + ((month > 9) ? month : '0' + month) + '-' + ((day > 9) ? day : '0' + day)
+          if (this.date === stringDate.substr(0, this.date.length)) {
+            selectedDates.add(stringDate)
+          }
+        }
+        this.selectedDates = Array.from(selectedDates)
+        this.selectedDates.sort().reverse()
+      },
+
       synchronize () {
         return new Promise((resolve, reject) => {
           this.getGroup(this.$router.history.current.params.id).then((group) => {
@@ -329,14 +334,12 @@
                 this.dates.push(date)
                 allowedDatesSet.add(stringDate)
               }
-              if (!this.date) {
-                var currentDate = new Date()
-                let year = currentDate.getFullYear()
-                let month = currentDate.getMonth() + 1
-                this.date = year + '-' + ((month > 9) ? month : '0' + month)
-                this.dates.push(currentDate)
-                this.formattedDate = currentDate.toDateString()
-              }
+              var currentDate = new Date()
+              let year = currentDate.getFullYear()
+              let month = currentDate.getMonth() + 1
+              this.date = year + '-' + ((month > 9) ? month : '0' + month)
+              this.dates.push(currentDate)
+              this.formattedDate = currentDate.toDateString()
               this.allowedDates = Array.from(allowedDatesSet)
               this.finish()
               resolve()
