@@ -538,6 +538,9 @@
                 this.group.override(getGroupFromResponse({...group, memberCardId: data.id}))
                 this.isStaff = data.is_staff
                 if (currentUpdate === this.updated) {
+                  if (this.reactiveActiveTasks) {
+                    this.reactiveActiveTasks.stopActions()
+                  }
                   this.reactiveActiveTasks = new ReactiveActiveGroupTasks(this.group)
                   this.getActiveGroupTasks()
                 }
