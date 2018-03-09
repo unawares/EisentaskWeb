@@ -33,7 +33,7 @@ export default {
         }
         state.called = false
       }
-      userActions.getUser(callback, state.user).onCatchStatusCodes([401]).do((queueRequests) => {
+      userActions.getUser(callback, state.user).onCatchStatusCodes([401, 403]).do((queueRequests) => {
         queueRequests.clear()
         this.commit('refreshUser')
         simpleRequest('/api/auth/logout/').method('post')
