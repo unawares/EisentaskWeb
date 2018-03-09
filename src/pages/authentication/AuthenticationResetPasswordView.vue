@@ -92,7 +92,7 @@
         this.refreshConfirmPasswordField()
         this.changePassword().then((data) => {
           this.showNotification('showSuccessWithText', 'The password has been changed')
-          this.$router.push({ name: 'Authentication', params: { action: 'signin' } })
+          this.$router.replace({ name: 'Authentication', params: { action: 'signin' } })
         }).catch((data) => {
           var error = false
           if ('new_password1' in data) {
@@ -112,7 +112,7 @@
         })
       },
       onCancelClick () {
-        this.$router.push({ name: 'Authentication', params: { action: 'signin' } })
+        this.$router.replace({ name: 'Authentication', params: { action: 'signin' } })
       },
       changePassword () {
         return new Promise((resolve, reject) => {

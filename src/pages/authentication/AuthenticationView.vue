@@ -8,14 +8,14 @@
       </div>
       <ul class="auth-tabs">
         <li class="auth-tab-item" :class="[action === 'signin' ? 'selected-tab' : '']" @click="refreshFields">
-          <router-link :to="{ name: 'Authentication', params: { action: 'signin' } }" class="router-box">
+          <router-link :to="{ name: 'Authentication', params: { action: 'signin' } }" class="router-box" replace>
             <span class="auth-tab-item-text">
               SIGN IN
             </span>
           </router-link>
         </li>
         <li class="auth-tab-item" :class="[action === 'signup' ? 'selected-tab' : '']" @click="refreshFields">
-          <router-link :to="{ name: 'Authentication', params: { action: 'signup' } }" class="router-box">
+          <router-link :to="{ name: 'Authentication', params: { action: 'signup' } }" class="router-box" replace>
             <span class="auth-tab-item-text">
               SIGN UP
             </span>

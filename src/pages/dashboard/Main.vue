@@ -210,7 +210,7 @@
       logout () {
         simpleRequest('/api/auth/logout/').method('post').then(() => {
           this.showNotification('showWarningWithText', 'You have logged out')
-          this.$router.push({ name: 'Authentication', params: { action: 'signin' } })
+          this.$router.replace({ name: 'Authentication', params: { action: 'signin' } })
         })
       }
     },
