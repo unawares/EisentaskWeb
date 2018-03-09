@@ -182,11 +182,14 @@ export default {
   },
   created () {
     this.loading = false
-    this.eventEmitter.on('updated', () => {
-      this.$router.replace({ name: 'ActiveTasks' })
-    })
+    this.eventEmitter.on('updated', this.userUpdatedListener)
     this.$store.commit('getUser')
   },
+
+  beforeDestroy () {
+    this.eventEmitter.removeListener('updated', this.userUpdatedListener)
+  },
+
   watch: {
     usernameOrEmail: function () {
       if (validateEmail(this.usernameOrEmail)) {
@@ -228,6 +231,9 @@ export default {
     }
   },
   methods: {
+    userUpdatedListener () {
+      this.$router.replace({ name: 'ActiveTasks' })
+    },
     refreshUsernameOrEmailField: function () {
       if (this.form.signin.usernameOrEmail.isError) {
         this.form.signin.usernameOrEmail.messages = []
