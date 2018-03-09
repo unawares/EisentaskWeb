@@ -183,7 +183,7 @@ export default {
   created () {
     this.loading = false
     this.eventEmitter.on('updated', () => {
-      this.$router.push({ name: 'ActiveTasks' })
+      this.$router.replace({ name: 'ActiveTasks' })
     })
     this.$store.commit('getUser')
   },
@@ -307,7 +307,7 @@ export default {
         simpleRequest('/api/auth/login/', data).method('post').then((response) => {
           this.showNotification('showSuccessWithText', 'Welcome, ' + response.data.user.username)
           this.loading = false
-          this.$router.push({ name: 'ActiveTasks' })
+          this.$router.replace({ name: 'ActiveTasks' })
           console.log(response)
         }).catch((error) => {
           this.loading = false
