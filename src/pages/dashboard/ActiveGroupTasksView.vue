@@ -373,10 +373,13 @@
             let {top} = getOffset(el)
             let yPosition = top + el.offsetHeight - (document.body.scrollTop + y)
             if (yPosition < 500 && !this.requested[id]) {
+              this.setLoadingState(priority, true)
               this.reactiveActiveTasks.getNext(priority).then(() => {
                 this.requested[id] = false
+                this.setLoadingState(priority, false)
               }).catch(() => {
                 this.requested[id] = false
+                this.setLoadingState(priority, false)
               })
             }
           }
@@ -762,8 +765,10 @@
         if (this.getLoadingState(priority)) return
         this.setLoadingState(parseInt(priority), true)
         setTimeout(() => {
+          this.activeTasksLoading = true
           this.reactiveActiveTasks.getNext(parseInt(priority)).then(() => {
             this.setLoadingState(parseInt(priority), false)
+            this.activeTasksLoading = false
           })
         }, 500)
       },
