@@ -245,6 +245,10 @@
             this.$refs.taskEditText.focus()
           }
         }, 100)
+      },
+
+      isActive: function () {
+        return this.drawer
       }
     }
   }

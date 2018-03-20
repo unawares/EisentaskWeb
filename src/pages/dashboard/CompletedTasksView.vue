@@ -46,9 +46,9 @@
     </v-layout>
     <v-layout justify-center style="color: white">
       <v-flex xl4 lg6 md8 sm10 xs12>
-        <div v-for="year in Object.keys(filteredTasks).sort().reverse()" :key="year">
-          <div v-for="month in Object.keys(filteredTasks[year]).sort().reverse()" :key="year + '-' + month">
-            <div v-for="day in Object.keys(filteredTasks[year][month]).sort().reverse()" :key="year + '-' + month + '-' + day">
+        <div v-for="year in sortedDateKeys(Object.keys(filteredTasks))" :key="year">
+          <div v-for="month in sortedDateKeys(Object.keys(filteredTasks[year]))" :key="year + '-' + month">
+            <div v-for="day in sortedDateKeys(Object.keys(filteredTasks[year][month]))" :key="year + '-' + month + '-' + day">
               <v-layout>
                 <v-flex justify-start>
                   <h4 class="header">{{ day }} {{ month | getDisplayMonth }}</h4>
@@ -106,6 +106,7 @@
 
 <script>
   import Vue from 'vue'
+  import _ from 'underscore'
 
   // Quick sort
   var quickSort = (() => {
@@ -148,7 +149,7 @@
     switch (month) {
       case '01': return 'January'
       case '02': return 'February'
-      case '03': return 'Murch'
+      case '03': return 'March'
       case '04': return 'April'
       case '05': return 'May'
       case '06': return 'June'
@@ -227,6 +228,7 @@
     },
     beforeDestroy () {
       this.completedTasksEventEmitter.removeListener('updated', () => {})
+      this.removeLoadingTag('CompletedTasksLoading')
     },
     watch: {
       date  () {
@@ -258,9 +260,9 @@
         var _filteredTasks = {}
         var fTasks = this.filterTheTasks()
         for (let i = 0; i < fTasks.length; i++) {
-          let year = fTasks[i].updated.substr(0, 4)
-          let month = fTasks[i].updated.substr(5, 2)
-          let day = fTasks[i].updated.substr(8, 2)
+          let year = (new Date(fTasks[i].updated)).getFullYear()
+          let month = (new Date(fTasks[i].updated)).getMonth() + 1
+          let day = (new Date(fTasks[i].updated)).getDate()
           if (!(year in _filteredTasks)) {
             _filteredTasks[year] = {}
             _filteredTasks[year][month] = {}
@@ -324,6 +326,10 @@
 
       deletedTask (task, { year, month, day, index }) {
         this.filteredTasks[year][month][day].splice(index, 1)
+      },
+
+      sortedDateKeys (keys) {
+        return _.sortBy(keys, key => parseInt(key)).reverse()
       }
     }
   }

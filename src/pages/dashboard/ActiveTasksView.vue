@@ -232,6 +232,7 @@
     },
     beforeDestroy () {
       this.activeTasksEventEmitter.removeListener('updated', () => {})
+      this.removeLoadingTag('TasksLoading')
     },
     watch: {
       activeTasksActiveRequests: {
@@ -487,6 +488,14 @@
       onNewInterruptionClick () {
         this.$refs.taskEditor.openEditor()
         this.$refs.taskEditor.setPriority(4)
+      }
+    },
+    beforeRouteUpdate (to, from, next) {
+      if (this.$refs.groupTaskEditor.isActive()) {
+        this.$refs.groupTaskEditor.closeEditor()
+        next(false)
+      } else {
+        next()
       }
     }
   }

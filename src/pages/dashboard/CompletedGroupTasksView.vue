@@ -46,9 +46,9 @@
     </v-layout>
     <v-layout justify-center style="color: white">
       <v-flex xl4 lg6 md8 sm10 xs12>
-        <div v-for="year in Object.keys(filteredTasks).sort().reverse()" :key="year">
-          <div v-for="month in Object.keys(filteredTasks[year]).sort().reverse()" :key="year + '-' + month">
-            <div v-for="day in Object.keys(filteredTasks[year][month]).sort().reverse()" :key="year + '-' + month + '-' + day">
+        <div v-for="year in sortedDateKeys(Object.keys(filteredTasks))" :key="year">
+          <div v-for="month in sortedDateKeys(Object.keys(filteredTasks[year]))" :key="year + '-' + month">
+            <div v-for="day in sortedDateKeys(Object.keys(filteredTasks[year][month]))" :key="year + '-' + month + '-' + day">
               <v-layout>
                 <v-flex justify-start>
                   <h4 class="header">{{ day }} {{ month | getDisplayMonth }}</h4>
@@ -132,7 +132,7 @@
     switch (month) {
       case 1: return 'January'
       case 2: return 'February'
-      case 3: return 'Murch'
+      case 3: return 'March'
       case 4: return 'April'
       case 5: return 'May'
       case 6: return 'June'
@@ -189,6 +189,9 @@
       this.synchronize().then(() => {
         this.init()
       })
+    },
+    beforeDestroy () {
+      this.removeLoadingTag('CompletedGroupTasksLoading')
     },
     watch: {
       $route (to, from) {
@@ -296,8 +299,7 @@
         for (let year in _filteredTasks) {
           for (let month in _filteredTasks[year]) {
             for (let day in _filteredTasks[year][month]) {
-              _filteredTasks[year][month][day] = _.sortBy(_filteredTasks[year][month][day], v => (new Date(v.created)).getTime())
-              _filteredTasks[year][month][day].reverse()
+              _filteredTasks[year][month][day] = _.sortBy(_filteredTasks[year][month][day], v => (new Date(v.created)).getTime()).reverse()
             }
           }
         }
@@ -317,6 +319,7 @@
         }
         this.selectedDates = Array.from(selectedDates)
         this.selectedDates.sort().reverse()
+        console.log(this.selectedDates)
       },
 
       synchronize () {
@@ -429,6 +432,10 @@
             this.tasks.splice(index, 1)
           }
         }
+      },
+
+      sortedDateKeys (keys) {
+        return _.sortBy(keys, key => parseInt(key)).reverse()
       }
     }
   }

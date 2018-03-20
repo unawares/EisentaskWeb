@@ -241,6 +241,10 @@
         setTimeout(() => {
           self.obj.$refs.taskEditText.focus()
         }, 100)
+      },
+
+      isActive: function () {
+        return self.obj.drawer
       }
     }
   }

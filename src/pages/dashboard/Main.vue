@@ -1,5 +1,5 @@
 <template>
-  <div class="dashboard">
+  <div class="dashboard" ref="dashboard">
     <div ref="main">
       <v-navigation-drawer
         class="scrollbar-hidden"
@@ -120,7 +120,8 @@
           section: undefined,
           kwargs: undefined
         },
-        lastRefresh: new Date()
+        lastRefresh: new Date(),
+        user: undefined
       }
     },
     created () {
@@ -129,11 +130,18 @@
         let user = this.$store.getters.user
         this.username = user.username
         this.removeLoadingTag('UserLoading')
+        this.user = user
       })
       setTimeout(() => {
         this.addLoadingTag('UserLoading')
         this.$store.commit('getUser')
       }, 200)
+      window.test_for_tags = this.loadingTags
+    },
+    updated () {
+      if (this.user) {
+        this.$refs.dashboard.style.display = 'block'
+      }
     },
     watch: {
       loadingTags (tags) {
@@ -219,6 +227,7 @@
         this.closeSettings()
         next(false)
       } else {
+        this.$refs.dashboard.style.display = 'block'
         next()
       }
     },
@@ -237,6 +246,7 @@
 
   .dashboard
     position: relative
+    display: none
 </style>
 
 <style scoped>

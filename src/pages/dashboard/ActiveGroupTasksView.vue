@@ -27,7 +27,7 @@
               @start="onDragStart"
               @end="onDragEnd"
               class="list">
-              <transition-group class="my-handle" :name="!isDragging? 'list-tasks' : null" :css="true">
+              <transition-group class="my-handle" :name="!isDragging && !isLoadingNewTasks? 'list-tasks' : null" :css="true">
                 <active-task
                   v-for="task in tasks.goals"
                   :key="task.instance.id"
@@ -83,7 +83,7 @@
               @start="onDragStart"
               @end="onDragEnd"
               class="list">
-              <transition-group class="my-handle" :name="!isDragging? 'list-tasks' : null" :css="true">
+              <transition-group class="my-handle" :name="!isDragging && !isLoadingNewTasks? 'list-tasks' : null" :css="true">
                 <active-task
                   v-for="task in tasks.progress"
                   :key="task.instance.id"
@@ -139,7 +139,7 @@
               @start="onDragStart"
               @end="onDragEnd"
               class="list">
-              <transition-group class="my-handle" :name="!isDragging? 'list-tasks' : null" :css="true">
+              <transition-group class="my-handle" :name="!isDragging && !isLoadingNewTasks? 'list-tasks' : null" :css="true">
                 <active-task
                   v-for="task in tasks.activities"
                   :key="task.instance.id"
@@ -195,7 +195,7 @@
               @start="onDragStart"
               @end="onDragEnd"
               class="list">
-              <transition-group class="my-handle" :name="!isDragging? 'list-tasks' : null" :css="true">
+              <transition-group class="my-handle" :name="!isDragging && !isLoadingNewTasks? 'list-tasks' : null" :css="true">
                 <active-task
                   v-for="task in tasks.interruptions"
                   :key="task.instance.id"
@@ -335,7 +335,8 @@
           progress: false,
           activities: false,
           interruptions: false
-        }
+        },
+        isLoadingNewTasks: false
       }
     },
     mounted () {
@@ -391,6 +392,7 @@
     beforeDestroy () {
       this.updated++
       this.destroy()
+      this.removeLoadingTag('ActiveGroupTasksLoading')
     },
     methods: {
       refresh () {
@@ -495,6 +497,7 @@
         var time = this.animationStartTime
         var f = () => {
           if ((new Date()).getTime() - this.animationStartTime.getTime() >= 800 || this.force) {
+            this.isLoadingNewTasks = true
             this.tasksDict = this.reactiveActiveTasks.getTasksDict()
             this.animationStartTime = new Date()
             this.clearTasks()
@@ -515,6 +518,7 @@
                   break
               }
             }
+            this.isLoadingNewTasks = false
           } else {
             setTimeout(() => {
               if (time.getTime() === this.animationStartTime.getTime()) {
@@ -832,6 +836,14 @@
       onNewInterruptionClick () {
         this.$refs.groupTaskEditor.openEditor()
         this.$refs.groupTaskEditor.setPriority(4)
+      }
+    },
+    beforeRouteUpdate (to, from, next) {
+      if (this.$refs.groupTaskEditor.isActive()) {
+        this.$refs.groupTaskEditor.closeEditor()
+        next(false)
+      } else {
+        next()
       }
     },
     components: {
