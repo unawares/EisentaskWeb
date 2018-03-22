@@ -27,7 +27,7 @@
               @start="onDragStart"
               @end="onDragEnd"
               class="list">
-              <transition-group class="my-handle" :name="!isDragging && !isLoadingNewTasks? 'list-tasks' : null" :css="true">
+              <transition-group class="my-handle" :name="!isDragging && !isLoadingNewTasks && isReady? 'list-tasks' : null" :css="true">
                 <active-task
                   v-for="task in tasks.goals"
                   :key="task.instance.id"
@@ -37,6 +37,9 @@
                   @onDeleteClick="onDeleteClick"
                   @onEditClick="onEditClick"
                   @onDoneClick="onDoneClick"
+                  @onMouseEnter="onMouseEnter"
+                  @onMouseLeave="onMouseLeave"
+                  :isMouseOver="isMouseOverInstanceId === task.instance.id"
                   :isStaff="isStaff">
                   <span v-html="filterWithUrls(task.text)" slot="text" class="notranslate"></span>
                 </active-task>
@@ -83,7 +86,7 @@
               @start="onDragStart"
               @end="onDragEnd"
               class="list">
-              <transition-group class="my-handle" :name="!isDragging && !isLoadingNewTasks? 'list-tasks' : null" :css="true">
+              <transition-group class="my-handle" :name="!isDragging && !isLoadingNewTasks && isReady? 'list-tasks' : null" :css="true">
                 <active-task
                   v-for="task in tasks.progress"
                   :key="task.instance.id"
@@ -93,6 +96,9 @@
                   @onDeleteClick="onDeleteClick"
                   @onEditClick="onEditClick"
                   @onDoneClick="onDoneClick"
+                  @onMouseEnter="onMouseEnter"
+                  @onMouseLeave="onMouseLeave"
+                  :isMouseOver="isMouseOverInstanceId === task.instance.id"
                   :isStaff="isStaff">
                   <span v-html="filterWithUrls(task.text)" slot="text" class="notranslate"></span>
                 </active-task>
@@ -139,7 +145,7 @@
               @start="onDragStart"
               @end="onDragEnd"
               class="list">
-              <transition-group class="my-handle" :name="!isDragging && !isLoadingNewTasks? 'list-tasks' : null" :css="true">
+              <transition-group class="my-handle" :name="!isDragging && !isLoadingNewTasks && isReady? 'list-tasks' : null" :css="true">
                 <active-task
                   v-for="task in tasks.activities"
                   :key="task.instance.id"
@@ -149,6 +155,9 @@
                   @onDeleteClick="onDeleteClick"
                   @onEditClick="onEditClick"
                   @onDoneClick="onDoneClick"
+                  @onMouseEnter="onMouseEnter"
+                  @onMouseLeave="onMouseLeave"
+                  :isMouseOver="isMouseOverInstanceId === task.instance.id"
                   :isStaff="isStaff">
                   <span v-html="filterWithUrls(task.text)" slot="text" class="notranslate"></span>
                 </active-task>
@@ -195,7 +204,7 @@
               @start="onDragStart"
               @end="onDragEnd"
               class="list">
-              <transition-group class="my-handle" :name="!isDragging && !isLoadingNewTasks? 'list-tasks' : null" :css="true">
+              <transition-group class="my-handle" :name="!isDragging && !isLoadingNewTasks && isReady? 'list-tasks' : null" :css="true">
                 <active-task
                   v-for="task in tasks.interruptions"
                   :key="task.instance.id"
@@ -205,6 +214,9 @@
                   @onDeleteClick="onDeleteClick"
                   @onEditClick="onEditClick"
                   @onDoneClick="onDoneClick"
+                  @onMouseEnter="onMouseEnter"
+                  @onMouseLeave="onMouseLeave"
+                  :isMouseOver="isMouseOverInstanceId === task.instance.id"
                   :isStaff="isStaff">
                   <span v-html="filterWithUrls(task.text)" slot="text" class="notranslate"></span>
                 </active-task>
@@ -322,12 +334,6 @@
         animationStartTime: new Date(),
         force: true,
         user: this.$store.getters.user,
-        requested: {
-          goals: false,
-          progress: false,
-          activities: false,
-          interruptions: false
-        },
         updated: 0,
         activeTasksLoading: true,
         loading: {
@@ -336,7 +342,9 @@
           activities: false,
           interruptions: false
         },
-        isLoadingNewTasks: false
+        isLoadingNewTasks: false,
+        isReady: false,
+        isMouseOverInstanceId: undefined
       }
     },
     mounted () {
@@ -352,12 +360,16 @@
       $route (to, from) {
         this.updated++
         this.addLoadingTag('ActiveGroupTasksLoading')
-        this.destroy()
+        this.activeTasksLoading = true
         this.clearTasks()
+        this.destroy()
         this.getGroupAndTasks(this.$router.history.current.params.id)
       },
 
       scrollEvent (evt) {
+        if (this.activeTasksLoading) {
+          return
+        }
         var goals = document.getElementById('goals')
         var progress = document.getElementById('progress')
         var activities = document.getElementById('activities')
@@ -372,13 +384,13 @@
             let {y} = getWindow()
             let {top} = getOffset(el)
             let yPosition = top + el.offsetHeight - (document.body.scrollTop + y)
-            if (yPosition < 500 && !this.requested[id]) {
+            if (yPosition < 500 && !this.loading[id]) {
               this.setLoadingState(priority, true)
               this.reactiveActiveTasks.getNext(priority).then(() => {
-                this.requested[id] = false
+                this.loading[id] = false
                 this.setLoadingState(priority, false)
               }).catch(() => {
-                this.requested[id] = false
+                this.loading[id] = false
                 this.setLoadingState(priority, false)
               })
             }
@@ -401,8 +413,9 @@
       refresh () {
         this.updated++
         this.addLoadingTag('ActiveGroupTasksLoading')
-        this.destroy()
+        this.activeTasksLoading = true
         this.clearTasks()
+        this.destroy()
         this.getGroupAndTasks(this.$router.history.current.params.id)
       },
 
@@ -447,7 +460,7 @@
       },
 
       destroy () {
-        this.activeTasksLoading = true
+        this.isReady = false
         if (this.reactiveActiveTasks) {
           this.reactiveActiveTasks.stopActions()
         }
@@ -455,6 +468,7 @@
         this.loading.progress = false
         this.loading.activities = false
         this.loading.interruptions = false
+        this.tasksDict = undefined
       },
 
       clearTasks () {
@@ -467,6 +481,8 @@
       },
 
       getActiveGroupTasks () {
+        var currentUpdate = this.updated
+        this.activeTasksLoading = true
         this.reactiveActiveTasks.getNext(1).then(() => {
           this.reactiveActiveTasks.getNext(2).then(() => {
             this.reactiveActiveTasks.getNext(3).then(() => {
@@ -477,11 +493,20 @@
                 this.reactiveActiveTasks.onUpdated()
                 this.reactiveActiveTasks.updater()
                 this.reactiveActiveTasks.refresher()
-                setTimeout(() => {
-                  this.activeTasksLoading = false
-                  this.force = false
-                  this.removeLoadingTag('ActiveGroupTasksLoading')
-                }, 500)
+                if (currentUpdate === this.updated) {
+                  setTimeout(() => {
+                    if (currentUpdate === this.updated) {
+                      this.activeTasksLoading = false
+                      this.force = false
+                      this.removeLoadingTag('ActiveGroupTasksLoading')
+                      setTimeout(() => {
+                        if (currentUpdate === this.updated) {
+                          this.isReady = true
+                        }
+                      }, 500)
+                    }
+                  }, 500)
+                }
               }).catch(() => {
                 this.refresh()
               })
@@ -501,9 +526,9 @@
         var f = () => {
           if ((new Date()).getTime() - this.animationStartTime.getTime() >= 800 || this.force) {
             this.isLoadingNewTasks = true
-            this.tasksDict = this.reactiveActiveTasks.getTasksDict()
             this.animationStartTime = new Date()
             this.clearTasks()
+            this.tasksDict = this.reactiveActiveTasks.getTasksDict()
             var tasks = _.sortBy(_.values(this.tasksDict), t => t.order)
             for (let task of tasks) {
               switch (task.priority) {
@@ -841,6 +866,14 @@
       onNewInterruptionClick () {
         this.$refs.groupTaskEditor.openEditor()
         this.$refs.groupTaskEditor.setPriority(4)
+      },
+
+      onMouseEnter (task) {
+        this.isMouseOverInstanceId = task.instance.id
+      },
+
+      onMouseLeave (task) {
+        this.isMouseOverInstanceId = undefined
       }
     },
     beforeRouteUpdate (to, from, next) {

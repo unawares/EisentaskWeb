@@ -1,5 +1,5 @@
 <template>
-  <v-card class="task" :hover="isHoverable && isStaff" ref="task" @click.native="onEditClick">
+  <v-card class="task" :hover="isHoverable && isStaff && isMouseOver" ref="task" @click.native="onEditClick" @mouseenter="mouseEnter" @mouseleave="mouseLeave">
     <v-card-text class="task-text">
       <slot name="text"></slot>
     </v-card-text>
@@ -27,7 +27,8 @@
       'task',
       'color',
       'isDragging',
-      'isStaff'
+      'isStaff',
+      'isMouseOver'
     ],
     watch: {
       isDragging (value) {
@@ -49,6 +50,12 @@
       },
       onDeleteClick () {
         this.$emit('onDeleteClick', this.task)
+      },
+      mouseEnter () {
+        this.$emit('onMouseEnter', this.task)
+      },
+      mouseLeave () {
+        this.$emit('onMouseLeave', this.task)
       }
     }
   }

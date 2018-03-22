@@ -45,8 +45,8 @@
             color="blue"
             ref="titleEditText"
             label="Title"
-            :rules="[(v) => validateTitle(v) || 'Blank is not allowed and max is 25 characters']"
-            :counter="25"
+            :rules="[(v) => validateTitle(v) || 'Blank is not allowed and max is 30 characters']"
+            :counter="30"
             clearable
             required
             v-model="title"

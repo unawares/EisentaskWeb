@@ -35,7 +35,7 @@
           },
           error: {
             text: 'Something went wrong',
-            timeout: 1500,
+            timeout: 5000,
             color: 'error',
             visible: false
           },
