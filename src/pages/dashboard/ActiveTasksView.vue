@@ -37,6 +37,9 @@
                 @onDeleteClick="onDeleteClick"
                 @onEditClick="onEditClick"
                 @onDoneClick="onDoneClick"
+                @onMouseEnter="onMouseEnter"
+                @onMouseLeave="onMouseLeave"
+                :isMouseOver="isMouseOverInstanceId === task.instance.id"
                 :isStaff="true">
                 <span v-html="filterWithUrls(task.text)" slot="text" class="notranslate"></span>
               </active-task>
@@ -80,6 +83,9 @@
                 @onDeleteClick="onDeleteClick"
                 @onEditClick="onEditClick"
                 @onDoneClick="onDoneClick"
+                @onMouseEnter="onMouseEnter"
+                @onMouseLeave="onMouseLeave"
+                :isMouseOver="isMouseOverInstanceId === task.instance.id"
                 :isStaff="true">
                 <span v-html="filterWithUrls(task.text)" slot="text" class="notranslate"></span>
               </active-task>
@@ -123,6 +129,9 @@
                 @onDeleteClick="onDeleteClick"
                 @onEditClick="onEditClick"
                 @onDoneClick="onDoneClick"
+                @onMouseEnter="onMouseEnter"
+                @onMouseLeave="onMouseLeave"
+                :isMouseOver="isMouseOverInstanceId === task.instance.id"
                 :isStaff="true">
                 <span v-html="filterWithUrls(task.text)" slot="text" class="notranslate"></span>
               </active-task>
@@ -166,6 +175,9 @@
                 @onDeleteClick="onDeleteClick"
                 @onEditClick="onEditClick"
                 @onDoneClick="onDoneClick"
+                @onMouseEnter="onMouseEnter"
+                @onMouseLeave="onMouseLeave"
+                :isMouseOver="isMouseOverInstanceId === task.instance.id"
                 :isStaff="true">
                 <span v-html="filterWithUrls(task.text)" slot="text" class="notranslate"></span>
               </active-task>
@@ -211,7 +223,8 @@
         completedTasksEventEmitter: this.$store.getters.completedTasksEventEmitter,
         activeTasksEventEmitter: this.$store.getters.activeTasksEventEmitter,
         activeTasksActiveRequests: this.$store.getters.activeTasksActiveRequests,
-        isDragging: false
+        isDragging: false,
+        isMouseOverInstanceId: undefined
       }
     },
     mounted () {
@@ -488,6 +501,14 @@
       onNewInterruptionClick () {
         this.$refs.taskEditor.openEditor()
         this.$refs.taskEditor.setPriority(4)
+      },
+
+      onMouseEnter (task) {
+        this.isMouseOverInstanceId = task.instance.id
+      },
+
+      onMouseLeave (task) {
+        this.isMouseOverInstanceId = undefined
       }
     },
     beforeRouteUpdate (to, from, next) {
