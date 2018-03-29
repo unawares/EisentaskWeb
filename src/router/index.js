@@ -7,6 +7,7 @@ import CompletedTasksView from '@/pages/dashboard/CompletedTasksView'
 import GroupTasksView from '@/pages/dashboard/GroupTasksView'
 import ActiveGroupTasksView from '@/pages/dashboard/ActiveGroupTasksView'
 import CompletedGroupTasksView from '@/pages/dashboard/CompletedGroupTasksView'
+import AssignedTasksView from '@/pages/dashboard/AssignedTasksView'
 import AuthenticationView from '@/pages/authentication/AuthenticationView'
 import AuthenticationResetPasswordView from '@/pages/authentication/AuthenticationResetPasswordView'
 
@@ -43,6 +44,12 @@ export default new Router({
               component: CompletedGroupTasksView
             }
           ]
+        },
+        {
+          path: 'assigned-tasks/:type',
+          name: 'AssignedTasks',
+          component: AssignedTasksView,
+          props: true
         }
       ]
     },

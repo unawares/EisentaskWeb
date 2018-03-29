@@ -4,7 +4,7 @@
       <v-layout justify-center>
         <v-flex>
           <header class="header">
-            <span class="text">Group Settings</span>
+            <span class="headline">Group Settings</span>
             <v-spacer></v-spacer>
             <v-btn flat icon @click="closeGroupSettings">
               <v-icon class="notranslate">close</v-icon>
@@ -30,7 +30,7 @@
         <v-container v-if="selected === 'main'" class="group-main-settings-view">
           <v-layout justify-start>
             <v-flex xs12 sm12 md10 lg9 xl8>
-              <span class="group-settings-header">Main</span>
+              <span class="headline">Main</span>
               <v-text-field
                 color="blue"
                 label="Tittle"

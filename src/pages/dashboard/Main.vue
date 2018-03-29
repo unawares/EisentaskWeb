@@ -36,6 +36,23 @@
             </v-list-tile-content>
           </v-list-tile>
           <v-divider></v-divider>
+          <v-list-tile router to="/dashboard/assigned-tasks/active" >
+            <v-list-tile-action>
+              <v-icon class="notranslate">assignment</v-icon>
+            </v-list-tile-action>
+            <v-list-tile-content>
+              <v-list-tile-title>Assigned Tasks</v-list-tile-title>
+            </v-list-tile-content>
+          </v-list-tile>
+          <v-list-tile router to="/dashboard/assigned-tasks/archived" >
+            <v-list-tile-action>
+              <v-icon class="notranslate">folder</v-icon>
+            </v-list-tile-action>
+            <v-list-tile-content>
+              <v-list-tile-title>Archived Tasks</v-list-tile-title>
+            </v-list-tile-content>
+          </v-list-tile>
+          <v-divider></v-divider>
         </v-list>
         <my-groups-list
           ref="groupsList"
@@ -64,6 +81,8 @@
           <v-slide-y-transition mode="out-in">
             <router-view
               ref="view"
+              :openSettings="openSettings"
+              :closeSettings="closeSettings"
               :addLoadingTag="addLoadingTag"
               :removeLoadingTag="removeLoadingTag"
               :showNotification="showNotification">
@@ -105,10 +124,6 @@
         loadingTags: [],
         drawer: false,
         items: [
-          { icon: 'info_outline', title: 'Active Tasks', to: '/dashboard/active-tasks' },
-          { icon: 'done', title: 'Completed Tasks', to: '/dashboard/completed-tasks' }
-        ],
-        groups: [
           { icon: 'info_outline', title: 'Active Tasks', to: '/dashboard/active-tasks' },
           { icon: 'done', title: 'Completed Tasks', to: '/dashboard/completed-tasks' }
         ],

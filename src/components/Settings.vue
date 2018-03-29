@@ -8,11 +8,20 @@
       @onClickCloseAction="onClickCloseAction"
       :showNotification="showNotification">
     </group-settings>
+    <assignment-settings
+      v-else-if="section === 'assignment-settings'"
+      :section="section"
+      :kwargs="kwargs"
+      :scrollEvent="scrollEvent"
+      @onClickCloseAction="onClickCloseAction"
+      :showNotification="showNotification">
+    </assignment-settings>
   </div>
 </template>
 
 <script>
   import GroupSettings from '@/components/GroupSettings'
+  import AssignmentSettings from '@/components/AssignmentSettings'
 
   export default {
     name: 'Settings',
@@ -35,7 +44,8 @@
       }
     },
     components: {
-      GroupSettings
+      GroupSettings,
+      AssignmentSettings
     }
   }
 </script>

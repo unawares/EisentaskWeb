@@ -8,6 +8,7 @@
 <script>
   import Vue from 'vue'
   import Vuetify from 'vuetify'
+  import VueMasonry from 'vue-masonry-css'
   import Notifications from '@/components/Notifications'
 
   function isFunction (functionToCheck) {
@@ -26,6 +27,7 @@
       interruptions_sub: '#717171'
     }
   })
+  Vue.use(VueMasonry)
 
   export default {
     data () {
