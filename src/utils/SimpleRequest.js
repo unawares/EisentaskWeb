@@ -14,7 +14,6 @@ export default function (url, data) {
           { getUrl () { return url } },
           data
         ).onSuccess((response) => {
-          console.log(JSON.stringify(response.data))
           resolve(response)
         }).onError((error) => {
           reject(error)

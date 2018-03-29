@@ -163,7 +163,6 @@
         var self = this
         simpleRequest('/api/assignments/private/').method('get').then((response) => {
           var assignments = response.data
-          self.assignments.splice(0, self.assignments.length)
           for (let assignment of assignments) {
             if (this.type === 'archived' && !assignment.archived) {
               continue
@@ -179,7 +178,6 @@
                 if (v) {
                   this.loading = true
                   simpleRequest('/api/assignments/private/' + this.uuid + '/get_assignment_profile_emails/').method('get').then((response) => {
-                    console.log(response)
                     this.emails = response.data.map((v) => {
                       return v.email
                     })
@@ -190,6 +188,7 @@
                       this.displayEmails.push(this.emails[i])
                     }
                     this.loading = false
+                    console.log(response)
                   }).catch((error) => {
                     self.showNotification('error')
                     console.log(error)
@@ -250,8 +249,8 @@
                 break
             }
             assignment.show = openedAssignmentUuids && openedAssignmentUuids.indexOf(assignment.uuid) !== -1
-            self.assignments.push(assignment)
           }
+          self.assignments = assignments
           console.log(response)
         }).catch((error) => {
           this.showNotification('error')
@@ -359,6 +358,7 @@
       onSettingsClick (assignment) {
         var self = this
         this.openSettings('assignment-settings', {
+          context: this,
           assignment: assignment,
           assignments: this.assignments,
           onUpdatedAssignment () {

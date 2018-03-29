@@ -106,6 +106,61 @@
           </v-layout>
         </v-container>
         <v-container v-if="selected === 'users'">
+          <v-layout justify-start>
+            <v-flex xs12 sm12 md10 lg9 xl8>
+              <v-list two-line>
+                <v-list-tile>
+                  <v-list-tile-content style="margin-right: 16px">
+                    <v-text-field
+                      color="blue"
+                      label="Email"
+                      v-model="email"
+                    ></v-text-field>
+                  </v-list-tile-content>
+                  <v-list-tile-action>
+                    <v-btn flat color="blue" @click="assignToEmail">ADD</v-btn>
+                  </v-list-tile-action>
+                </v-list-tile>
+                <v-list-tile v-for="email in emails" :key="email">
+                  <v-list-tile-content>
+                    <v-list-tile-title>{{ email }}</v-list-tile-title>
+                  </v-list-tile-content>
+                  <v-list-tile-action>
+                    <v-menu
+                      :close-on-content-click="false"
+                      :nudge-width="200"
+                      v-model="menus[email]"
+                    >
+                      <v-btn flat icon light slot="activator" color="grey">
+                        <v-icon class="notranslate">more_vert</v-icon>
+                      </v-btn>
+                      <v-card>
+                        <v-list>
+                          <v-list-tile>
+                            <v-list-tile-content>
+                              <v-list-tile-title>{{ email }}</v-list-tile-title>
+                            </v-list-tile-content>
+                            <v-list-tile-action>
+                              <v-btn icon @click.native="menus[email] = false">
+                                <v-icon color="grey">close</v-icon>
+                              </v-btn>
+                            </v-list-tile-action>
+                          </v-list-tile>
+                        </v-list>
+                        <v-divider></v-divider>
+                        <v-list>
+                          <v-list-tile
+                            @click="removeUser(email)">
+                            <v-list-tile-title>Remove user</v-list-tile-title>
+                          </v-list-tile>
+                        </v-list>
+                      </v-card>
+                    </v-menu>
+                  </v-list-tile-action>
+                </v-list-tile>
+              </v-list>
+            </v-flex>
+          </v-layout>
         </v-container>
       </div>
     </div>
@@ -130,25 +185,40 @@
         name: '',
         description: '',
         access: 0,
-        label_color: 0
+        label_color: 0,
+        email: '',
+        menus: {},
+        emails: []
       }
     },
     mounted () {
       this.assignment = this.kwargs.assignment
       this.selected = 'main'
+      this.getAssignedEmails()
     },
     watch: {
       assignment: {
         handler (obj) {
-          this.name = obj.name
-          this.description = obj.description
-          this.access = obj.access
-          this.label_color = obj.label_color
+          this.setAssignment(obj)
         },
         deep: true
       }
     },
     methods: {
+      refresh () {
+        this.assignment = this.kwargs.assignment
+        this.getAssignedEmails()
+      },
+      setAssignment (obj) {
+        this.name = obj.name
+        this.description = obj.description
+        this.access = obj.access
+        this.label_color = obj.label_color
+        this.emails = []
+        for (let email of obj.emails) {
+          this.emails.push(email)
+        }
+      },
       closeAssignmentSettings () {
         this.$emit('onClickCloseAction')
       },
@@ -164,14 +234,12 @@
           this.showNotification('showSuccessWithText', 'The assignment has been updated')
           this.kwargs.onUpdatedAssignment(this.assignment)
         }).catch((error) => {
+          this.refresh()
           console.log(error)
         })
       },
       resetAssignment () {
-        this.name = this.assignment.name
-        this.description = this.assignment.description
-        this.access = this.assignment.access
-        this.label_color = this.assignment.label_color
+        this.setAssignment(this.assignment)
       },
       deleteAssignment () {
         simpleRequest('/api/assignments/private/' + this.assignment.uuid + '/delete_assignment_tasks/').method('delete').then(() => {
@@ -183,7 +251,42 @@
           this.closeAssignmentSettings()
           this.kwargs.onDeletedAssignment(this.assignment)
         }).catch(() => {
+          this.refresh()
           this.showNotification('error')
+        })
+      },
+      assignToEmail () {
+        this.assignment.email = this.email
+        this.kwargs.context.assignTo(this.assignment)
+        this.emails.unshift(this.email)
+        this.email = ''
+        this.getAssignedEmails()
+        this.assignment
+      },
+      removeUser (email) {
+        this.kwargs.context.removeUser(this.assignment, email)
+        let index = this.emails.indexOf(email)
+        if (index !== -1) {
+          this.emails.splice(index, 1)
+        }
+        this.getAssignedEmails()
+      },
+      getAssignedEmails () {
+        simpleRequest('/api/assignments/private/' + this.assignment.uuid + '/get_assignment_profile_emails/').method('get').then((response) => {
+          this.assignment.emails = response.data.map((v) => {
+            return v.email
+          })
+          while (this.assignment.displayEmails.length > 0) {
+            this.assignment.displayEmails.pop()
+          }
+          for (let i = 0; i < this.assignment.count && i < this.assignment.emails.length; i++) {
+            this.assignment.displayEmails.push(this.assignment.emails[i])
+          }
+          console.log(response)
+        }).catch((error) => {
+          this.refresh()
+          self.showNotification('error')
+          console.log(error)
         })
       }
     }
