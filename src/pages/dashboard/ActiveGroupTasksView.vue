@@ -236,16 +236,16 @@
           </v-card-actions>
         </v-card>
       </v-flex>
-      <group-task-editor
-        ref="groupTaskEditor"
-        style="visibility: hidden"
-        @updateActiveGroupTask="updateActiveGroupTask"
-        @createActiveGroupTask="createActiveGroupTask"
-        @opened="openedGroupTaskEditor"
-        @closed="closedGroupTaskEditor"
-        :isStaff="isStaff">
-      </group-task-editor>
     </v-layout>
+    <group-task-editor
+      ref="groupTaskEditor"
+      style="visibility: hidden"
+      @updateActiveGroupTask="updateActiveGroupTask"
+      @createActiveGroupTask="createActiveGroupTask"
+      @opened="openedGroupTaskEditor"
+      @closed="closedGroupTaskEditor"
+      :isStaff="isStaff">
+    </group-task-editor>
   </v-container>
 </template>
 
@@ -487,13 +487,13 @@
           this.reactiveActiveTasks.getNext(2).then(() => {
             this.reactiveActiveTasks.getNext(3).then(() => {
               this.reactiveActiveTasks.getNext(4).then(() => {
-                this.reactiveActiveTasks.setOnUpdated(() => {
-                  this.setTasks()
-                })
-                this.reactiveActiveTasks.onUpdated()
-                this.reactiveActiveTasks.updater()
-                this.reactiveActiveTasks.refresher()
                 if (currentUpdate === this.updated) {
+                  this.reactiveActiveTasks.setOnUpdated(() => {
+                    this.setTasks()
+                  })
+                  this.reactiveActiveTasks.onUpdated()
+                  this.reactiveActiveTasks.updater()
+                  this.reactiveActiveTasks.refresher()
                   setTimeout(() => {
                     if (currentUpdate === this.updated) {
                       this.activeTasksLoading = false
@@ -569,10 +569,10 @@
               if (data.group.id === group.id) {
                 this.group.override(getGroupFromResponse({...group, memberCardId: data.id}))
                 this.isStaff = data.is_staff
+                if (this.reactiveActiveTasks) {
+                  this.reactiveActiveTasks.stopActions()
+                }
                 if (currentUpdate === this.updated) {
-                  if (this.reactiveActiveTasks) {
-                    this.reactiveActiveTasks.stopActions()
-                  }
                   this.reactiveActiveTasks = new ReactiveActiveGroupTasks(this.group)
                   this.getActiveGroupTasks()
                 }

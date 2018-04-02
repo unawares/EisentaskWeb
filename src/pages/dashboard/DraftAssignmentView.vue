@@ -1,5 +1,11 @@
 <template>
   <v-container>
+    <v-container style="position: relative; margin-top: 20px; margin-bottom: 20px">
+      <div style="border-radius: 3px; position: absolute; top: 0; bottom: 0; left: 0; right: 0; background-color: white; opacity: 0.1"></div>
+      <v-btn flat color="blue" @click="onSaveDraftAssignment">save</v-btn>
+      <v-btn flat color="blue">reset</v-btn>
+      <v-btn flat color="blue">settings</v-btn>
+    </v-container>
     <v-layout row justify-center wrap>
       <v-flex xs12 sm6 md3 lg3 xl3 class="list-of-tasks">
         <v-card light>
@@ -22,24 +28,22 @@
               :options="{group: 'tasks', handle: '.my-handle', scrollSensitivity: 160, animation: 150}"
               :list="tasks.goals"
               :no-transition-on-drag="true"
-              @add="onDragAdd"
-              @update="onDragUpdate"
               @start="onDragStart"
               @end="onDragEnd"
               class="list">
               <active-task
                 class="my-handle"
                 v-for="task in tasks.goals"
-                :key="task.instance.id"
+                :key="keys.get(task)"
                 :task="task"
                 :color="'goals'"
                 :isDragging="isDragging"
                 @onDeleteClick="onDeleteClick"
                 @onEditClick="onEditClick"
-                @onDoneClick="onDoneClick"
                 @onMouseEnter="onMouseEnter"
                 @onMouseLeave="onMouseLeave"
-                :isMouseOver="isMouseOverInstanceId === task.instance.id"
+                :actions="['edit', 'delete']"
+                :isMouseOver="isMouseOverInstanceId === keys.get(task)"
                 :isStaff="true">
                 <span v-html="filterWithUrls(task.text)" slot="text" class="notranslate"></span>
               </active-task>
@@ -68,24 +72,22 @@
               :options="{group: 'tasks', handle: '.my-handle', scrollSensitivity: 160, animation: 150}"
               :list="tasks.progress"
               :no-transition-on-drag="true"
-              @add="onDragAdd"
-              @update="onDragUpdate"
               @start="onDragStart"
               @end="onDragEnd"
               class="list">
               <active-task
                 class="my-handle"
                 v-for="task in tasks.progress"
-                :key="task.instance.id"
+                :key="keys.get(task)"
                 :task="task"
                 :color="'progress'"
                 :isDragging="isDragging"
                 @onDeleteClick="onDeleteClick"
                 @onEditClick="onEditClick"
-                @onDoneClick="onDoneClick"
                 @onMouseEnter="onMouseEnter"
                 @onMouseLeave="onMouseLeave"
-                :isMouseOver="isMouseOverInstanceId === task.instance.id"
+                :actions="['edit', 'delete']"
+                :isMouseOver="isMouseOverInstanceId === keys.get(task)"
                 :isStaff="true">
                 <span v-html="filterWithUrls(task.text)" slot="text" class="notranslate"></span>
               </active-task>
@@ -114,24 +116,22 @@
               :options="{group: 'tasks', handle: '.my-handle', scrollSensitivity: 160, animation: 150}"
               :list="tasks.activities"
               :no-transition-on-drag="true"
-              @add="onDragAdd"
-              @update="onDragUpdate"
               @start="onDragStart"
               @end="onDragEnd"
               class="list">
               <active-task
                 class="my-handle"
                 v-for="task in tasks.activities"
-                :key="task.instance.id"
+                :key="keys.get(task)"
                 :task="task"
                 :color="'activities'"
                 :isDragging="isDragging"
                 @onDeleteClick="onDeleteClick"
                 @onEditClick="onEditClick"
-                @onDoneClick="onDoneClick"
                 @onMouseEnter="onMouseEnter"
                 @onMouseLeave="onMouseLeave"
-                :isMouseOver="isMouseOverInstanceId === task.instance.id"
+                :actions="['edit', 'delete']"
+                :isMouseOver="isMouseOverInstanceId === keys.get(task)"
                 :isStaff="true">
                 <span v-html="filterWithUrls(task.text)" slot="text" class="notranslate"></span>
               </active-task>
@@ -160,24 +160,22 @@
               :options="{group: 'tasks', handle: '.my-handle', scrollSensitivity: 160, animation: 150}"
               :list="tasks.interruptions"
               :no-transition-on-drag="true"
-              @add="onDragAdd"
-              @update="onDragUpdate"
               @start="onDragStart"
               @end="onDragEnd"
               class="list">
               <active-task
                 class="my-handle"
                 v-for="task in tasks.interruptions"
-                :key="task.instance.id"
+                :key="keys.get(task)"
                 :task="task"
                 :color="'interruptions'"
                 :isDragging="isDragging"
                 @onDeleteClick="onDeleteClick"
                 @onEditClick="onEditClick"
-                @onDoneClick="onDoneClick"
                 @onMouseEnter="onMouseEnter"
                 @onMouseLeave="onMouseLeave"
-                :isMouseOver="isMouseOverInstanceId === task.instance.id"
+                :actions="['edit', 'delete']"
+                :isMouseOver="isMouseOverInstanceId === keys.get(task)"
                 :isStaff="true">
                 <span v-html="filterWithUrls(task.text)" slot="text" class="notranslate"></span>
               </active-task>
@@ -189,22 +187,32 @@
     <task-editor
       ref="taskEditor"
       style="visibility: hidden"
-      @updateTask="updateTask"
-      @createTask="createTask"
+      @updateTask="onUpdateTask"
+      @createTask="onCreateTask"
       :isStaff="true">
     </task-editor>
   </v-container>
 </template>
 
 <script>
+  import _ from 'underscore'
   import Draggable from 'vuedraggable'
   import TaskEditor from '@/components/TaskEditor'
   import ActiveTask from '@/components/ActiveTask'
 
+  var getNextIndex = (function () {
+    var index = 0
+    return () => {
+      return ++index
+    }
+  })()
+
   export default {
     props: [
       'addLoadingTag',
-      'removeLoadingTag'
+      'removeLoadingTag',
+      'id',
+      'showNotification'
     ],
     data () {
       return {
@@ -220,51 +228,95 @@
           activities: [],
           interruptions: []
         },
-        completedTasksEventEmitter: this.$store.getters.completedTasksEventEmitter,
-        activeTasksEventEmitter: this.$store.getters.activeTasksEventEmitter,
-        activeTasksActiveRequests: this.$store.getters.activeTasksActiveRequests,
+        arrayOfTasks: [],
         isDragging: false,
-        isMouseOverInstanceId: undefined
+        isMouseOverInstanceId: undefined,
+        keys: new Map()
       }
     },
     mounted () {
-      this.removeLoadingTag('TasksLoading')
-      this.removeLoadingTag('CompletedTasksLoading')
-      this.activeTasksEventEmitter.removeAllListeners('updated', () => {})
-      this.completedTasksEventEmitter.removeAllListeners('updated', () => {})
-      this.refreshAndGetActiveTasks()
-      this.activeTasksEventEmitter.on('updated', () => {
-        this.setActiveTasks()
-        this.removeLoadingTag('TasksLoading')
-      })
+      this.init()
       setTimeout(() => {
         if (this.$refs.taskEditor) {
           this.$refs.taskEditor.$el.style.visibility = 'visible'
         }
       }, 700)
-    },
-    beforeDestroy () {
-      this.activeTasksEventEmitter.removeListener('updated', () => {})
-      this.removeLoadingTag('TasksLoading')
-    },
-    watch: {
-      activeTasksActiveRequests: {
-        handler () {
-          if (this.activeTasksActiveRequests.count > 0) {
-            this.addLoadingTag('TasksLoading')
-          }
-        },
-        deep: true
-      }
+      window.test = this
     },
     components: {
       Draggable,
       ActiveTask,
       TaskEditor
     },
+    watch: {
+      $route (to, from) {
+        this.refresh()
+      },
+      arrayOfTasks (values) {
+        this.clearTasks()
+        this.keys = new Map()
+        for (let task of values) {
+          this.keys.set(task, getNextIndex())
+          if (task.action !== 'delete') {
+            switch (task.priority) {
+              case 1:
+                this.tasks.goals.push(task)
+                break
+              case 2:
+                this.tasks.progress.push(task)
+                break
+              case 3:
+                this.tasks.activities.push(task)
+                break
+              case 4:
+                this.tasks.interruptions.push(task)
+                break
+            }
+          }
+        }
+      }
+    },
+
+    beforeDestroy () {
+      this.$store.getters.draftAssignmentsEventEmitter.removeListener('updated', this.draftAssignmentsListener)
+    },
+
     methods: {
       refresh () {
-        this.refreshAndGetActiveTasks()
+        this.init()
+      },
+
+      init () {
+        this.$store.getters.draftAssignmentsEventEmitter.removeListener('updated', this.draftAssignmentsListener)
+        this.$store.commit('getProfileData')
+        this.$store.getters.draftAssignmentsEventEmitter.on('updated', this.draftAssignmentsListener)
+      },
+
+      draftAssignmentsListener (draftAssignments) {
+        if (!this.synchronize(draftAssignments)) {
+          this.error()
+        }
+      },
+
+      error () {
+        this.$store.getters.draftAssignmentsEventEmitter.removeListener('updated', this.draftAssignmentsListener)
+        this.$router.replace('/dashboard/assigned-tasks/active/')
+      },
+
+      synchronize (draftAssignments) {
+        var index = 0
+        for (; index < draftAssignments.length && draftAssignments[index].id !== this.id; index++) {}
+        if (index !== draftAssignments.length) {
+          this.setDraftAssignment(draftAssignments[index])
+          return true
+        } else {
+          return false
+        }
+      },
+
+      setDraftAssignment (draftAssignment) {
+        this.draftAssignment = draftAssignment
+        this.arrayOfTasks = draftAssignment.tasks
       },
 
       clearTasks () {
@@ -273,57 +325,6 @@
           progress: [],
           activities: [],
           interruptions: []
-        }
-      },
-
-      refreshAndGetActiveTasks () {
-        this.addLoadingTag('TasksLoading')
-        this.$store.commit('refreshActiveTasks')
-        setTimeout(() => {
-          this.$store.commit('getActiveTasks')
-        })
-      },
-
-      setActiveTasks () {
-        var tasks = this.$store.getters.activeTasks
-        var orders = this.$store.getters.activeTasksOrders
-        var tasksMap = new Map(tasks.map((task) => [task.instance.id, task]))
-        this.clearTasks()
-        for (let pk of orders.goals) {
-          let task = tasksMap.get(pk)
-          if (task) {
-            this.tasks.goals.push(task)
-          } else {
-            this.refreshAndGetActiveTasks()
-            return
-          }
-        }
-        for (let pk of orders.progress) {
-          let task = tasksMap.get(pk)
-          if (task) {
-            this.tasks.progress.push(tasksMap.get(pk))
-          } else {
-            this.refreshAndGetActiveTasks()
-            return
-          }
-        }
-        for (let pk of orders.activities) {
-          let task = tasksMap.get(pk)
-          if (task) {
-            this.tasks.activities.push(tasksMap.get(pk))
-          } else {
-            this.refreshAndGetActiveTasks()
-            return
-          }
-        }
-        for (let pk of orders.interruptions) {
-          let task = tasksMap.get(pk)
-          if (task) {
-            this.tasks.interruptions.push(tasksMap.get(pk))
-          } else {
-            this.refreshAndGetActiveTasks()
-            return
-          }
         }
       },
 
@@ -341,115 +342,13 @@
         return -1
       },
 
-      onDragAdd (evt) {
-        var newPriority = this.getPriorityByString(evt.to.id)
-        var newIndex = evt.newIndex
-        var task
-        switch (newPriority) {
-          case 1:
-            task = this.tasks.goals[newIndex]
-            break
-          case 2:
-            task = this.tasks.progress[newIndex]
-            break
-          case 3:
-            task = this.tasks.activities[newIndex]
-            break
-          case 4:
-            task = this.tasks.interruptions[newIndex]
-            break
-        }
-        task.priority = newPriority
-        task.newPosition = newIndex
-        this.updatedTask(task)
-        this.$store.commit('updateActiveTask', task)
-      },
-
-      onDragUpdate (evt) {
-        var newPriority = this.getPriorityByString(evt.to.id)
-        var newIndex = evt.newIndex
-        var task
-        switch (newPriority) {
-          case 1:
-            task = this.tasks.goals[newIndex]
-            break
-          case 2:
-            task = this.tasks.progress[newIndex]
-            break
-          case 3:
-            task = this.tasks.activities[newIndex]
-            break
-          case 4:
-            task = this.tasks.interruptions[newIndex]
-            break
-        }
-        task.priority = newPriority
-        task.newPosition = newIndex
-        this.updatedTask(task)
-        this.$store.commit('updateActiveTask', task)
-      },
-
       onDragStart () {
         this.isDragging = true
       },
 
       onDragEnd () {
         this.isDragging = false
-      },
-
-      createTask (task) {
-        this.$store.commit('createActiveTask', task)
-        this.createdTask(task)
-      },
-
-      updateTask (task) {
-        this.$store.commit('updateActiveTask', task)
-        this.updatedTask(task)
-      },
-
-      createdTask (task) {
-        if (!task.completed) {
-          switch (task.priority) {
-            case 1:
-              this.tasks.goals.unshift(task)
-              break
-            case 2:
-              this.tasks.progress.unshift(task)
-              break
-            case 3:
-              this.tasks.activities.unshift(task)
-              break
-            case 4:
-              this.tasks.interruptions.unshift(task)
-              break
-          }
-        }
-      },
-
-      updatedTask (task) {
-        if (task.completed) {
-          for (let priority in this.tasks) {
-            let index = this.tasks[priority].findIndex((t) => {
-              return task.instance.id === t.instance.id
-            })
-            if (index !== -1) {
-              this.tasks[priority].splice(index, 1)
-              break
-            }
-          }
-        }
-      },
-
-      deletedTask (task) {
-        for (let priority in this.tasks) {
-          let index = this.tasks[priority].findIndex((t) => {
-            return task.instance.id === t.instance.id
-          })
-          if (index !== -1) {
-            this.tasks[priority].splice(index, 1)
-            break
-          }
-        }
+        this.syncTasks()
       },
 
       filterWithUrls (text) {
@@ -464,24 +363,127 @@
         })
       },
 
+      onMouseEnter (task) {
+        this.isMouseOverInstanceId = this.keys.get(task)
+      },
+
+      onMouseLeave (task) {
+        this.isMouseOverInstanceId = undefined
+      },
+
+      createTask (text, priority) {
+        this.$store.getters.draftAssignmentsEventEmitter.once('updated', (draftAssignments) => {
+          if (!this.synchronize(draftAssignments)) {
+            this.$router.replace('/dashboard/active-tasks/')
+          }
+        })
+        this.$store.commit('createAssignedTask', [this.draftAssignment.id, text, priority])
+      },
+
+      updateTask (task, text, priority) {
+        var index = this.arrayOfTasks.indexOf(task)
+        if (index !== -1) {
+          this.$store.getters.draftAssignmentsEventEmitter.once('updated', (draftAssignments) => {
+            if (!this.synchronize(draftAssignments)) {
+              this.$router.replace('/dashboard/active-tasks/')
+            }
+          })
+          this.$store.commit('updateAssignedTask', [this.draftAssignment.id, index, text, priority])
+        } else {
+          this.refresh()
+        }
+      },
+
+      onCreateTask (task) {
+        this.createTask(task.text, task.priority)
+      },
+
+      onUpdateTask (task) {
+        this.updateTask(task.ref, task.text, task.priority)
+      },
+
+      deleteTask (task) {
+        var index = this.arrayOfTasks.indexOf(task)
+        if (index !== -1) {
+          this.$store.getters.draftAssignmentsEventEmitter.once('updated', (draftAssignments) => {
+            if (!this.synchronize(draftAssignments)) {
+              this.$router.replace('/dashboard/active-tasks/')
+            }
+          })
+          this.$store.commit('deleteAssignedTask', [this.draftAssignment.id, index])
+        } else {
+          this.refresh()
+        }
+      },
+
+      syncTasks (task) {
+        var a = new Map()
+        var arr = []
+        for (let i = 0; i < this.tasks.goals.length; i++) {
+          if (this.tasks.goals[i].priority !== 1) {
+            this.tasks.goals[i].action = 'update'
+          }
+          a.set(this.tasks.goals[i], i + 1)
+          this.tasks.goals[i].priority = 1
+          arr.push(this.tasks.goals[i])
+        }
+        for (let i = 0; i < this.tasks.progress.length; i++) {
+          if (this.tasks.progress[i].priority !== 2) {
+            this.tasks.progress[i].action = 'update'
+          }
+          a.set(this.tasks.progress[i], i + 1)
+          this.tasks.progress[i].priority = 2
+          arr.push(this.tasks.progress[i])
+        }
+        for (let i = 0; i < this.tasks.activities.length; i++) {
+          if (this.tasks.activities[i].priority !== 3) {
+            this.tasks.activities[i].action = 'update'
+          }
+          a.set(this.tasks.activities[i], i + 1)
+          this.tasks.activities[i].priority = 3
+          arr.push(this.tasks.activities[i])
+        }
+        for (let i = 0; i < this.tasks.interruptions.length; i++) {
+          if (this.tasks.interruptions[i].priority !== 4) {
+            this.tasks.interruptions[i].action = 'update'
+          }
+          a.set(this.tasks.interruptions[i], i + 1)
+          this.tasks.interruptions[i].priority = 4
+          arr.push(this.tasks.interruptions[i])
+        }
+        arr = _.sortBy(arr, (v) => { return a.get(v) })
+        this.$store.commit(
+          'setDraftAssignedTasks',
+          [this.draftAssignment.id, [...arr, ...this.arrayOfTasks.filter(v => v.action === 'delete')]])
+      },
+
+      onDeleteClick (task) {
+        this.deleteTask(task)
+      },
+
       onEditClick (task) {
+        var t = JSON.parse(JSON.stringify(task))
+        t.ref = task
         if (window.linkClicked) {
           window.linkClicked = false
         } else {
           this.$refs.taskEditor.openEditor()
-          this.$refs.taskEditor.setTaskInstance(task)
+          this.$refs.taskEditor.setTaskInstance(t)
         }
       },
 
-      onDeleteClick (task) {
-        this.deletedTask(task)
-        this.$store.commit('deleteActiveTask', task)
-      },
-
-      onDoneClick (task) {
-        task.completed = true
-        this.updatedTask(task)
-        this.$store.commit('updateActiveTask', task)
+      onSaveDraftAssignment () {
+        var onError = () => {
+          this.showNotification('error')
+        }
+        this.$store.getters.draftAssignmentEventEmitter.removeAllListeners('updated')
+        this.$store.getters.draftAssignmentEventEmitter.once('error', onError)
+        this.$store.getters.draftAssignmentEventEmitter.once('updated', (draftAssignment) => {
+          this.showNotification('showSuccessWithText', 'The assignment has been saved')
+          this.$store.getters.draftAssignmentEventEmitter.removeListener('error', onError)
+          this.$router.push('/dashboard/assigned-tasks/active/')
+        })
+        this.$store.commit('saveDraftAssigment', [this.draftAssignment.id])
       },
 
       onNewGoalClick () {
@@ -502,16 +504,9 @@
       onNewInterruptionClick () {
         this.$refs.taskEditor.openEditor()
         this.$refs.taskEditor.setPriority(4)
-      },
-
-      onMouseEnter (task) {
-        this.isMouseOverInstanceId = task.instance.id
-      },
-
-      onMouseLeave (task) {
-        this.isMouseOverInstanceId = undefined
       }
-    },
+    }
+    /*
     beforeRouteUpdate (to, from, next) {
       if (this.$refs.groupTaskEditor.isActive()) {
         this.$refs.groupTaskEditor.closeEditor()
@@ -520,6 +515,7 @@
         next()
       }
     }
+    */
   }
 </script>
 

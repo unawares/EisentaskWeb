@@ -1,14 +1,20 @@
 <template>
-  <v-card class="task" :hover="isHoverable && isStaff && isMouseOver" ref="task" @click.native="onEditClick" @mouseenter="mouseEnter" @mouseleave="mouseLeave">
+  <v-card
+    class="task"
+    :hover="isHoverable && isStaff && isMouseOverWrapper"
+    ref="task"
+    @click.native="() => { if (actions.indexOf('edit') !== -1) { onEditClick() } }"
+    @mouseenter="mouseEnter"
+    @mouseleave="mouseLeave">
     <v-card-text class="task-text">
       <slot name="text"></slot>
     </v-card-text>
     <v-card-actions>
-      <v-btn v-if="isStaff" flat icon :color="color" @click.stop="onDeleteClick">
+      <v-btn v-if="isStaff && actions.indexOf('delete') !== -1" flat icon :color="color" @click.stop="onDeleteClick">
         <v-icon class="notranslate">delete</v-icon>
       </v-btn>
       <v-spacer></v-spacer>
-      <v-btn flat icon :color="color" @click.stop="onDoneClick">
+      <v-btn v-if="actions.indexOf('complete') !== -1" flat icon :color="color" @click.stop="onDoneClick">
         <v-icon class="notranslate">done</v-icon>
       </v-btn>
     </v-card-actions>
@@ -20,16 +26,26 @@
     name: 'ActiveTask',
     data () {
       return {
-        isHoverable: true
+        isHoverable: true,
+        isMouseOverWrapper: false
       }
     },
-    props: [
-      'task',
-      'color',
-      'isDragging',
-      'isStaff',
-      'isMouseOver'
-    ],
+    props: {
+      task: Object,
+      color: String,
+      isDragging: Boolean,
+      isStaff: Boolean,
+      isMouseOver: Boolean,
+      actions: {
+        type: Array,
+        default: () => {
+          return ['complete', 'edit', 'delete']
+        }
+      }
+    },
+    mounted () {
+      this.isMouseOverWrapper = this.isMouseOver
+    },
     watch: {
       isDragging (value) {
         if (!this.$el.classList.contains('sortable-ghost')) {
@@ -38,6 +54,19 @@
           } else {
             this.isHoverable = true
           }
+        }
+      },
+      isMouseOver () {
+        if (!this.isMouseOver) {
+          setTimeout(() => {
+            if (!this.isMouseOver) {
+              this.isMouseOverWrapper = false
+            } else {
+              this.isMouseOverWrapper = true
+            }
+          }, 200)
+        } else {
+          this.isMouseOverWrapper = true
         }
       }
     },

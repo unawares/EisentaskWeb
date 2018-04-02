@@ -9,7 +9,7 @@ export default class Group {
     this.description = this.description || instance.description
     this.isPublic = this.isPublic || instance.isPublic
     this.isJoiningAllowed = this.isJoiningAllowed || instance.isJoiningAllowed
-    this.image = this.image || instance.image
+    // this.image = this.image || instance.image
     this.created = this.created || instance.created
     this.updated = this.updated || instance.updated
     this.admin = this.admin || instance.admin
@@ -21,7 +21,7 @@ export default class Group {
     this.description = instance.description
     this.isPublic = instance.isPublic
     this.isJoiningAllowed = instance.isJoiningAllowed
-    this.image = instance.image
+    // this.image = instance.image
     this.created = instance.created
     this.updated = instance.updated
     this.admin = instance.admin

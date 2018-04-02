@@ -114,7 +114,10 @@
                     <v-text-field
                       color="blue"
                       label="Email"
-                      v-model="email"
+                      v-model="assignment.email"
+                      min="8"
+                      :error="assignment.field.isError"
+                      :rules="assignment.field.messages"
                     ></v-text-field>
                   </v-list-tile-content>
                   <v-list-tile-action>
@@ -186,7 +189,6 @@
         description: '',
         access: 0,
         label_color: 0,
-        email: '',
         menus: {},
         emails: []
       }
@@ -197,6 +199,11 @@
       this.getAssignedEmails()
     },
     watch: {
+      selected (value) {
+        if (value === 'users') {
+          this.assignment.field.messages = []
+        }
+      },
       assignment: {
         handler (obj) {
           this.setAssignment(obj)
@@ -256,7 +263,6 @@
         })
       },
       assignToEmail () {
-        this.assignment.email = this.email
         this.kwargs.context.assignTo(this.assignment)
         this.emails.unshift(this.email)
         this.email = ''

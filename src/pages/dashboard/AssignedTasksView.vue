@@ -95,6 +95,70 @@
         </v-card>
       </div>
     </masonry>
+    <v-btn
+      v-if="type == 'active'"
+      ref="button"
+      dark
+      color="activities"
+      fab
+      fixed
+      right
+      bottom
+      @click="dialog = true"
+    >
+      <v-icon class="notranslate">add</v-icon>
+    </v-btn>
+    <v-dialog v-if="type == 'active'" v-model="dialog" max-width="400">
+      <v-card>
+        <v-card-title class="headline">Creating Group</v-card-title>
+        <v-card-text>
+          <v-text-field
+            color="blue"
+            ref="nameEditText"
+            label="Name"
+            :rules="[(v) => validateName(v) || 'Blank is not allowed and max is 200 characters']"
+            :counter="200"
+            clearable
+            required
+            v-model="name"
+          ></v-text-field>
+          <v-text-field
+            color="blue"
+            ref="descriptionEditText"
+            label="Description"
+            multi-line
+            v-model="description"
+          ></v-text-field>
+          <v-radio-group v-model="labelColor">
+            <v-radio
+              color="goals"
+              label="Goals"
+              :value="1"
+            ></v-radio>
+            <v-radio
+              color="progress"
+              label="Progress"
+              :value="2"
+            ></v-radio>
+            <v-radio
+              color="activities"
+              label="Activities"
+              :value="3"
+            ></v-radio>
+            <v-radio
+              color="interruptions"
+              label="Interruptions"
+              :value="4"
+            ></v-radio>
+          </v-radio-group>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn flat="flat" color="blue" @click="closeDialog">Cancel</v-btn>
+          <v-btn flat="flat" color="blue" @click="onCreateAssignment">Create</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -137,12 +201,15 @@
           assignment: undefined,
           isActive: false,
           selectedEmail: undefined
-        }
+        },
+        dialog: false,
+        name: '',
+        description: '',
+        labelColor: 1
       }
     },
     mounted () {
       this.init()
-      window.mytest = this
     },
     updated () {
       if (!this.user) {
@@ -162,8 +229,8 @@
       init (openedAssignmentUuids) {
         var self = this
         simpleRequest('/api/assignments/private/').method('get').then((response) => {
-          var assignments = response.data
-          for (let assignment of assignments) {
+          var assignments = []
+          for (let assignment of response.data) {
             if (this.type === 'archived' && !assignment.archived) {
               continue
             } else if (this.type === 'active' && assignment.archived) {
@@ -226,10 +293,10 @@
                 this._email = v
               }
             })
+            assignment.field = new Field()
             assignment.displayEmails = []
             assignment.emails = []
             assignment.loading = false
-            assignment.field = new Field()
             assignment.count = 10
             assignment.assign_loading = false
             assignment.email = ''
@@ -249,6 +316,7 @@
                 break
             }
             assignment.show = openedAssignmentUuids && openedAssignmentUuids.indexOf(assignment.uuid) !== -1
+            assignments.push(assignment)
           }
           self.assignments = assignments
           console.log(response)
@@ -341,7 +409,34 @@
         })
       },
       onEditClick (assignment) {
-        console.log('edit')
+        this.$store.getters.draftAssignmentsEventEmitter.once('updated', (draftAssignments) => {
+          var index = 0
+          for (; index < draftAssignments.length && assignment.uuid !== draftAssignments[index].uuid; index++) {}
+          if (index !== draftAssignments.length) {
+            this.$router.push('/dashboard/draft-assignments/' + draftAssignments[index].id + '/')
+          } else {
+            simpleRequest('/api/assignments/private/' + assignment.uuid + '/get_assignment_tasks/').method('get').then((response) => {
+              var onError = () => {
+                this.showNotification('error')
+              }
+              this.$store.getters.draftAssignmentEventEmitter.removeAllListeners('created')
+              this.$store.getters.draftAssignmentEventEmitter.once('error', onError)
+              this.$store.getters.draftAssignmentEventEmitter.once('created', (draftAssignment) => {
+                this.$store.getters.draftAssignmentEventEmitter.removeListener('error', onError)
+                this.showNotification('showSuccessWithText', 'Created draft assignment for edit')
+              })
+              this.$store.getters.draftAssignmentsEventEmitter.once('updated', (draftAssignments) => {
+                this.$store.commit('getDraftAssignmentsFromProfileData')
+                this.onEditClick(assignment)
+              })
+              this.$store.commit('createDraftAssignmentFromAssignment', [response.data])
+            }).catch((error) => {
+              console.log(error)
+            })
+          }
+        })
+        this.$store.commit('getDraftAssignmentsFromProfileData')
+        console.log(assignment)
       },
       onDeleteClick (assignment) {
         simpleRequest('/api/assignments/private/' + assignment.uuid + '/delete_assignment_tasks/').method('delete').then((response) => {
@@ -405,6 +500,41 @@
         this.menu.selectedEmail = undefined
         this.menu.assignment = undefined
         this.menu.isActive = false
+      },
+      validateName (value) {
+        if (value && (value.length > 0 && value.length <= 200)) {
+          return true
+        } else {
+          return false
+        }
+      },
+      closeDialog () {
+        this.dialog = false
+        setTimeout(() => {
+          if (!this.dialog) {
+            if (this.$refs.nameEditText && this.$refs.descriptionEditText) {
+              this.$refs.nameEditText.reset()
+              this.$refs.descriptionEditText.reset()
+            }
+          }
+        }, 400)
+      },
+      onCreateAssignment () {
+        var name = this.name
+        var description = this.description
+        var labelColor = this.labelColor
+        var onError = () => {
+          this.showNotification('error')
+        }
+        this.$store.getters.draftAssignmentEventEmitter.removeAllListeners('created')
+        this.$store.getters.draftAssignmentEventEmitter.once('error', onError)
+        this.$store.getters.draftAssignmentEventEmitter.once('created', (draftAssignment) => {
+          this.showNotification('showSuccessWithText', 'Created draft assignment for edit')
+          this.$store.getters.draftAssignmentEventEmitter.removeListener('error', onError)
+          this.closeDialog()
+          this.$router.push('/dashboard/draft-assignments/' + draftAssignment.id + '/')
+        })
+        this.$store.commit('createDraftAssignment', [name, description, labelColor])
       }
     }
   }

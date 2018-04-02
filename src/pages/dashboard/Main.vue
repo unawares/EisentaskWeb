@@ -52,8 +52,9 @@
               <v-list-tile-title>Archived Tasks</v-list-tile-title>
             </v-list-tile-content>
           </v-list-tile>
-          <v-divider></v-divider>
         </v-list>
+        <draft-assignments-list></draft-assignments-list>
+        <v-divider></v-divider>
         <my-groups-list
           ref="groupsList"
           :addLoadingTag="addLoadingTag"
@@ -105,6 +106,7 @@
 <script>
   import Overlayable from 'vuetify/src/mixins/overlayable'
   import MyGroupsList from '@/components/MyGroupsList'
+  import DraftAssignmentsList from '@/components/DraftAssignmentsList'
   import Settings from '@/components/Settings'
   import simpleRequest from '@/utils/SimpleRequest'
 
@@ -248,6 +250,7 @@
     },
     components: {
       MyGroupsList,
+      DraftAssignmentsList,
       Settings
     }
   }

@@ -250,6 +250,7 @@
       },
 
       refreshAndGetCompletedTasks () {
+        this.addLoadingTag('TasksLoading')
         this.$store.commit('refreshCompletedTasks')
         setTimeout(() => {
           this.$store.commit('getCompletedTasks')

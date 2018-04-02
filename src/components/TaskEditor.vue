@@ -169,11 +169,15 @@
 
       drawer: function (value) {
         if (value) {
-          this.$refs.taskEditor.$el.style.visibility = 'visible'
+          if (this.$refs.taskEditor) {
+            this.$refs.taskEditor.$el.style.visibility = 'visible'
+          }
         } else {
           setTimeout(() => {
             if (!this.drawer) {
-              this.$refs.taskEditor.$el.style.visibility = 'hidden'
+              if (this.$refs.taskEditor) {
+                this.$refs.taskEditor.$el.style.visibility = 'hidden'
+              }
             }
           }, 1000)
         }
