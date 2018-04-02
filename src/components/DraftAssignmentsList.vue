@@ -1,6 +1,6 @@
 <template>
   <v-list v-if="draftAssignments.length > 0" subheader>
-    <v-subheader>Draft Assignments</v-subheader>
+    <v-subheader>(Draft) Assignments</v-subheader>
     <v-list-tile
       v-for="draftAssignment in draftAssignments"
       :key="draftAssignment.id"

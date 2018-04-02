@@ -1,10 +1,12 @@
 <template>
   <v-container>
-    <v-container style="position: relative; margin-top: 20px; margin-bottom: 20px">
-      <div style="border-radius: 3px; position: absolute; top: 0; bottom: 0; left: 0; right: 0; background-color: white; opacity: 0.1"></div>
-      <v-btn flat color="blue" @click="onSaveDraftAssignment">save</v-btn>
-      <v-btn flat color="blue">reset</v-btn>
-      <v-btn flat color="blue">settings</v-btn>
+    <v-container class="actions-container">
+      <div class="actions-background"></div>
+      <div class="actions-view">
+        <v-btn flat color="blue" @click="onSaveDraftAssignment">save</v-btn>
+        <v-spacer></v-spacer>
+        <v-btn flat color="amber">settings</v-btn>
+      </div>
     </v-container>
     <v-layout row justify-center wrap>
       <v-flex xs12 sm6 md3 lg3 xl3 class="list-of-tasks">
@@ -231,7 +233,8 @@
         arrayOfTasks: [],
         isDragging: false,
         isMouseOverInstanceId: undefined,
-        keys: new Map()
+        keys: new Map(),
+        draftAssignment: undefined
       }
     },
     mounted () {
@@ -473,17 +476,44 @@
       },
 
       onSaveDraftAssignment () {
-        var onError = () => {
-          this.showNotification('error')
+        var hasUpdates = false
+        for (let i = 0; this.draftAssignment && i < this.draftAssignment.tasks.length; i++) {
+          if (this.draftAssignment.tasks[i].action !== 'none') {
+            hasUpdates = true
+            break
+          }
         }
-        this.$store.getters.draftAssignmentEventEmitter.removeAllListeners('updated')
-        this.$store.getters.draftAssignmentEventEmitter.once('error', onError)
-        this.$store.getters.draftAssignmentEventEmitter.once('updated', (draftAssignment) => {
-          this.showNotification('showSuccessWithText', 'The assignment has been saved')
-          this.$store.getters.draftAssignmentEventEmitter.removeListener('error', onError)
-          this.$router.push('/dashboard/assigned-tasks/active/')
-        })
-        this.$store.commit('saveDraftAssigment', [this.draftAssignment.id])
+        if (!hasUpdates) {
+          this.showNotification('showWarningWithText', 'There is no changes')
+          return
+        }
+        if ((this.tasks.goals.length + this.tasks.progress.length + this.tasks.activities.length + this.tasks.interruptions.length) > 0) {
+          var onError = () => {
+            this.showNotification('error')
+            this.$store.getters.draftAssignmentEventEmitter.removeListener('created', onCreate)
+            this.$store.getters.draftAssignmentEventEmitter.removeListener('updated', onUpdate)
+          }
+          var onUpdate = () => {
+            this.showNotification('showSuccessWithText', 'The assignment has been saved')
+            this.$router.push('/dashboard/assigned-tasks/active/')
+            this.$store.getters.draftAssignmentEventEmitter.removeListener('created', onCreate)
+            this.$store.getters.draftAssignmentEventEmitter.removeListener('error', onError)
+          }
+          var onCreate = () => {
+            onUpdate()
+            this.$store.getters.draftAssignmentEventEmitter.removeListener('error', onError)
+            this.$store.getters.draftAssignmentEventEmitter.removeListener('updated', onUpdate)
+          }
+          this.$store.getters.draftAssignmentEventEmitter.removeAllListeners('created')
+          this.$store.getters.draftAssignmentEventEmitter.removeAllListeners('updated')
+          this.$store.getters.draftAssignmentEventEmitter.removeAllListeners('error')
+          this.$store.getters.draftAssignmentEventEmitter.once('error', onError)
+          this.$store.getters.draftAssignmentEventEmitter.once('created', onCreate)
+          this.$store.getters.draftAssignmentEventEmitter.once('updated', onUpdate)
+          this.$store.commit('saveDraftAssigment', [this.draftAssignment.id])
+        } else {
+          this.showNotification('showWarningWithText', 'You have not written tasks')
+        }
       },
 
       onNewGoalClick () {
@@ -587,4 +617,27 @@
 
   .text-center
     text-align: center
+  
+
+  .actions-container
+    position: relative
+    margin-top: 20px
+    margin-bottom: 20px
+
+  .actions-background
+    border-radius: 3px
+    position: absolute
+    top: 0
+    bottom: 0
+    left: 0
+    right: 0
+    background-color: white
+    opacity: 0.1
+
+  .actions-view
+    top: 0
+    bottom: 0
+    left: 0
+    right: 0
+    display: flex
 </style>

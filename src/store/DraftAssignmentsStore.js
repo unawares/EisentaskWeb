@@ -434,7 +434,7 @@ export default {
               this.commit('updateProfileData', profileData)
               console.log(response)
             }).catch((error) => {
-              this.commit('deleteDraftAssignment', [draftAssignment.id])
+              this.getters.draftAssignmentEventEmitter.emit('error')
               console.log(error)
             })
             console.log(response)
@@ -485,11 +485,11 @@ export default {
                 this.commit('updateProfileData', profileData)
                 console.log(response)
               }).catch((error) => {
-                this.commit('deleteDraftAssignment', [draftAssignment.id])
+                this.getters.draftAssignmentEventEmitter.emit('error')
                 console.log(error)
               })
             } else {
-              this.commit('deleteDraftAssignment', [draftAssignment.id])
+              this.getters.draftAssignmentEventEmitter.emit('error')
             }
             console.log(error)
           })
@@ -539,7 +539,7 @@ export default {
             this.commit('updateProfileData', profileData)
             console.log(response)
           }).catch((error) => {
-            this.commit('deleteDraftAssignment', [draftAssignment.id])
+            this.getters.draftAssignmentEventEmitter.emit('error')
             console.log(error)
           })
         }

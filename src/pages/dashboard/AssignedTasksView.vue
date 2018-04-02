@@ -99,7 +99,7 @@
       v-if="type == 'active'"
       ref="button"
       dark
-      color="activities"
+      color="blue"
       fab
       fixed
       right
@@ -110,7 +110,7 @@
     </v-btn>
     <v-dialog v-if="type == 'active'" v-model="dialog" max-width="400">
       <v-card>
-        <v-card-title class="headline">Creating Group</v-card-title>
+        <v-card-title class="headline">Creating Assignment</v-card-title>
         <v-card-text>
           <v-text-field
             color="blue"
@@ -418,17 +418,18 @@
             simpleRequest('/api/assignments/private/' + assignment.uuid + '/get_assignment_tasks/').method('get').then((response) => {
               var onError = () => {
                 this.showNotification('error')
+                this.$store.getters.draftAssignmentEventEmitter.removeListener('created', onCreate)
               }
-              this.$store.getters.draftAssignmentEventEmitter.removeAllListeners('created')
-              this.$store.getters.draftAssignmentEventEmitter.once('error', onError)
-              this.$store.getters.draftAssignmentEventEmitter.once('created', (draftAssignment) => {
+              var onCreate = () => {
                 this.$store.getters.draftAssignmentEventEmitter.removeListener('error', onError)
                 this.showNotification('showSuccessWithText', 'Created draft assignment for edit')
-              })
-              this.$store.getters.draftAssignmentsEventEmitter.once('updated', (draftAssignments) => {
                 this.$store.commit('getDraftAssignmentsFromProfileData')
                 this.onEditClick(assignment)
-              })
+              }
+              this.$store.getters.draftAssignmentEventEmitter.removeAllListeners('created')
+              this.$store.getters.draftAssignmentEventEmitter.removeAllListeners('error')
+              this.$store.getters.draftAssignmentEventEmitter.once('error', onError)
+              this.$store.getters.draftAssignmentEventEmitter.once('created', onCreate)
               this.$store.commit('createDraftAssignmentFromAssignment', [response.data])
             }).catch((error) => {
               console.log(error)
@@ -525,15 +526,18 @@
         var labelColor = this.labelColor
         var onError = () => {
           this.showNotification('error')
+          this.$store.getters.draftAssignmentEventEmitter.removeListener('created')
         }
-        this.$store.getters.draftAssignmentEventEmitter.removeAllListeners('created')
-        this.$store.getters.draftAssignmentEventEmitter.once('error', onError)
-        this.$store.getters.draftAssignmentEventEmitter.once('created', (draftAssignment) => {
+        var onCreate = (draftAssignment) => {
           this.showNotification('showSuccessWithText', 'Created draft assignment for edit')
           this.$store.getters.draftAssignmentEventEmitter.removeListener('error', onError)
           this.closeDialog()
           this.$router.push('/dashboard/draft-assignments/' + draftAssignment.id + '/')
-        })
+        }
+        this.$store.getters.draftAssignmentEventEmitter.removeAllListeners('created')
+        this.$store.getters.draftAssignmentEventEmitter.removeAllListeners('error')
+        this.$store.getters.draftAssignmentEventEmitter.once('error', onError)
+        this.$store.getters.draftAssignmentEventEmitter.once('created', onCreate)
         this.$store.commit('createDraftAssignment', [name, description, labelColor])
       }
     }
