@@ -13,6 +13,7 @@ export default class Group {
     this.created = this.created || instance.created
     this.updated = this.updated || instance.updated
     this.admin = this.admin || instance.admin
+    this.flow = this.flow || instance.flow
   }
 
   override (instance) {
@@ -25,5 +26,6 @@ export default class Group {
     this.created = instance.created
     this.updated = instance.updated
     this.admin = instance.admin
+    this.flow = instance.flow
   }
 }

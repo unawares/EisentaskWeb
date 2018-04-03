@@ -287,7 +287,8 @@
       created: response.created,
       updated: response.updated,
       admin: response.admin,
-      memberCardId: response.memberCardId
+      memberCardId: response.memberCardId,
+      flow: response.flow
     }
   }
 

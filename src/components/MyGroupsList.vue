@@ -58,6 +58,19 @@
             multi-line
             v-model="description"
           ></v-text-field>
+          <span class="title">Label Color</span>
+          <v-radio-group v-model="flow">
+            <v-radio
+              color="blue"
+              label="One task for each"
+              :value="1"
+            ></v-radio>
+            <v-radio
+              color="blue"
+              label="One task for all"
+              :value="2"
+            ></v-radio>
+          </v-radio-group>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
@@ -86,7 +99,8 @@
         title: '',
         description: '',
         isPublic: false,
-        isJoiningAllowed: false
+        isJoiningAllowed: false,
+        flow: 1
       }
     },
     mounted () {
@@ -124,7 +138,8 @@
             title: this.title,
             description: this.description || '',
             is_public: this.isPublic,
-            is_joining_allowed: this.isJoiningAllowed
+            is_joining_allowed: this.isJoiningAllowed,
+            flow: this.flow
           }).method('post').then((response) => {
             this.closeDialog()
             this.getMyGroups()

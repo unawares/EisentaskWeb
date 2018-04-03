@@ -45,6 +45,21 @@
                 rows="7"
                 :disabled="!isAdmin"
               ></v-text-field>
+              <span class="headline">Tasks flow logic</span>
+              <v-radio-group v-model="flow">
+                <v-radio
+                  :disabled="!isAdmin"
+                  color="blue"
+                  label="One task for each"
+                  :value="1"
+                ></v-radio>
+                <v-radio
+                  :disabled="!isAdmin"
+                  color="blue"
+                  label="One task for all"
+                  :value="2"
+                ></v-radio>
+              </v-radio-group>
               <div class="group-settings-actions">
                 <v-btn flat light color="red" @click="clickDeleteGroupSettings" :disabled="!isAdmin">Delete</v-btn>
                 <v-spacer></v-spacer>
@@ -150,7 +165,8 @@
       created: response.created,
       updated: response.updated,
       admin: response.admin,
-      memberCardId: response.memberCardId
+      memberCardId: response.memberCardId,
+      flow: response.flow
     }
   }
 
@@ -178,7 +194,8 @@
           begin: undefined,
           loading: false
         },
-        usernameOrEmail: ''
+        usernameOrEmail: '',
+        flow: undefined
       }
     },
     mounted () {
@@ -208,6 +225,7 @@
         this.description = this.group.description
         this.isPublic = this.group.isPublic
         this.isJoiningAllowed = this.group.isJoiningAllowed
+        this.flow = this.group.flow
         this.groupMemberCards.begin = '/api/groups/list/' + this.group.instance.id + '/member-cards/'
         this.groupMemberCards.next = this.groupMemberCards.begin
       },
@@ -259,7 +277,8 @@
           title: this.title,
           description: this.description,
           is_public: this.isPublic,
-          is_joining_allowed: this.isJoiningAllowed
+          is_joining_allowed: this.isJoiningAllowed,
+          flow: this.flow
         }).method('put').then((response) => {
           this.group.instance = getGroupFromResponse(response.data)
           this.showNotification('showWarningWithText', 'Group settings has been changed.')
