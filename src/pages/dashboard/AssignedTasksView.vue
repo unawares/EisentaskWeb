@@ -130,6 +130,7 @@
             multi-line
             v-model="description"
           ></v-text-field>
+          <span class="title">Label Color</span>
           <v-radio-group v-model="labelColor">
             <v-radio
               color="goals"
@@ -306,7 +307,6 @@
             assignment.count = 10
             assignment.assign_loading = false
             assignment.email = ''
-            assignment.win = undefined
             switch (assignment.label_color) {
               case 1:
                 assignment.colorClass = 'goals'
@@ -379,18 +379,7 @@
         })
       },
       goTo (assignment) {
-        if (assignment.win) {
-          try {
-            assignment.win.focus()
-          } catch (error) {
-            assignment.win = undefined
-          }
-        }
-        if (!assignment.win) {
-          assignment.win = window.open('/web/assignments/' + assignment.uuid + '/' + encodeURIComponent(assignment.info.assignment_info) + '/active-tasks/', '_blank')
-        } else {
-          assignment.win.location.href = '/web/assignments/' + assignment.uuid + '/' + encodeURIComponent(assignment.info.assignment_info) + '/active-tasks/'
-        }
+        window.open('/web/assignments/' + assignment.uuid + '/' + encodeURIComponent(assignment.info.assignment_info) + '/active-tasks/', '_blank')
       },
       onArchiveClick (assignment) {
         simpleRequest('/api/assignments/private/' + assignment.uuid + '/archive_assignment_tasks/').method('post').then(() => {
@@ -417,7 +406,7 @@
       onEditClick (assignment) {
         this.$store.getters.draftAssignmentsEventEmitter.once('updated', (draftAssignments) => {
           var index = 0
-          for (; index < draftAssignments.length && assignment.uuid !== draftAssignments[index].uuid; index++) {}
+          for (; index < draftAssignments.length && assignment.uuid !== draftAssignments[index].uuid; index++) { }
           if (index !== draftAssignments.length) {
             this.$router.push('/dashboard/draft-assignments/' + draftAssignments[index].id + '/')
           } else {
@@ -460,9 +449,9 @@
       onSettingsClick (assignment) {
         var self = this
         this.openSettings('assignment-settings', {
-          context: this,
+          context: self,
           assignment: assignment,
-          assignments: this.assignments,
+          assignments: self.assignments,
           onUpdatedAssignment () {
             self.init(getOpenedAssignmentUuids(self.assignments))
           },

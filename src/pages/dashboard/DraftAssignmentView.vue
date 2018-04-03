@@ -3,7 +3,7 @@
     <v-container class="actions-container">
       <div class="actions-background"></div>
       <div class="actions-view">
-        <v-btn flat color="blue" @click="onSaveDraftAssignment">Change Assignment</v-btn>
+        <v-btn flat color="blue" @click="onSaveDraftAssignment">Make assignment</v-btn>
         <v-spacer></v-spacer>
         <v-btn flat color="amber" @click="onSettingsClick">settings</v-btn>
       </div>

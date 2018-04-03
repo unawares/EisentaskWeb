@@ -239,6 +239,7 @@
           this.assignment.name = response.data.assignment.name
           this.assignment.description = response.data.assignment.description
           this.showNotification('showSuccessWithText', 'The assignment has been updated')
+          this.closeAssignmentSettings()
           this.kwargs.onUpdatedAssignment(this.assignment)
         }).catch((error) => {
           setTimeout(() => {
