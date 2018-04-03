@@ -58,7 +58,7 @@
             multi-line
             v-model="description"
           ></v-text-field>
-          <span class="title">Label Color</span>
+          <span class="title">Tasks flow logic</span>
           <v-radio-group v-model="flow">
             <v-radio
               color="blue"
