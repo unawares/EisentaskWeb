@@ -241,7 +241,9 @@
           this.showNotification('showSuccessWithText', 'The assignment has been updated')
           this.kwargs.onUpdatedAssignment(this.assignment)
         }).catch((error) => {
-          this.refresh()
+          setTimeout(() => {
+            this.closeAssignmentSettings()
+          }, 2000)
           console.log(error)
         })
       },
@@ -258,7 +260,9 @@
           this.closeAssignmentSettings()
           this.kwargs.onDeletedAssignment(this.assignment)
         }).catch(() => {
-          this.refresh()
+          setTimeout(() => {
+            this.closeAssignmentSettings()
+          }, 2000)
           this.showNotification('error')
         })
       },
@@ -278,6 +282,7 @@
         this.getAssignedEmails()
       },
       getAssignedEmails () {
+        var self = this
         simpleRequest('/api/assignments/private/' + this.assignment.uuid + '/get_assignment_profile_emails/').method('get').then((response) => {
           this.assignment.emails = response.data.map((v) => {
             return v.email
@@ -290,7 +295,9 @@
           }
           console.log(response)
         }).catch((error) => {
-          this.refresh()
+          setTimeout(() => {
+            this.closeAssignmentSettings()
+          }, 2000)
           self.showNotification('error')
           console.log(error)
         })

@@ -148,6 +148,7 @@
         this.username = user.username
         this.removeLoadingTag('UserLoading')
         this.user = user
+        this.refresh()
       })
       setTimeout(() => {
         this.addLoadingTag('UserLoading')
@@ -211,7 +212,9 @@
         this.hideScroll()
         this.settings.visible = true
         setTimeout(() => {
-          this.$refs.settings.$el.classList.add('visible')
+          if (this.$refs.settings) {
+            this.$refs.settings.$el.classList.add('visible')
+          }
           setTimeout(() => {
             this.$refs.main.style.visibility = 'hidden'
           }, 200)
@@ -221,7 +224,9 @@
         this.$refs.main.style.visibility = 'visible'
         setTimeout(() => {
           this.showScroll()
-          this.$refs.settings.$el.classList.remove('visible')
+          if (this.$refs.settings) {
+            this.$refs.settings.$el.classList.remove('visible')
+          }
           setTimeout(() => {
             this.settings.visible = false
             this.settings.kwargs = undefined

@@ -5,6 +5,8 @@ var queueRequests = createQueueRequests(IGNORE, {
   xsrfCookieName: 'csrftoken'
 })
 
+queueRequests.retryInterval = 1000
+
 export default function (url, data) {
   return {
     method (requestMethod) {

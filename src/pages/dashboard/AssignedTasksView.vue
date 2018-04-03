@@ -96,6 +96,7 @@
       </div>
     </masonry>
     <v-btn
+      class="add-assignment-button"
       v-if="type == 'active'"
       ref="button"
       dark
@@ -227,6 +228,11 @@
         this.init(getOpenedAssignmentUuids(this.assignments))
       },
       init (openedAssignmentUuids) {
+        setTimeout(() => {
+          if (this.$refs.button) {
+            this.$refs.button.$el.style.visibility = 'visible'
+          }
+        }, 700)
         var self = this
         simpleRequest('/api/assignments/private/').method('get').then((response) => {
           var assignments = []
@@ -422,7 +428,7 @@
               }
               var onCreate = () => {
                 this.$store.getters.draftAssignmentEventEmitter.removeListener('error', onError)
-                this.showNotification('showSuccessWithText', 'Created draft assignment for edit')
+                this.showNotification('showSuccessWithText', 'Created draft of the assignment for edit')
                 this.$store.commit('getDraftAssignmentsFromProfileData')
                 this.onEditClick(assignment)
               }
@@ -577,4 +583,7 @@
     background-color: #FF9F1C
   .header.interruptions
     background-color: #616161
+  
+  .add-assignment-button
+    visibility: hidden
 </style>

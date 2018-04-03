@@ -16,12 +16,21 @@
       @onClickCloseAction="onClickCloseAction"
       :showNotification="showNotification">
     </assignment-settings>
+    <draft-assignment-settings
+      v-else-if="section === 'draft-assignment-settings'"
+      :section="section"
+      :kwargs="kwargs"
+      :scrollEvent="scrollEvent"
+      @onClickCloseAction="onClickCloseAction"
+      :showNotification="showNotification">
+    </draft-assignment-settings>
   </div>
 </template>
 
 <script>
   import GroupSettings from '@/components/GroupSettings'
   import AssignmentSettings from '@/components/AssignmentSettings'
+  import DraftAssignmentSettings from '@/components/DraftAssignmentSettings'
 
   export default {
     name: 'Settings',
@@ -45,7 +54,8 @@
     },
     components: {
       GroupSettings,
-      AssignmentSettings
+      AssignmentSettings,
+      DraftAssignmentSettings
     }
   }
 </script>

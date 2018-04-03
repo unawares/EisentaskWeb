@@ -3,9 +3,9 @@
     <v-container class="actions-container">
       <div class="actions-background"></div>
       <div class="actions-view">
-        <v-btn flat color="blue" @click="onSaveDraftAssignment">save</v-btn>
+        <v-btn flat color="blue" @click="onSaveDraftAssignment">Change Assignment</v-btn>
         <v-spacer></v-spacer>
-        <v-btn flat color="amber">settings</v-btn>
+        <v-btn flat color="amber" @click="onSettingsClick">settings</v-btn>
       </div>
     </v-container>
     <v-layout row justify-center wrap>
@@ -214,7 +214,9 @@
       'addLoadingTag',
       'removeLoadingTag',
       'id',
-      'showNotification'
+      'showNotification',
+      'openSettings',
+      'closeSettings'
     ],
     data () {
       return {
@@ -303,7 +305,12 @@
 
       error () {
         this.$store.getters.draftAssignmentsEventEmitter.removeListener('updated', this.draftAssignmentsListener)
-        this.$router.replace('/dashboard/assigned-tasks/active/')
+        var a = () => {
+          this.$router.replace('/dashboard/assigned-tasks/active/', () => {}, () => {
+            setTimeout(a, 100)
+          })
+        }
+        a()
       },
 
       synchronize (draftAssignments) {
@@ -377,7 +384,7 @@
       createTask (text, priority) {
         this.$store.getters.draftAssignmentsEventEmitter.once('updated', (draftAssignments) => {
           if (!this.synchronize(draftAssignments)) {
-            this.$router.replace('/dashboard/active-tasks/')
+            this.error()
           }
         })
         this.$store.commit('createAssignedTask', [this.draftAssignment.id, text, priority])
@@ -388,7 +395,7 @@
         if (index !== -1) {
           this.$store.getters.draftAssignmentsEventEmitter.once('updated', (draftAssignments) => {
             if (!this.synchronize(draftAssignments)) {
-              this.$router.replace('/dashboard/active-tasks/')
+              this.error()
             }
           })
           this.$store.commit('updateAssignedTask', [this.draftAssignment.id, index, text, priority])
@@ -410,7 +417,7 @@
         if (index !== -1) {
           this.$store.getters.draftAssignmentsEventEmitter.once('updated', (draftAssignments) => {
             if (!this.synchronize(draftAssignments)) {
-              this.$router.replace('/dashboard/active-tasks/')
+              this.error()
             }
           })
           this.$store.commit('deleteAssignedTask', [this.draftAssignment.id, index])
@@ -476,17 +483,6 @@
       },
 
       onSaveDraftAssignment () {
-        var hasUpdates = false
-        for (let i = 0; this.draftAssignment && i < this.draftAssignment.tasks.length; i++) {
-          if (this.draftAssignment.tasks[i].action !== 'none') {
-            hasUpdates = true
-            break
-          }
-        }
-        if (!hasUpdates) {
-          this.showNotification('showWarningWithText', 'There is no changes')
-          return
-        }
         if ((this.tasks.goals.length + this.tasks.progress.length + this.tasks.activities.length + this.tasks.interruptions.length) > 0) {
           var onError = () => {
             this.showNotification('error')
@@ -534,6 +530,20 @@
       onNewInterruptionClick () {
         this.$refs.taskEditor.openEditor()
         this.$refs.taskEditor.setPriority(4)
+      },
+
+      onSettingsClick () {
+        var self = this
+        this.openSettings('draft-assignment-settings', {
+          context: this,
+          assignment: this.draftAssignment,
+          onUpdatedAssignment () {
+            self.refresh()
+          },
+          onDeletedAssignment () {
+            self.refresh()
+          }
+        })
       }
     }
     /*
