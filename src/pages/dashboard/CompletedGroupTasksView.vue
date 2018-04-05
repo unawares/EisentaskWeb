@@ -145,7 +145,8 @@
     props: [
       'addLoadingTag',
       'removeLoadingTag',
-      'scrollEvent'
+      'scrollEvent',
+      'id'
     ],
     data () {
       return {
@@ -173,18 +174,18 @@
       }
     },
     mounted () {
-      this.addLoadingTag('CompletedGroupTasksLoading')
+      this.addLoadingTag('CompletedGroupTasksLoading' + this.id)
       this.refreshData()
       this.synchronize().then(() => {
         this.init()
       })
     },
     beforeDestroy () {
-      this.removeLoadingTag('CompletedGroupTasksLoading')
+      this.removeLoadingTag('CompletedGroupTasksLoading' + this.id)
     },
     watch: {
       $route (to, from) {
-        this.addLoadingTag('CompletedGroupTasksLoading')
+        this.addLoadingTag('CompletedGroupTasksLoading' + this.id)
         this.refreshData()
         this.synchronize().then(() => {
           this.synchronizeSelectedDates()
@@ -247,7 +248,7 @@
       },
 
       refresh () {
-        this.addLoadingTag('CompletedGroupTasksLoading')
+        this.addLoadingTag('CompletedGroupTasksLoading' + this.id)
         this.refreshData()
         this.synchronize().then(() => {
           this.getNextCompletedTasks().then(() => {
@@ -258,7 +259,7 @@
 
       finish () {
         this.isActive = true
-        this.removeLoadingTag('CompletedGroupTasksLoading')
+        this.removeLoadingTag('CompletedGroupTasksLoading' + this.id)
       },
 
       refreshData () {
@@ -313,7 +314,7 @@
 
       synchronize () {
         return new Promise((resolve, reject) => {
-          this.getGroup(this.$router.history.current.params.id).then((group) => {
+          this.getGroup(this.id).then((group) => {
             this.group = group
             this.getAllowedDates().then((dates) => {
               var allowedDatesSet = new Set()

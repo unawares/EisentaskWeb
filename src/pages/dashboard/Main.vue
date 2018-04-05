@@ -138,6 +138,7 @@
           kwargs: undefined
         },
         lastRefresh: new Date(),
+        lastTagAdd: new Date(),
         user: undefined
       }
     },
@@ -169,13 +170,18 @@
             this.loading = true
           }
         } else {
-          setTimeout(() => {
-            if (!(tags.length > 0)) {
-              if (this.loading) {
-                this.loading = false
+          var a = () => {
+            if ((new Date()).getTime() - this.lastTagAdd.getTime() > 1000) {
+              if (!(this.loadingTags.length > 0)) {
+                if (this.loading) {
+                  this.loading = false
+                }
               }
+            } else {
+              setTimeout(a, 100)
             }
-          }, 2000)
+          }
+          a()
         }
       },
       navigationDrawer (value) {
@@ -191,7 +197,7 @@
     },
     methods: {
       refresh () {
-        if ((new Date()).getTime() - this.lastRefresh.getTime() > 2000) {
+        if ((new Date()).getTime() - this.lastRefresh.getTime() > 1000) {
           this.lastRefresh = new Date()
           this.$store.commit('getUser')
           this.$refs.view.refresh()  // Must be implemented
@@ -201,6 +207,7 @@
         }
       },
       addLoadingTag (tag) {
+        this.lastTagAdd = new Date()
         if (this.loadingTags.indexOf(tag) === -1) {
           this.loadingTags.push(tag)
         }

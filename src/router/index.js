@@ -37,12 +37,14 @@ export default new Router({
             {
               path: 'active-tasks',
               name: 'ActiveGroupTasks',
-              component: ActiveGroupTasksView
+              component: ActiveGroupTasksView,
+              props: true
             },
             {
               path: 'completed-tasks',
               name: 'CompletedGroupTasks',
-              component: CompletedGroupTasksView
+              component: CompletedGroupTasksView,
+              props: true
             }
           ]
         },

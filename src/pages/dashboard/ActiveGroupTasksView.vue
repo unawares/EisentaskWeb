@@ -309,7 +309,8 @@
       'addLoadingTag',
       'removeLoadingTag',
       'scrollEvent',
-      'showNotification'
+      'showNotification',
+      'id'
     ],
     data () {
       return {
@@ -349,8 +350,8 @@
       }
     },
     mounted () {
-      this.addLoadingTag('ActiveGroupTasksLoading')
-      this.getGroupAndTasks(this.$router.history.current.params.id)
+      this.addLoadingTag('ActiveGroupTasksLoading' + this.id)
+      this.getGroupAndTasks(this.id)
       setTimeout(() => {
         if (this.$refs.groupTaskEditor) {
           this.$refs.groupTaskEditor.$el.style.visibility = 'visible'
@@ -360,11 +361,11 @@
     watch: {
       $route (to, from) {
         this.updated++
-        this.addLoadingTag('ActiveGroupTasksLoading')
+        this.addLoadingTag('ActiveGroupTasksLoading' + this.id)
         this.activeTasksLoading = true
         this.clearTasks()
         this.destroy()
-        this.getGroupAndTasks(this.$router.history.current.params.id)
+        this.getGroupAndTasks(this.id)
       },
 
       scrollEvent (evt) {
@@ -408,16 +409,16 @@
     beforeDestroy () {
       this.updated++
       this.destroy()
-      this.removeLoadingTag('ActiveGroupTasksLoading')
+      this.removeLoadingTag('ActiveGroupTasksLoading' + this.id)
     },
     methods: {
       refresh () {
         this.updated++
-        this.addLoadingTag('ActiveGroupTasksLoading')
+        this.addLoadingTag('ActiveGroupTasksLoading' + this.id)
         this.activeTasksLoading = true
         this.clearTasks()
         this.destroy()
-        this.getGroupAndTasks(this.$router.history.current.params.id)
+        this.getGroupAndTasks(this.id)
       },
 
       continueActions (quickly = false) {
@@ -499,7 +500,7 @@
                     if (currentUpdate === this.updated) {
                       this.activeTasksLoading = false
                       this.force = false
-                      this.removeLoadingTag('ActiveGroupTasksLoading')
+                      this.removeLoadingTag('ActiveGroupTasksLoading' + this.id)
                       setTimeout(() => {
                         if (currentUpdate === this.updated) {
                           this.isReady = true

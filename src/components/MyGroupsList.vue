@@ -9,7 +9,7 @@
         <v-list-tile-title>Add Group</v-list-tile-title>
       </v-list-tile-content>
     </v-list-tile>
-    <v-list-group v-for="group in groups" :key="group.id">
+    <v-list-group v-for="group in groups" :key="group.id" :value="initialSelected === group.instance.id">
       <v-list-tile slot="item">
         <v-list-tile-avatar size="36px">
           <img v-if="group.image" :src="group.image">
@@ -100,7 +100,8 @@
         description: '',
         isPublic: false,
         isJoiningAllowed: false,
-        flow: 1
+        flow: 1,
+        initialSelected: undefined
       }
     },
     mounted () {
@@ -112,6 +113,10 @@
       },
 
       refreshAndGetMyGroups () {
+        var current = this.$router.history.current
+        if (current.name === 'ActiveGroupTasks' || current.name === 'CompletedGroupTasks') {
+          this.initialSelected = parseInt(current.params.id)
+        }
         this.$store.commit('refreshMyGroups')
         setTimeout(() => {
           this.$store.commit('getMyGroups')

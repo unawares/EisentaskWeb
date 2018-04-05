@@ -283,7 +283,7 @@
 
     beforeDestroy () {
       this.$store.getters.draftAssignmentsEventEmitter.removeListener('updated', this.draftAssignmentsListener)
-      this.removeLoadingTag('DraftAssignmentLoading')
+      this.removeLoadingTag('DraftAssignmentLoading' + this.id)
     },
 
     methods: {
@@ -292,8 +292,8 @@
       },
 
       init () {
-        this.removeLoadingTag('DraftAssignmentLoading')
-        this.addLoadingTag('DraftAssignmentLoading')
+        this.removeLoadingTag('DraftAssignmentLoading' + this.id)
+        this.addLoadingTag('DraftAssignmentLoading' + this.id)
         this.$store.getters.draftAssignmentsEventEmitter.removeListener('updated', this.draftAssignmentsListener)
         this.$store.commit('getProfileData')
         this.$store.getters.draftAssignmentsEventEmitter.on('updated', this.draftAssignmentsListener)
@@ -303,11 +303,12 @@
         if (!this.synchronize(draftAssignments)) {
           this.error()
         } else {
-          this.removeLoadingTag('DraftAssignmentLoading')
+          this.removeLoadingTag('DraftAssignmentLoading' + this.id)
         }
       },
 
       error () {
+        this.removeLoadingTag('DraftAssignmentLoading' + this.id)
         this.$store.getters.draftAssignmentsEventEmitter.removeListener('updated', this.draftAssignmentsListener)
         var a = () => {
           this.$router.replace('/dashboard/assigned-tasks/active/', () => {}, () => {
