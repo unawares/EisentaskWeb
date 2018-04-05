@@ -449,6 +449,8 @@
     color: #E8F967
     &:visited
       color: #E8F967
+    &:hover
+      opacity: 0.8
 </style>
 
 <style lang="stylus" scoped>
