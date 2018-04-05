@@ -1,99 +1,108 @@
 <template>
-  <div class="assignments" ref="assignments">
+  <v-container class="assignments" ref="assignments">
     <masonry
       :cols="{default: 4, 1000: 4, 900: 3, 800: 2, 560: 1}"
       :gutter="{default: '20px'}"
       >
-      <div class="item" v-for="assignment in assignments" :key="assignment.id">
-        <v-card>
-          <v-card-actions class="actions-header" :class="assignment.colorClass">
-            <v-btn v-if="assignment.archived" @click="onCancelClick(assignment)" icon small><v-icon color="white">cancel</v-icon></v-btn>
-            <v-btn v-else @click="onArchiveClick(assignment)" icon small><v-icon color="white">folder</v-icon></v-btn>
-            <v-btn v-if="!assignment.archived" @click="onEditClick(assignment)" icon small><v-icon color="white">edit</v-icon></v-btn>
-            <v-spacer></v-spacer>
-            <v-btn @click="onDeleteClick(assignment)" icon small><v-icon color="white">delete</v-icon></v-btn>
+      <v-card class="item" v-for="assignment in assignments" :key="assignment.id">
+        <v-card-actions class="actions-header" :class="assignment.colorClass">
+          <v-btn v-if="assignment.archived" @click="onCancelClick(assignment)" icon small><v-icon color="white">cancel</v-icon></v-btn>
+          <v-btn v-else @click="onArchiveClick(assignment)" icon small><v-icon color="white">folder</v-icon></v-btn>
+          <v-btn v-if="!assignment.archived" @click="onEditClick(assignment)" icon small><v-icon color="white">edit</v-icon></v-btn>
+          <v-spacer></v-spacer>
+          <v-btn @click="onDeleteClick(assignment)" icon small><v-icon color="white">delete</v-icon></v-btn>
+        </v-card-actions>
+        <v-card-media class="header" :class="assignment.colorClass">
+          <v-container fill-height fluid>
+            <v-layout fill-height>
+              <v-flex class="card-header" xs12 align-end flexbox>
+                <div>
+                  <div class="headline white--text">{{ assignment.name }}</div>
+                  <div class="subtitle">
+                    [<span v-if="assignment.access === 1">Private</span>
+                    <span v-else-if="assignment.access === 2">Protected</span>
+                    <span v-else-if="assignment.access === 3">Public</span>]
+                  </div>
+                </div>
+              </v-flex>
+            </v-layout>
+          </v-container>
+        </v-card-media>
+        <!--
+        <v-card-title class="card-status">
+        </v-card-title>
+        -->
+        <v-card-text primary-title>
+          <div class="grey--text">{{ assignment.description }}</div>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn icon v-if="!assignment.archived" @click="onSettingsClick(assignment)"><v-icon :color="assignment.colorClass">settings</v-icon></v-btn>
+          <v-spacer></v-spacer>
+          <v-btn icon @click.native="assignment.show = !assignment.show">
+            <v-icon :color="assignment.colorClass">{{ !assignment.show ? 'keyboard_arrow_down' : 'keyboard_arrow_up' }}</v-icon>
+          </v-btn>
+        </v-card-actions>
+        <v-slide-y-transition>
+          <v-container v-show="assignment.show">
+            <v-layout flexbox justify-center column>
+                <v-text-field
+                  :color="assignment.colorClass"
+                  label="Email"
+                  v-model="assignment.email"
+                  min="8"
+                  :error="assignment.field.isError"
+                  :rules="assignment.field.messages"
+                  light
+                ></v-text-field>
+                <v-btn :loading="assignment.assign_loading" outline small :color="assignment.colorClass" @click="assignTo(assignment)">Assign</v-btn>
+            </v-layout>
+            <v-list dense subheader class="emails-list">
+              <v-menu
+                top
+                v-for="email in assignment.displayEmails"
+                :key="email"
+                :close-on-content-click="false"
+                :value="(menu.assignment === assignment && menu.selectedEmail === email) && menu.isActive"
+              >
+                <v-list-tile slot="activator" @click="onOpenEmailActionsClick(assignment, email)">
+                  <v-list-tile-content>
+                    <v-list-tile-title>{{ email }}</v-list-tile-title>
+                  </v-list-tile-content>
+                </v-list-tile>
+                <v-card>
+                  <v-list dense>
+                    <v-list-tile>
+                      <v-list-tile-content>
+                        <v-list-tile-title>{{ email }}</v-list-tile-title>
+                      </v-list-tile-content>
+                      <v-list-tile-action>
+                        <v-btn icon @click="onCloseEmailActionsClick()">
+                          <v-icon color="grey">close</v-icon>
+                        </v-btn>
+                      </v-list-tile-action>
+                    </v-list-tile>
+                  </v-list>
+                  <v-divider></v-divider>
+                  <v-list dense>
+                    <v-list-tile @click="removeUser(assignment, email)">
+                      <v-list-tile-title>Remove Profile</v-list-tile-title>
+                    </v-list-tile>
+                  </v-list>
+                </v-card>
+              </v-menu>
+            </v-list>
+            <v-layout v-if="nextLoadCount(assignment) > 0" flexbox justify-center column>
+              <v-btn @click="loadNextEmails(assignment)" flat small color="grey" :loading="assignment.loading">load next {{ nextLoadCount(assignment) }}</v-btn>
+            </v-layout>
+          </v-container>
+        </v-slide-y-transition>
+        <v-slide-y-transition>
+          <v-card-actions v-if="user" ref="actions_view">
+            <v-btn v-if="assignment.info" block small flat :color="assignment.colorClass" @click="goTo(assignment)">GO TO</v-btn>
+            <v-btn v-else-if="!assignment.show || (assignment.show && !assignment.assign_loading)" block small flat color="grey" @click="assignToMe(assignment)" :loading="assignment.assign_loading">ASSIGN TO ME</v-btn>
           </v-card-actions>
-          <v-card-media class="header" :class="assignment.colorClass">
-            <v-container fill-height fluid>
-              <v-layout fill-height>
-                <v-flex class="card-header" xs12 align-end flexbox>
-                  <span class="headline white--text">{{ assignment.name }}</span>
-                </v-flex>
-              </v-layout>
-            </v-container>
-          </v-card-media>
-          <v-card-text primary-title>
-            <div class="grey--text">{{ assignment.description }}</div>
-          </v-card-text>
-          <v-card-actions>
-            <v-btn icon v-if="!assignment.archived" @click="onSettingsClick(assignment)"><v-icon :color="assignment.colorClass">settings</v-icon></v-btn>
-            <v-spacer></v-spacer>
-            <v-btn icon @click.native="assignment.show = !assignment.show">
-              <v-icon :color="assignment.colorClass">{{ !assignment.show ? 'keyboard_arrow_down' : 'keyboard_arrow_up' }}</v-icon>
-            </v-btn>
-          </v-card-actions>
-          <v-slide-y-transition>
-            <v-container v-show="assignment.show">
-              <v-layout flexbox justify-center column>
-                  <v-text-field
-                    :color="assignment.colorClass"
-                    label="Email"
-                    v-model="assignment.email"
-                    min="8"
-                    :error="assignment.field.isError"
-                    :rules="assignment.field.messages"
-                    light
-                  ></v-text-field>
-                  <v-btn :loading="assignment.assign_loading" outline small :color="assignment.colorClass" @click="assignTo(assignment)">Assign</v-btn>
-              </v-layout>
-              <v-list dense subheader class="emails-list">
-                <v-menu
-                  top
-                  v-for="email in assignment.displayEmails"
-                  :key="email"
-                  :close-on-content-click="false"
-                  :value="(menu.assignment === assignment && menu.selectedEmail === email) && menu.isActive"
-                >
-                  <v-list-tile slot="activator" @click="onOpenEmailActionsClick(assignment, email)">
-                    <v-list-tile-content>
-                      <v-list-tile-title>{{ email }}</v-list-tile-title>
-                    </v-list-tile-content>
-                  </v-list-tile>
-                  <v-card>
-                    <v-list dense>
-                      <v-list-tile>
-                        <v-list-tile-content>
-                          <v-list-tile-title>{{ email }}</v-list-tile-title>
-                        </v-list-tile-content>
-                        <v-list-tile-action>
-                          <v-btn icon @click="onCloseEmailActionsClick()">
-                            <v-icon color="grey">close</v-icon>
-                          </v-btn>
-                        </v-list-tile-action>
-                      </v-list-tile>
-                    </v-list>
-                    <v-divider></v-divider>
-                    <v-list dense>
-                      <v-list-tile @click="removeUser(assignment, email)">
-                        <v-list-tile-title>Remove Profile</v-list-tile-title>
-                      </v-list-tile>
-                    </v-list>
-                  </v-card>
-                </v-menu>
-              </v-list>
-              <v-layout v-if="nextLoadCount(assignment) > 0" flexbox justify-center column>
-                <v-btn @click="loadNextEmails(assignment)" flat small color="grey" :loading="assignment.loading">load next {{ nextLoadCount(assignment) }}</v-btn>
-              </v-layout>
-            </v-container>
-          </v-slide-y-transition>
-          <v-slide-y-transition>
-            <v-card-actions v-if="user" ref="actions_view">
-              <v-btn v-if="assignment.info" block small flat :color="assignment.colorClass" @click="goTo(assignment)">GO TO</v-btn>
-              <v-btn v-else-if="!assignment.show || (assignment.show && !assignment.assign_loading)" block small flat color="grey" @click="assignToMe(assignment)" :loading="assignment.assign_loading">ASSIGN TO ME</v-btn>
-            </v-card-actions>
-          </v-slide-y-transition>
-        </v-card>
-      </div>
+        </v-slide-y-transition>
+      </v-card>
     </masonry>
     <v-btn
       class="add-assignment-button"
@@ -161,7 +170,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-  </div>
+  </v-container>
 </template>
 
 <script>
@@ -192,7 +201,9 @@
       'showNotification',
       'type',
       'openSettings',
-      'closeSettings'
+      'closeSettings',
+      'addLoadingTag',
+      'removeLoadingTag'
     ],
     data () {
       return {
@@ -213,6 +224,9 @@
     mounted () {
       this.init()
     },
+    beforeDestroy () {
+      this.removeLoadingTag('AssignedTasksLoading')
+    },
     updated () {
       if (!this.user) {
         this.user = this.$store.getters.user
@@ -229,6 +243,8 @@
         this.init(getOpenedAssignmentUuids(this.assignments))
       },
       init (openedAssignmentUuids) {
+        this.removeLoadingTag('AssignedTasksLoading')
+        this.addLoadingTag('AssignedTasksLoading')
         setTimeout(() => {
           if (this.$refs.button) {
             this.$refs.button.$el.style.visibility = 'visible'
@@ -325,6 +341,7 @@
             assignments.push(assignment)
           }
           self.assignments = assignments
+          this.removeLoadingTag('AssignedTasksLoading')
           console.log(response)
         }).catch((error) => {
           this.showNotification('error')
@@ -544,8 +561,13 @@
     padding: 36px
 
   .card-header
-    display: flex;
-    align-items: flex-end;
+    display: flex
+    align-items: flex-end
+    .subtitle
+      color: #E8F967
+  
+  .card-status
+    background-color: #EDEDED
 
   .item
     margin-bottom: 20px

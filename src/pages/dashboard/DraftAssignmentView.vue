@@ -246,7 +246,6 @@
           this.$refs.taskEditor.$el.style.visibility = 'visible'
         }
       }, 700)
-      window.test = this
     },
     components: {
       Draggable,
@@ -284,6 +283,7 @@
 
     beforeDestroy () {
       this.$store.getters.draftAssignmentsEventEmitter.removeListener('updated', this.draftAssignmentsListener)
+      this.removeLoadingTag('DraftAssignmentLoading')
     },
 
     methods: {
@@ -292,6 +292,8 @@
       },
 
       init () {
+        this.removeLoadingTag('DraftAssignmentLoading')
+        this.addLoadingTag('DraftAssignmentLoading')
         this.$store.getters.draftAssignmentsEventEmitter.removeListener('updated', this.draftAssignmentsListener)
         this.$store.commit('getProfileData')
         this.$store.getters.draftAssignmentsEventEmitter.on('updated', this.draftAssignmentsListener)
@@ -300,6 +302,8 @@
       draftAssignmentsListener (draftAssignments) {
         if (!this.synchronize(draftAssignments)) {
           this.error()
+        } else {
+          this.removeLoadingTag('DraftAssignmentLoading')
         }
       },
 

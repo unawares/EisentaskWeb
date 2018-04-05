@@ -229,7 +229,6 @@
     },
     mounted () {
       this.removeLoadingTag('TasksLoading')
-      this.removeLoadingTag('CompletedTasksLoading')
       this.activeTasksEventEmitter.removeAllListeners('updated', () => {})
       this.completedTasksEventEmitter.removeAllListeners('updated', () => {})
       this.refreshAndGetActiveTasks()

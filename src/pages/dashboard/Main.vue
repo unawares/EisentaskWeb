@@ -165,9 +165,17 @@
     watch: {
       loadingTags (tags) {
         if (tags.length > 0) {
-          this.loading = true
+          if (!this.loading) {
+            this.loading = true
+          }
         } else {
-          this.loading = false
+          setTimeout(() => {
+            if (!(tags.length > 0)) {
+              if (this.loading) {
+                this.loading = false
+              }
+            }
+          }, 2000)
         }
       },
       navigationDrawer (value) {
@@ -193,19 +201,15 @@
         }
       },
       addLoadingTag (tag) {
-        setTimeout(() => {
-          if (this.loadingTags.indexOf(tag) === -1) {
-            this.loadingTags.push(tag)
-          }
-        })
+        if (this.loadingTags.indexOf(tag) === -1) {
+          this.loadingTags.push(tag)
+        }
       },
       removeLoadingTag (tag) {
-        setTimeout(() => {
-          let index = this.loadingTags.indexOf(tag)
-          if (index !== -1) {
-            this.loadingTags.splice(index, 1)
-          }
-        }, 700)
+        let index = this.loadingTags.indexOf(tag)
+        if (index !== -1) {
+          this.loadingTags.splice(index, 1)
+        }
       },
       openSettings (section, kwargs) {
         this.settings.section = section

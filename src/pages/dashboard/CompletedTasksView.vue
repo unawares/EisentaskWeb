@@ -180,7 +180,6 @@
       }
     },
     mounted () {
-      this.removeLoadingTag('TasksLoading')
       this.removeLoadingTag('CompletedTasksLoading')
       this.activeTasksEventEmitter.removeAllListeners('updated', () => {})
       this.completedTasksEventEmitter.removeAllListeners('updated', () => {})
@@ -239,7 +238,7 @@
       },
 
       refreshAndGetCompletedTasks () {
-        this.addLoadingTag('TasksLoading')
+        this.addLoadingTag('CompletedTasksLoading')
         this.$store.commit('refreshCompletedTasks')
         setTimeout(() => {
           this.$store.commit('getCompletedTasks')
