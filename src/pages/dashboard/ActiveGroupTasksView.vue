@@ -896,21 +896,21 @@
 <style scoped>
   .list-tasks-enter-active {
     overflow: hidden;
-    transition: all 500ms ease;
+    transition: all 300ms ease;
   }
 
   .list-tasks-move {
-    transition: transform 500ms;
+    transition: transform 300ms;
   }
 
   .list-tasks-leave-active {
     overflow: hidden;
-    transition: all 500ms ease;
+    transition: all 300ms ease;
   }
 
   .list-tasks-enter,
   .list-tasks-leave-to {
-    transition: all 500ms ease;
+    transition: all 300ms ease;
     max-height: 0;
     opacity: 0;
     overflow: hidden;

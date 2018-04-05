@@ -430,7 +430,7 @@
         var a = new Map()
         var arr = []
         for (let i = 0; i < this.tasks.goals.length; i++) {
-          if (this.tasks.goals[i].priority !== 1) {
+          if (this.tasks.goals[i].priority !== 1 && this.tasks.goals[i].action !== 'create') {
             this.tasks.goals[i].action = 'update'
           }
           a.set(this.tasks.goals[i], i + 1)
@@ -438,7 +438,7 @@
           arr.push(this.tasks.goals[i])
         }
         for (let i = 0; i < this.tasks.progress.length; i++) {
-          if (this.tasks.progress[i].priority !== 2) {
+          if (this.tasks.progress[i].priority !== 2 && this.tasks.progress[i].action !== 'create') {
             this.tasks.progress[i].action = 'update'
           }
           a.set(this.tasks.progress[i], i + 1)
@@ -446,7 +446,7 @@
           arr.push(this.tasks.progress[i])
         }
         for (let i = 0; i < this.tasks.activities.length; i++) {
-          if (this.tasks.activities[i].priority !== 3) {
+          if (this.tasks.activities[i].priority !== 3 && this.tasks.activities[i].action !== 'create') {
             this.tasks.activities[i].action = 'update'
           }
           a.set(this.tasks.activities[i], i + 1)
@@ -454,7 +454,7 @@
           arr.push(this.tasks.activities[i])
         }
         for (let i = 0; i < this.tasks.interruptions.length; i++) {
-          if (this.tasks.interruptions[i].priority !== 4) {
+          if (this.tasks.interruptions[i].priority !== 4 && this.tasks.interruptions[i].action !== 'create') {
             this.tasks.interruptions[i].action = 'update'
           }
           a.set(this.tasks.interruptions[i], i + 1)

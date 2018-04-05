@@ -192,7 +192,7 @@ export default class ReactiveActiveGroupTasks {
           } else if (this.updaterIsActive) {
             f()
           }
-        }, 5000)
+        }, 2500)
       }
     }
     f()

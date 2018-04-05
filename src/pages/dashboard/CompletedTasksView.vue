@@ -1,6 +1,7 @@
 <template>
   <div class="completed-tasks">
-    <v-layout row wrap justify-center>
+    <v-container>
+    <v-layout row wrap>
       <v-flex xl4 lg6 md8 sm10 xs12>
         <v-menu
           lazy
@@ -44,63 +45,51 @@
         </v-menu>
       </v-flex>
     </v-layout>
-    <v-layout justify-center style="color: white">
-      <v-flex xl4 lg6 md8 sm10 xs12>
-        <div v-for="year in sortedDateKeys(Object.keys(filteredTasks))" :key="year">
-          <div v-for="month in sortedDateKeys(Object.keys(filteredTasks[year]))" :key="year + '-' + month">
-            <div v-for="day in sortedDateKeys(Object.keys(filteredTasks[year][month]))" :key="year + '-' + month + '-' + day">
-              <v-layout>
-                <v-flex justify-start>
-                  <h4 class="header">{{ day }} {{ month | getDisplayMonth }}</h4>
-                </v-flex>
-                <v-flex justify-end>
-                  <h4
-                    class="header"
-                    style="text-align: right">{{ filteredTasks[year][month][day].length }}</h4>
-                </v-flex>
-              </v-layout>
-              <hr/>
-              <v-layout>
-                <v-flex style="max-width: 100%">
-                  <div
-                    v-for="(task, index) in filteredTasks[year][month][day]"
-                    class="task"
-                    :class="'border-color-' + getGolorNameByPriority(task.priority)"
-                    :key="task.id">
-                    <v-layout>
-                      <v-flex style="max-width: 100%">
-                        <div class="task-text">
-                          <span class="notranslate">{{ task.text }}</span>
-                        </div>
-                      </v-flex>
-                    </v-layout>
-                    <div class="text-xs-right">
-                      <v-btn
-                        :color="getGolorNameByPriority(task.priority)"
-                        dark
-                        flat
-                        icon
-                        @click="cancelTask(year, month, day, index)">
-                        <v-icon class="notranslate">remove_circle_outline</v-icon>
-                      </v-btn>
-                      <v-btn
-                        :color="getGolorNameByPriority(task.priority)"
-                        dark
-                        flat
-                        icon
-                        @click="deleteTask(year, month, day, index)">
-                        <v-icon class="notranslate">delete</v-icon>
-                      </v-btn>
-                    </div>
-                  </div>
-                </v-flex>
-              </v-layout>
-              <br /><br /><br />
-            </div>
-          </div>
+    <div v-for="year in sortedDateKeys(Object.keys(filteredTasks))" :key="year">
+      <div v-for="month in sortedDateKeys(Object.keys(filteredTasks[year]))" :key="year + '-' + month">
+        <div v-for="day in sortedDateKeys(Object.keys(filteredTasks[year][month]))" :key="year + '-' + month + '-' + day">
+          <h4 class="header">{{ day }} {{ month | getDisplayMonth }}</h4>
+          <masonry
+            :cols="{default: 4, 1000: 4, 900: 3, 800: 2, 560: 1}"
+            :gutter="{default: '20px'}"
+            >
+            <v-card
+              class="task"
+              :class="getGolorNameByPriority(task.priority)"
+              v-for="(task, index)
+              in filteredTasks[year][month][day]"
+              :key="task.id">
+              <v-card-text class="m-card-text">
+                <span class="text">
+                  <span v-html="filterWithUrls(task.text)" class="notranslate"></span>
+                </span>
+              </v-card-text>
+              <v-card-actions class="m-card-actions">
+                <v-btn
+                  color="white"
+                  light
+                  flat
+                  icon
+                  @click="deleteTask(year, month, day, index)">
+                  <v-icon class="notranslate">delete</v-icon>
+                </v-btn>
+                <v-spacer></v-spacer>
+                <v-btn
+                  color="white"
+                  light
+                  flat
+                  icon
+                  @click="cancelTask(year, month, day, index)">
+                  <v-icon class="notranslate">remove_circle_outline</v-icon>
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </masonry>
+          <br /><br /><br />
         </div>
-      </v-flex>
-    </v-layout>
+      </div>
+    </div>
+    </v-container>
   </div>
 </template>
 
@@ -331,55 +320,65 @@
 
       sortedDateKeys (keys) {
         return _.sortBy(keys, key => parseInt(key)).reverse()
+      },
+
+      filterWithUrls (text) {
+        text = text.replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;')
+        var regex = /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|(www\.)?[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9]\.[^\s]{2,})/g
+        return text.replace(regex, (match, a, b) => {
+          var url = match
+          if (!url.match(/^[a-zA-Z]+:\/\//)) {
+            url = '//' + url
+          }
+          return '<a target="_blank" class="m-link" href="' + url + '">' + match + '</a>'
+        })
       }
     }
   }
 </script>
 
+<style lang="stylus">
+  .m-link
+    text-decoration: none
+    color: #E8F967
+    &:visited
+      color: #E8F967
+</style>
+
 <style lang="stylus" scoped>
-  $goals = #F44336
-  $progress = #0C73AF
-  $activities = #FF9F1C
-  $interruptions = #616161
-  $text-color = #333333
-
-
   .task
-    max-width: 100%
-    border-radius: 2px
-    color: $text-color
-    border-left-width: 10px
-    border-left-style: solid
-    padding-left: 20px
-    margin: 20px 0
-    background-color: white
-    padding: 15px
-
-    &.border-color-goals
-      border-color: $goals
-
-    &.border-color-progress
-      border-color: $progress
-
-    &.border-color-activities
-      border-color: $activities
-
-    &.border-color-interruptions
-      border-color: $interruptions
-
-    .task-text
-      font-size: 20px
-      overflow: hidden
-      text-overflow: ellipsis
-      white-space: pre-line
-
-      > span
+    margin-bottom: 20px
+    .m-card-text
+      color: white
+      .text
+        max-width: 100%
+        display: inline-block
         overflow: hidden
         text-overflow: ellipsis
         white-space: pre-line
-
-
+    &.goals
+      .m-card-text
+        background-color: #F44336
+      .m-card-actions
+        background-color: #FF5742
+    &.progress
+      .m-card-text
+        background-color: #0C73AF
+      .m-card-actions
+        background-color: #2185B7
+    &.activities
+      .m-card-text
+        background-color: #FF9F1C
+      .m-card-actions
+        background-color: #FFB532
+    &.interruptions
+      .m-card-text
+        background-color: #616161
+      .m-card-actions
+        background-color: #717171
   .header
+    color: white
     font-weight: normal
     font-size: 30px
+    line-height: 2
 </style>

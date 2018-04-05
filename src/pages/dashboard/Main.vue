@@ -141,14 +141,13 @@
         user: undefined
       }
     },
-    created () {
+    mounted () {
       this.userEventEmitter.on('updated', () => {
         this.navigationDrawer = true
         let user = this.$store.getters.user
         this.username = user.username
         this.removeLoadingTag('UserLoading')
         this.user = user
-        this.refresh()
       })
       setTimeout(() => {
         this.addLoadingTag('UserLoading')
@@ -158,7 +157,9 @@
     },
     updated () {
       if (this.user) {
-        this.$refs.dashboard.style.display = 'block'
+        if (this.$refs.dashboard) {
+          this.$refs.dashboard.style.display = 'block'
+        }
       }
     },
     watch: {

@@ -42,7 +42,7 @@ class DraftAssignmentTask {
 }
 
 class DraftAssignment {
-  constructor (id, name, description, labelColor, access = 1, tasks = [], uuid = null) {
+  constructor (id, name, description, labelColor, access = 2, tasks = [], uuid = null) {
     this.id = id
     this.name = name
     this.description = description
@@ -153,7 +153,7 @@ class DraftAssignmentBuilder {
       false
     )
   }
-  static newDraftAssignment (name, description, labelColor, access = 1, tasks = [], uuid = null) {
+  static newDraftAssignment (name, description, labelColor, access = 2, tasks = [], uuid = null) {
     return new DraftAssignmentManager(
       new DraftAssignment(
         getNewId(),
@@ -434,6 +434,7 @@ export default {
               this.commit('updateProfileData', profileData)
               console.log(response)
             }).catch((error) => {
+              console.log(error.response.data)
               this.getters.draftAssignmentEventEmitter.emit('error')
               console.log(error)
             })
