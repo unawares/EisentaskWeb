@@ -251,9 +251,7 @@
         this.addLoadingTag('CompletedGroupTasksLoading' + this.id)
         this.refreshData()
         this.synchronize().then(() => {
-          this.getNextCompletedTasks().then(() => {
-            this.currentIndex++
-          })
+          this.init()
         })
       },
 
@@ -330,7 +328,9 @@
               var currentDate = new Date()
               let year = currentDate.getFullYear()
               let month = currentDate.getMonth() + 1
-              this.date = year + '-' + ((month > 9) ? month : '0' + month)
+              if (!this.date) {
+                this.date = year + '-' + ((month > 9) ? month : '0' + month)
+              }
               this.dates.push(currentDate)
               this.formattedDate = currentDate.toDateString()
               this.allowedDates = Array.from(allowedDatesSet)
