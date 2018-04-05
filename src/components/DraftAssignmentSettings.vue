@@ -97,7 +97,6 @@
                 <div class="assignment-settings-actions">
                   <v-btn flat light color="red" @click="deleteAssignment">Delete Draft</v-btn>
                   <v-spacer></v-spacer>
-                  <v-btn flat light color="blue" @click="resetAssignment">Reset</v-btn>
                   <v-btn flat light color="blue" @click="updateAssignment">Save</v-btn>
                 </div>
               </div>
@@ -235,6 +234,7 @@
     .main-view
       .assignment-settings-actions
         display: flex
+        flex-wrap: wrap
     .settings-content
       padding-top: 16px
       padding-bottom: 16px

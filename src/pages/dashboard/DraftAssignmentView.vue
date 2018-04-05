@@ -3,7 +3,7 @@
     <v-container class="actions-container">
       <div class="actions-background"></div>
       <div class="actions-view">
-        <v-btn flat color="blue" @click="onSaveDraftAssignment">Make assignment</v-btn>
+        <v-btn flat color="blue" @click="onSaveDraftAssignment">Make</v-btn>
         <v-spacer></v-spacer>
         <v-btn flat color="amber" @click="onSettingsClick">settings</v-btn>
       </div>
@@ -650,6 +650,7 @@
     opacity: 0.1
 
   .actions-view
+    justify-content: center
     top: 0
     bottom: 0
     left: 0

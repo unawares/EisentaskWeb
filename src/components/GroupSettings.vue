@@ -63,7 +63,6 @@
               <div class="group-settings-actions">
                 <v-btn flat light color="red" @click="clickDeleteGroupSettings" :disabled="!isAdmin">Delete</v-btn>
                 <v-spacer></v-spacer>
-                <v-btn flat light color="blue" @click="clickResetGroupSettings" :disabled="!isAdmin">Reset</v-btn>
                 <v-btn flat light color="blue" @click="clickSaveGroupSettings" :disabled="!isAdmin">Save</v-btn>
               </div>
               <div v-if="!isAdmin" class="group-settings-actions justify-center margin-top">
@@ -450,8 +449,7 @@
     .group-settings-actions
       display: flex
       align-items: center
-      &.justify-center
-        justify-items: center
+      flex-wrap: wrap
       &.margin-top
         margin-top: 20px
 
