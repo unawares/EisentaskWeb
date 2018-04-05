@@ -339,9 +339,9 @@
 <style lang="stylus">
   .m-link
     text-decoration: none
-    color: #E8F967
+    color: #E8F967 !important
     &:visited
-      color: #E8F967
+      color: #E8F967 !important
     &:hover
       opacity: 0.8
 </style>

@@ -525,8 +525,11 @@
 <style lang="stylus">
   .task-text-link
     text-decoration: none
+    color: #2196F3 !important
+    &:visited:
+      color: #2196F3 !important
     &:hover
-      color: #F2215D
+      color: #F2215D !important
 </style>
 
 
