@@ -467,6 +467,15 @@
           arr.push(this.tasks.interruptions[i])
         }
         arr = _.sortBy(arr, (v) => { return a.get(v) })
+        var beforePost = () => {
+          this.removeLoadingTag('DraftAssignmentLoading' + this.id)
+          if (!this.synchronize(this.$store.getters.draftAssignments)) {
+            this.error()
+          } else {
+            this.removeLoadingTag('DraftAssignmentLoading' + this.id)
+          }
+        }
+        this.$store.getters.draftAssignmentEventEmitter.once('beforePost', beforePost)
         this.$store.commit(
           'setDraftAssignedTasks',
           [this.draftAssignment.id, [...arr, ...this.arrayOfTasks.filter(v => v.action === 'delete')]])
@@ -550,17 +559,15 @@
           }
         })
       }
-    }
-    /*
+    },
     beforeRouteUpdate (to, from, next) {
-      if (this.$refs.groupTaskEditor.isActive()) {
-        this.$refs.groupTaskEditor.closeEditor()
+      if (this.$refs.taskEditor.isActive()) {
+        this.$refs.taskEditor.closeEditor()
         next(false)
       } else {
         next()
       }
     }
-    */
   }
 </script>
 

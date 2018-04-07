@@ -197,6 +197,7 @@ export default {
       this.getters.profileDataEventEmitter.once('updated', () => {
         state.draftAssignmentEventEmitter.emit('created', res)
       })
+      state.draftAssignmentEventEmitter.emit('beforePost')
       this.commit('updateProfileData', profileData)
     },
     createDraftAssignmentFromAssignment (state, [assignment]) {
@@ -231,6 +232,7 @@ export default {
       this.getters.profileDataEventEmitter.once('updated', () => {
         state.draftAssignmentEventEmitter.emit('created', res)
       })
+      state.draftAssignmentEventEmitter.emit('beforePost')
       this.commit('updateProfileData', profileData)
     },
     updateDraftAssignment (state, [id, name, description, labelColor, access, tasks, uuid]) {
@@ -266,6 +268,7 @@ export default {
           state.draftAssignmentEventEmitter.emit('updated', res)
         })
       }
+      state.draftAssignmentEventEmitter.emit('beforePost')
       this.commit('updateProfileData', profileData)
     },
     deleteDraftAssignment (state, [id]) {
@@ -286,6 +289,7 @@ export default {
           }
         }
       }
+      state.draftAssignmentEventEmitter.emit('beforePost')
       this.commit('updateProfileData', profileData)
     },
     createAssignedTask (state, [id /* Draft Assignment id */, text, priority]) {
@@ -310,8 +314,9 @@ export default {
           .withDraftAssignment(draftAssignment)
           .addTask(text, priority)
           .into(profileData)
-        this.commit('updateProfileData', profileData)
       }
+      state.draftAssignmentEventEmitter.emit('beforePost')
+      this.commit('updateProfileData', profileData)
     },
     updateAssignedTask (state, [id, index, text, priority]) {
       // Get draft assignment
@@ -335,8 +340,9 @@ export default {
           .withDraftAssignment(draftAssignment)
           .updateTask(index, text, priority)
           .into(profileData)
-        this.commit('updateProfileData', profileData)
       }
+      state.draftAssignmentEventEmitter.emit('beforePost')
+      this.commit('updateProfileData', profileData)
     },
     deleteAssignedTask (state, [id, index]) {
       // Get draft assignment
@@ -360,8 +366,9 @@ export default {
           .withDraftAssignment(draftAssignment)
           .deleteTask(index)
           .into(profileData)
-        this.commit('updateProfileData', profileData)
       }
+      state.draftAssignmentEventEmitter.emit('beforePost')
+      this.commit('updateProfileData', profileData)
     },
     setDraftAssignedTasks (state, [id, tasks]) {
       // Get draft assignment
@@ -385,8 +392,9 @@ export default {
           .withDraftAssignment(draftAssignment)
           .setTasks(tasks)
           .into(profileData)
-        this.commit('updateProfileData', profileData)
       }
+      state.draftAssignmentEventEmitter.emit('beforePost')
+      this.commit('updateProfileData', profileData)
     },
     saveDraftAssigment (state, [id]) {
       // Get draft assignment
@@ -405,6 +413,7 @@ export default {
         }
       }
       if (draftAssignment !== null) {
+        state.draftAssignmentEventEmitter.emit('beforePost')
         if (draftAssignment.uuid) {
           simpleRequest('/api/assignments/private/' + draftAssignment.uuid + '/').method('get').then((response) => {
             simpleRequest('/api/assignments/private/' + draftAssignment.uuid + '/update_assignment_tasks/', {

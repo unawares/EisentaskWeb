@@ -512,8 +512,8 @@
       }
     },
     beforeRouteUpdate (to, from, next) {
-      if (this.$refs.groupTaskEditor.isActive()) {
-        this.$refs.groupTaskEditor.closeEditor()
+      if (this.$refs.taskEditor.isActive()) {
+        this.$refs.taskEditor.closeEditor()
         next(false)
       } else {
         next()

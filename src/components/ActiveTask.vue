@@ -1,8 +1,8 @@
 <template>
   <v-card
     class="task"
-    :hover="isHoverable && isStaff && isMouseOverWrapper"
     ref="task"
+    :class="{ hoverable: isHoverable && isStaff && isMouseOver }"
     @click.native="() => { if (actions.indexOf('edit') !== -1) { onEditClick() } }"
     @mouseenter="mouseEnter"
     @mouseleave="mouseLeave">
@@ -26,8 +26,7 @@
     name: 'ActiveTask',
     data () {
       return {
-        isHoverable: true,
-        isMouseOverWrapper: false
+        isHoverable: true
       }
     },
     props: {
@@ -43,9 +42,6 @@
         }
       }
     },
-    mounted () {
-      this.isMouseOverWrapper = this.isMouseOver
-    },
     watch: {
       isDragging (value) {
         if (!this.$el.classList.contains('sortable-ghost')) {
@@ -54,19 +50,6 @@
           } else {
             this.isHoverable = true
           }
-        }
-      },
-      isMouseOver () {
-        if (!this.isMouseOver) {
-          setTimeout(() => {
-            if (!this.isMouseOver) {
-              this.isMouseOverWrapper = false
-            } else {
-              this.isMouseOverWrapper = true
-            }
-          }, 200)
-        } else {
-          this.isMouseOverWrapper = true
         }
       }
     },
@@ -95,6 +78,9 @@
   margin-top: 10px
   margin-bottom: 10px
   max-height: 9999px
+  &.hoverable:hover
+    cursor: pointer
+    background-color: #F0F0F0
 
   .task-text
     overflow: hidden
