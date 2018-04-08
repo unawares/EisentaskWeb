@@ -63,6 +63,11 @@
                     label="Protected"
                     :value="2"
                   ></v-radio>
+                  <v-radio
+                    color="blue"
+                    label="Public"
+                    :value="3"
+                  ></v-radio>
                 </v-radio-group>
               </div>
               <div class="settings-content">

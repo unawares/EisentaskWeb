@@ -4,7 +4,7 @@
       :cols="{default: 4, 1000: 4, 900: 3, 800: 2, 560: 1}"
       :gutter="{default: '20px'}"
       >
-      <v-card class="item" v-for="assignment in assignments" :key="assignment.id">
+      <v-card class="item" v-for="assignment in assignments" :key="assignment.id" :id="'assignment' + assignment.uuid">
         <v-card-actions class="actions-header" :class="assignment.colorClass">
           <v-btn v-if="assignment.archived" @click="onCancelClick(assignment)" icon small><v-icon color="white">cancel</v-icon></v-btn>
           <v-btn v-else @click="onArchiveClick(assignment)" icon small><v-icon color="white">folder</v-icon></v-btn>
@@ -28,10 +28,12 @@
             </v-layout>
           </v-container>
         </v-card-media>
-        <!--
-        <v-card-title class="card-status">
+        <v-card-title class="card-status" v-if="assignment.access === 3">
+          <div class="m-field">
+            <input type="text" class="link-field" readonly :value="'http://eisentask.com/web/assignments/public/' + assignment.uuid + '/'">
+            <v-btn icon @click="copyTheLink(assignment)"><v-icon :color="assignment.colorClass">link</v-icon></v-btn>
+          </div>
         </v-card-title>
-        -->
         <v-card-text primary-title>
           <div class="grey--text">{{ assignment.description }}</div>
         </v-card-text>
@@ -396,7 +398,7 @@
         })
       },
       goTo (assignment) {
-        window.open('/web/assignments/' + assignment.uuid + '/' + encodeURIComponent(assignment.info.assignment_info) + '/active-tasks/', '_blank')
+        window.open('/web/assignments/protected/' + assignment.uuid + '/' + encodeURIComponent(assignment.info.assignment_info) + '/active-tasks/', '_blank')
       },
       onArchiveClick (assignment) {
         simpleRequest('/api/assignments/private/' + assignment.uuid + '/archive_assignment_tasks/').method('post').then(() => {
@@ -551,6 +553,11 @@
         this.$store.getters.draftAssignmentEventEmitter.once('error', onError)
         this.$store.getters.draftAssignmentEventEmitter.once('created', onCreate)
         this.$store.commit('createDraftAssignment', [name, description, labelColor])
+      },
+      copyTheLink (assignment) {
+        var el = document.querySelector('#assignment5f1631c5c0e34968a90472c0a7a0d2d5 .card-status .m-field .link-field')
+        el.select()
+        document.execCommand('Copy')
       }
     }
   }
@@ -567,7 +574,7 @@
       color: #E8F967
   
   .card-status
-    background-color: #EDEDED
+    background-color: #ECEFF1
 
   .item
     margin-bottom: 20px
@@ -597,4 +604,20 @@
   
   .add-assignment-button
     visibility: hidden
+
+  .m-field
+    max-width: 100%
+    display: inline-flex
+    align-items: center
+    justify-content: center
+    .btn
+      flex-shrink: 0
+    .link-field
+      padding: 4px 8px
+      min-width: 0;
+      background-color: #CFD8DC
+      font-size: 14px
+      outline: none
+      flex-grow: 1
+      border: none
 </style>
