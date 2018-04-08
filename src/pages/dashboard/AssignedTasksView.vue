@@ -30,7 +30,7 @@
         </v-card-media>
         <v-card-title class="card-status" v-if="assignment.access === 3">
           <div class="m-field">
-            <input type="text" class="link-field" readonly :value="'http://eisentask.com/web/assignments/public/' + assignment.uuid + '/'">
+            <input :ref="assignment.uuid" type="text" class="link-field" readonly :value="'http://eisentask.com/web/assignments/public/' + assignment.uuid + '/'">
             <v-btn icon @click="copyTheLink(assignment)"><v-icon :color="assignment.colorClass">link</v-icon></v-btn>
           </div>
         </v-card-title>
@@ -555,9 +555,14 @@
         this.$store.commit('createDraftAssignment', [name, description, labelColor])
       },
       copyTheLink (assignment) {
-        var el = document.querySelector('#assignment5f1631c5c0e34968a90472c0a7a0d2d5 .card-status .m-field .link-field')
-        el.select()
-        document.execCommand('Copy')
+        var el = this.$refs[assignment.uuid][0]
+        if (el) {
+          el.select()
+          document.execCommand('Copy')
+          this.showNotification('showSuccessWithText', 'The link has been copied.')
+        } else {
+          this.showNotification('showWarningWithText', 'Can\'t copy the link.')
+        }
       }
     }
   }
@@ -606,7 +611,7 @@
     visibility: hidden
 
   .m-field
-    max-width: 100%
+    width: 100%
     display: inline-flex
     align-items: center
     justify-content: center
